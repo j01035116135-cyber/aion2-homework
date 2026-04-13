@@ -61,8 +61,11 @@
   .small{font-size:12px}
   .weekly-box{padding:14px;margin-bottom:12px}
   .weekly-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
-  .weekly-grid{display:grid;gap:10px}
-
+  .weekly-grid{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:10px;
+}
   .weekly-summary-layout{display:grid;grid-template-columns:minmax(0,1fr) 500px;gap:14px;align-items:start}
   .weekly-progress-panel{background:#0d1427;border:1px solid #28365b;border-radius:16px;padding:14px 16px;min-height:100%}
   .progress-panel-title{font-size:15px;font-weight:900;margin-bottom:12px}
@@ -246,12 +249,12 @@
   .task-group-ode-cell.task-group-start{border-left:3px solid rgba(134,199,156,.9) !important;}
   .task-group-ode-cell.task-group-end{border-right:3px solid rgba(134,199,156,.9) !important;}
   .week-item,.progress-card,.table-wrap{contain:layout paint;}
-  @media (max-width:1200px){
-    .layout{grid-template-columns:1fr}
-    .weekly-grid{grid-template-columns:repeat(3,1fr)}
-    .weekly-summary-layout{grid-template-columns:1fr}
-    .progress-list{grid-template-columns:1fr}
-  }
+  @media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  .weekly-grid{grid-template-columns:repeat(2,1fr)}
+  .weekly-summary-layout{grid-template-columns:1fr}
+  .progress-list{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
