@@ -613,6 +613,7 @@ function persistStateToCloud(){
       if(error){
         console.error('saveState error:', error);
       }
+      await updateGuildStats(userId, state.characters);
     } finally {
       if(saveResolver) saveResolver();
       savePromise = null;
@@ -1748,11 +1749,29 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.location.href = "index.html";
   }
 
+async function updateGuildStats(userId, characters) {
+  for (const char of characters) {
+    await window.supabaseClient
+      .from("guild_public_stats")
+      .upsert({
+        user_id: userId,
+        nickname: userId,
+        character_name: char.name,
+        combat_power: char.combat_power || 0,
+        item_level: char.item_level || 0,
+        weekly_completion: char.weekly_completion || 0,
+        updated_at: new Date().toISOString()
+      });
+  }
+}
+
+  
   if (logoutBtn) {
     logoutBtn.addEventListener("click", logout);
   }
 
   await requireLogin();
+  
 </script>
 </body>
 </html>
