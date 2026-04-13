@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아이온2 [무쌍] 레기온</title>
+<style>
+  html,body{margin:0;height:100%;background:#020617;color:#fff;font-family:Arial,"Noto Sans KR",sans-serif}
+  .boot{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+  .muted{color:#9fb0d8}
+  iframe{border:0;width:100%;height:100%;display:none}
+</style>
+</head>
+<body>
+  <div id="boot" class="boot">
+    <h2 style="margin:0">아이온2 [무쌍] 레기온</h2>
+    <div id="status" class="muted">불러오는 중...</div>
+  </div>
+  <iframe id="board" title="숙제판"></iframe>
+
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
+
+const SUPABASE_URL = "https://fpkqdodltalcaspqdpqk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_9pL-aHb6w2w-n5l4poOAlw_FeuQk4S2";
+const STORAGE_KEY = "aion2_homework_tracker_v7";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const boot = document.getElementById("boot");
+const board = document.getElementById("board");
+const statusEl = document.getElementById("status");
+
+let currentUserId = null;
+let lastSavedRaw = null;
+let saveTimer = null;
+let startedPolling = false;
+
+function normalizeBoardState(raw){
+  const state = JSON.parse(JSON.stringify(raw || {}));
+  if(!Array.isArray(state.characters)) state.characters = [];
+  if(!Array.isArray(state.weeklyTasks)) state.weeklyTasks = [];
+  if(!state.taskColors || typeof state.taskColors !== "object") state.taskColors = {};
+
+  for(const c of state.characters){
+    if(!Array.isArray(c.tasks)) c.tasks = [];
+    for(const t of c.tasks){
+      if((t.name === "⚔️루드라" || t.name === "⚔️침식")){
+        if(typeof t.challengeCurrent !== "number") t.challengeCurrent = 4;
+        if(typeof t.challengeMax !== "number") t.challengeMax = 4;
+        if(typeof t.rewardCurrent !== "number") t.rewardCurrent = 2;
+        if(typeof t.rewardMax !== "number") t.rewardMax = 2;
+        if(typeof t.challengeChargeCurrent !== "number") t.challengeChargeCurrent = 0;
+        if(typeof t.challengeChargeMax !== "number") t.challengeChargeMax = 0;
+        if(typeof t.rewardChargeCurrent !== "number") t.rewardChargeCurrent = 0;
+        if(typeof t.rewardChargeMax !== "number") t.rewardChargeMax = 0;
+        if(!t.resetRule) t.resetRule = "weekly_wed_05_reset";
+      }else{
+        if(typeof t.rewardCurrent !== "number" && typeof t.rewardMax === "number") t.rewardCurrent = t.rewardMax;
+        if(typeof t.rewardMax !== "number") t.rewardMax = 0;
+        if(typeof t.chargeCurrent !== "number" && typeof t.chargeMax === "number") t.chargeCurrent = t.chargeMax;
+        if(typeof t.chargeMax !== "number") t.chargeMax = 0;
+        if(!t.resetRule) t.resetRule = "none";
+      }
+    }
+  }
+  return state;
+}
+
+
+function setStatus(text){
+  statusEl.textContent = text;
+}
+
+async function getSessionOrRedirect(){
+  const { data: { session } } = await supabase.auth.getSession();
+  if(!session?.user){
+    window.location.href = "aion2_login_fixed.html";
+    return null;
+  }
+  return session;
+}
+
+async function loadRemoteState(userId){
+  const { data, error } = await supabase
+    .from("dashboard_states")
+    .select("state_json")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if(error) throw error;
+  return data?.state_json || null;
+}
+
+async function saveRemoteState(userId, rawJson){
+  try{
+    const parsed = normalizeBoardState(JSON.parse(rawJson));
+    rawJson = JSON.stringify(parsed);
+    const { error } = await supabase.from("dashboard_states").upsert({
+      user_id: userId,
+      state_json: parsed,
+      updated_at: new Date().toISOString()
+    });
+    if(error) throw error;
+    lastSavedRaw = rawJson;
+    console.log("saved");
+  }catch(err){
+    console.error("save failed", err);
+  }
+}
+
+function queueSave(rawJson){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => saveRemoteState(currentUserId, rawJson), 700);
+}
+
+function startPolling(){
+  if(startedPolling) return;
+  startedPolling = true;
+
+  setInterval(() => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return;
+
+    // first save after original board auto-generates sample state
+    if(lastSavedRaw === null){
+      lastSavedRaw = raw;
+      queueSave(raw);
+      return;
+    }
+
+    if(raw !== lastSavedRaw){
+      queueSave(raw);
+    }
+  }, 1000);
+}
+
+async function init(){
+  try{
+    setStatus("로그인 확인 중...");
+    const session = await getSessionOrRedirect();
+    if(!session) return;
+
+    currentUserId = session.user.id;
+    const username = localStorage.getItem("musang_username") || "admin";
+
+    setStatus("저장 데이터 확인 중...");
+    const remoteState = await loadRemoteState(currentUserId);
+
+    if(remoteState){
+      const normalized = normalizeBoardState(remoteState);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+      lastSavedRaw = JSON.stringify(normalized);
+      setStatus("저장 데이터 불러오기 완료");
+    }else{
+      localStorage.removeItem(STORAGE_KEY);
+      lastSavedRaw = null;
+      setStatus("기본 숙제판 생성 중...");
+    }
+
+    board.src = "aion2_final_v15.html";
+    board.onload = () => {
+      boot.style.display = "none";
+      board.style.display = "block";
+    };
+
+    startPolling();
+    console.log("logged in as", username, currentUserId);
+  }catch(err){
+    console.error(err);
+    setStatus("불러오기 실패: " + (err?.message || "알 수 없는 오류"));
+  }
+}
+
+window.addEventListener("beforeunload", () => {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(currentUserId && raw && raw !== lastSavedRaw){
+    navigator.sendBeacon?.(
+      SUPABASE_URL + "/rest/v1/dashboard_states",
+      new Blob([JSON.stringify({
+        user_id: currentUserId,
+        state_json: JSON.parse(raw),
+        updated_at: new Date().toISOString()
+      })], {type:"application/json"})
+    );
+  }
+});
+
+init();
+</script>
+</body>
+</html>

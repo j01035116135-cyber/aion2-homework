@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>무쌍 관리자 승인 페이지</title>
+  <style>
+    body {
+      margin: 0;
+      background: #020617;
+      color: #fff;
+      font-family: Arial, "Noto Sans KR", sans-serif;
+      padding: 24px;
+    }
+    .wrap {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .topbar {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .msg {
+      margin: 12px 0 20px;
+      color: #cbd5e1;
+    }
+    .card {
+      background: #0b1220;
+      border: 1px solid #24314f;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .small {
+      color: #94a3b8;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    button {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: 0;
+      background: #e5e7eb;
+      color: #111;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.approve {
+      background: #22c55e;
+      color: white;
+    }
+    button.logout {
+      background: #ef4444;
+      color: white;
+    }
+    .empty {
+      color: #94a3b8;
+      padding: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <h1>무쌍 관리자 승인 페이지</h1>
+      <button class="logout" id="logoutBtn" type="button">로그아웃</button>
+    </div>
+
+    <div class="msg" id="msg">불러오는 중...</div>
+    <div id="userList"></div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
+
+    const SUPABASE_URL = "https://fpkqdodltalcaspqdpqk.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_9pL-aHb6w2w-n5l4poOAlw_FeuQk4S2";
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const msg = document.getElementById("msg");
+    const userList = document.getElementById("userList");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    function setMsg(text) {
+      msg.textContent = text;
+    }
+
+    async function requireAdmin() {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        alert("로그인이 필요합니다.");
+        window.location.href = "index.html";
+        return null;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role, approved, username")
+        .eq("id", user.id)
+        .single();
+
+      if (profileError || !profile) {
+        alert("프로필 확인 실패");
+        await supabase.auth.signOut();
+        window.location.href = "index.html";
+        return null;
+      }
+
+      if (profile.role !== "admin") {
+        alert("관리자만 접근 가능합니다.");
+        window.location.href = "index.html";
+        return null;
+      }
+
+      return user;
+    }
+
+    async function loadPendingUsers() {
+      setMsg("승인 대기 유저 불러오는 중...");
+
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, username, approved, role, created_at")
+        .eq("approved", false)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        setMsg("목록 불러오기 실패: " + error.message);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        userList.innerHTML = `<div class="empty">승인 대기 유저가 없습니다.</div>`;
+        setMsg("승인 대기 목록");
+        return;
+      }
+
+      userList.innerHTML = data.map(user => `
+        <div class="card">
+          <div class="row">
+            <div>
+              <div><strong>${user.username}</strong></div>
+              <div class="small">role: ${user.role} / approved: ${user.approved}</div>
+              <div class="small">가입일: ${new Date(user.created_at).toLocaleString("ko-KR")}</div>
+            </div>
+            <button class="approve" data-id="${user.id}" data-username="${user.username}">승인</button>
+          </div>
+        </div>
+      `).join("");
+
+      setMsg("승인 대기 목록");
+
+      document.querySelectorAll(".approve").forEach(button => {
+        button.addEventListener("click", async () => {
+          const userId = button.dataset.id;
+          const username = button.dataset.username;
+
+          const ok = confirm(`${username} 계정을 승인할까요?`);
+          if (!ok) return;
+
+          const { error } = await supabase
+            .from("profiles")
+            .update({ approved: true })
+            .eq("id", userId);
+
+          if (error) {
+            alert("승인 실패: " + error.message);
+            return;
+          }
+
+          alert(`${username} 승인 완료`);
+          loadPendingUsers();
+        });
+      });
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = "index.html";
+    }
+
+    logoutBtn.addEventListener("click", logout);
+
+    const adminUser = await requireAdmin();
+    if (adminUser) {
+      loadPendingUsers();
+    }
+  </script>
+</body>
+</html>
