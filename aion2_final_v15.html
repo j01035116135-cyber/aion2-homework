@@ -752,9 +752,12 @@ function updateCharacterField(id,key,value){
 
 
 function parseNumberText(value){
-  if(!value) return '';
-  const m = String(value).replace(/,/g,'').match(/\d+(?:\.\d+)?/);
-  return m ? m[0] : '';
+  if (!value) return '';
+  const cleaned = String(value).replace(/[^\d.,]/g, '').trim();
+  if (!cleaned) return '';
+  const numbers = cleaned.match(/\d[\d,]*(?:\.\d+)?/g);
+  if (!numbers || !numbers.length) return '';
+  return numbers[numbers.length - 1].replace(/,/g, '');
 }
 
 function formatPowerCompact(value){
