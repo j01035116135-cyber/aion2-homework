@@ -256,19 +256,14 @@
   .task-group-ode-cell{background:rgba(77,125,98,.12) !important;border-top:2px solid rgba(134,199,156,.7) !important;border-bottom:2px solid rgba(134,199,156,.7) !important;}
   .task-group-ode-cell.task-group-start{border-left:3px solid rgba(134,199,156,.9) !important;}
   .task-group-ode-cell.task-group-end{border-right:3px solid rgba(134,199,156,.9) !important;}
-  @media (max-width:1200px){
-    .layout{grid-template-columns:1fr}
-    .weekly-grid{grid-template-columns:repeat(3,1fr)}
-    .weekly-summary-layout{grid-template-columns:1fr}
-    .progress-list{grid-template-columns:1fr}
-    .weekly-summary-layout{grid-template-columns:1fr}
-.done-label{
+  .done-label{
   margin-top:4px;
   font-size:13px;
   font-weight:800;
   color:#ffd6d6;
   letter-spacing:0.5px;
-  }
+}
+
 .stat-row{
   display:flex;
   gap:6px;
@@ -295,7 +290,38 @@
   color:#facc15;
 }
 
-  .week-item,.progress-card,.table-wrap{contain:layout paint;}
+.week-item,.progress-card,.table-wrap{contain:layout paint;}
+
+@media (max-width:1200px){
+  .layout{grid-template-columns:1fr}
+  .weekly-grid{grid-template-columns:repeat(3,1fr)}
+  .weekly-summary-layout{grid-template-columns:1fr}
+  .progress-list{grid-template-columns:1fr}
+}
+
+@media (max-width:900px){
+  .weekly-group-grid{
+    grid-template-columns:repeat(2, 1fr) !important;
+  }
+
+  .title{
+    font-size:22px;
+  }
+
+  .section-title{
+    font-size:15px;
+  }
+
+  button{
+    padding:12px 14px;
+    font-size:14px;
+  }
+
+  input, select{
+    font-size:16px;
+    padding:12px;
+  }
+}
 </style>
 </head>
 <body>
