@@ -808,31 +808,36 @@ async function fetchProfileHtml(url){
 function extractProfileFromHtml(html, fallbackUrl=''){
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
-  const text = (doc.body?.innerText || doc.documentElement?.textContent || '').replace(/\s+/g, ' ').trim();
+  const text = (doc.body?.innerText || doc.documentElement?.textContent || '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
-  const patterns = {
-    itemLevel: [
-      /아이템\s*레벨[^\d]{0,20}([\d.,]+)/i,
-      /item\s*level[^\d]{0,20}([\d.,]+)/i
-    ],
-    power: [
-      /달성\s*최고\s*전투력[^\d]{0,20}([\d.,]+)/i,
-      /전투력[^\d]{0,20}([\d.,]+)/i,
-      /power[^\d]{0,20}([\d.,]+)/i
-    ]
-  };
+  function findNumberAfterLabel(labels, sourceText){
+    for (const label of labels) {
+      const idx = sourceText.indexOf(label);
+      if (idx === -1) continue;
 
-  function findByPatterns(list){
-    for(const p of list){
-      const m = text.match(p);
-      if(m && m[1]) return parseNumberText(m[1]);
+      const slice = sourceText.slice(idx, idx + 120);
+      const matches = slice.match(/\d[\d,]*(?:\.\d+)?/g);
+      if (matches && matches.length) {
+        return matches[matches.length - 1].replace(/,/g, '');
+      }
     }
     return '';
   }
 
   const name = decodeNameFromProfileUrl(fallbackUrl) || '';
-  const itemLevel = findByPatterns(patterns.itemLevel);
-  const power = findByPatterns(patterns.power);
+
+  const itemLevel = findNumberAfterLabel(
+    ['아이템 레벨', '아이템레벨', 'item level', 'Item Level'],
+    text
+  );
+
+  const power = findNumberAfterLabel(
+    ['달성 최고 전투력', '전투력', 'combat power', 'power'],
+    text
+  );
+
   return { name, itemLevel, power };
 }
 async function importProfileFromUrl(url, targetCharacterId=null){
@@ -845,7 +850,7 @@ async function importProfileFromUrl(url, targetCharacterId=null){
     if(!c) throw new Error('캐릭터를 찾지 못했습니다.');
     if(profile.name) c.name = profile.name;
     if(profile.itemLevel) c.itemLevel = profile.itemLevel;
-    if(profile.power) c.power = formatPowerCompact(profile.power);
+    if(profile.power) c.power = profile.power;
     c.profileUrl = url;
     saveState();
     render();
