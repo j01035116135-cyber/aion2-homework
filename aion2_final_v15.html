@@ -232,6 +232,24 @@
     background:#131d35;color:#fff;font-weight:900;cursor:pointer;user-select:none;
   }
   .cube small{display:block;font-size:11px;color:#b8c4eb;margin-top:2px;font-weight:700}
+  .cube.zero,
+  .main-count.zero,
+  .sub-count.zero{
+    background:linear-gradient(180deg, rgba(170,50,50,.42), rgba(120,30,30,.30)) !important;
+    border-color:#d26a6a !important;
+    color:#fff5f5 !important;
+    box-shadow:
+      inset 0 0 0 1px rgba(255,170,170,.28),
+      0 0 0 1px rgba(210,106,106,.18);
+  }
+  .cube.warn,
+  .main-count.warn,
+  .sub-count.warn{
+    background:linear-gradient(180deg, rgba(120,100,36,.22), rgba(120,100,36,.10)) !important;
+    border-color:#8b7631 !important;
+    color:#fff7d6 !important;
+    box-shadow:inset 0 0 0 1px rgba(255,220,120,.10);
+  }
   .note{
     width:120px;background:#070c18;color:#fff;border:1px solid #3b4d7e;border-radius:10px;padding:8px 10px;
   }
@@ -383,7 +401,7 @@
       <div class="panel weekly-box">
         <div class="weekly-head">
           <div>
-            <div class="section-title" style="margin-bottom:4px">주간 숙제</div>
+            <div class="section-title" style="margin-bottom:4px">주간 미션</div>
             <div class="small muted">숫자 클릭 시 직접 입력 · 체크박스 클릭 시 전부 완료</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
@@ -430,6 +448,7 @@ const defaultTaskColors = {
 };
 
 const EXTRA_CHARGE_DEFAULTS = {
+  '⚡오드':2000,
   '슈고':10,
   '원정':10,
   '초월':10,
@@ -501,6 +520,7 @@ function normalizeLoadedState(parsed){
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
+        if(!t.lastWeeklyChallengeResetKey) t.lastWeeklyChallengeResetKey = null;
       } else if(t.name === '초월'){
         t.rewardMax = 7;
         t.challengeMax = 28;
@@ -512,13 +532,14 @@ function normalizeLoadedState(parsed){
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
+        if(!t.lastWeeklyChallengeResetKey) t.lastWeeklyChallengeResetKey = null;
       } else if(t.name === '⚔️루드라' || t.name === '⚔️침식'){
         t.challengeChargeMax = 10;
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
       } else if(EXTRA_CHARGE_DEFAULTS[t.name]){
-        t.chargeMax = 10;
+        t.chargeMax = EXTRA_CHARGE_DEFAULTS[t.name];
         if(typeof t.chargeCurrent !== 'number') t.chargeCurrent = 0;
         t.challengeChargeMax = 0;
         t.rewardChargeMax = 0;
@@ -679,8 +700,8 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
   } else if(name === '⚔️루드라' || name === '⚔️침식'){
     challengeChargeMax = 10;
     rewardChargeMax = 10;
-  } else if(chargeMax > 0){
-    chargeMax = 10;
+  } else if(EXTRA_CHARGE_DEFAULTS[name]){
+    chargeMax = EXTRA_CHARGE_DEFAULTS[name];
   }
 
   return {
@@ -690,7 +711,9 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     chargeMax, chargeCurrent:0,
     challengeChargeMax, challengeChargeCurrent,
     rewardChargeMax, rewardChargeCurrent,
-    resetRule, lastResetAppliedKey:null,
+    resetRule,
+    lastResetAppliedKey:null,
+    lastWeeklyChallengeResetKey:null,
     color:color || state.taskColors[name] || getDefaultColor(name),
     note:''
   };
@@ -721,7 +744,7 @@ async function addCharacter(){
   const c = {
     id: uid(),
     name: rawName || profile?.name || '새 캐릭터',
-    power: profile?.power ? formatPowerCompact(profile.power) : '',
+    power: profile?.power || '',
     itemLevel: profile?.itemLevel || '',
     profileUrl: rawUrl || '',
     tasks: []
@@ -1173,30 +1196,51 @@ function applyRuleToTask(task){
   if(task.resetRule === 'od_charge'){
     const hit = getLatestOdCharge();
     if(!hit || task.lastResetAppliedKey === hit.key) return false;
-    task.rewardCurrent = clamp(task.rewardCurrent + 15, 0, task.rewardMax);
+    task.chargeCurrent = clamp((task.chargeCurrent || 0) + 15, 0, task.chargeMax || 0);
     task.lastResetAppliedKey = hit.key;
     return true;
   }
+
+  let changed = false;
+
   const hit = getLatestReset(task.resetRule);
-  if(!hit || task.lastResetAppliedKey === hit.key) return false;
-  if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset'){
-    if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
-    if(task.rewardMax > 0) task.rewardCurrent = task.rewardMax;
-    if(task.chargeMax > 0) task.chargeCurrent = 0;
-    if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
-    if(task.rewardChargeMax > 0 || task.rewardChargeCurrent > 0) task.rewardChargeCurrent = 0;
-  }else if(task.resetRule === 'daily_05_plus2'){
-    task.rewardCurrent = clamp(task.rewardCurrent + 2, 0, task.rewardMax);
-  }else if(task.resetRule === 'daily_05_plus1'){
-    task.rewardCurrent = clamp(task.rewardCurrent + 1, 0, task.rewardMax);
+  if(hit && task.lastResetAppliedKey !== hit.key){
+    if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset'){
+      if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
+      if(task.rewardMax > 0) task.rewardCurrent = task.rewardMax;
+      if(task.chargeMax > 0) task.chargeCurrent = 0;
+      if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
+      if(task.rewardChargeMax > 0 || task.rewardChargeCurrent > 0) task.rewardChargeCurrent = 0;
+      changed = true;
+    }else if(task.resetRule === 'daily_05_plus2'){
+      task.rewardCurrent = clamp(task.rewardCurrent + 2, 0, task.rewardMax);
+      changed = true;
+    }else if(task.resetRule === 'daily_05_plus1'){
+      task.rewardCurrent = clamp(task.rewardCurrent + 1, 0, task.rewardMax);
+      changed = true;
+    }
+
+    task.lastResetAppliedKey = hit.key;
   }
-  task.lastResetAppliedKey = hit.key;
-  return true;
+
+  if(task.name === '원정' || task.name === '초월'){
+    const weeklyHit = getLatestReset('weekly_wed_05_reset');
+    if(weeklyHit && task.lastWeeklyChallengeResetKey !== weeklyHit.key){
+      task.challengeCurrent = task.challengeMax;
+      task.lastWeeklyChallengeResetKey = weeklyHit.key;
+      changed = true;
+    }
+  }
+
+  return changed;
 }
 function applyRuleToWeekly(task){
   const hit = getLatestReset(task.resetRule);
   if(!hit || task.lastResetAppliedKey === hit.key) return false;
   task.current = task.max;
+  if(Array.isArray(task.segmentStates)){
+    task.segmentStates = task.segmentStates.map(() => 1);
+  }
   task.lastResetAppliedKey = hit.key;
   return true;
 }
@@ -1240,6 +1284,12 @@ function getMainClass(cur,max){
   if(max === 0) return '';
   if(cur === 0) return 'zero';
   if(cur <= Math.max(1, Math.floor(max*0.2))) return 'warn';
+  return '';
+}
+function getMiniClass(cur, max){
+  if(max === 0) return '';
+  if(cur === 0) return ' zero';
+  if(cur <= Math.max(1, Math.floor(max * 0.2))) return ' warn';
   return '';
 }
 function getGlobalNearest(){
@@ -1480,19 +1530,22 @@ function renderCell(character, taskName){
     : '';
 
   if(t.name === '⚔️루드라' || t.name === '⚔️침식'){
+    const challengeCls = getMiniClass(t.challengeCurrent, t.challengeMax);
+    const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
+
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
           <div class="cube-row">
             <div>
-              <div class="cube" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
+              <div class="cube${challengeCls}" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
                 ${t.challengeCurrent}/${t.challengeMax}
                 <small>도전횟수</small>
               </div>
               <div class="sub-count" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
             </div>
             <div>
-              <div class="cube" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
+              <div class="cube${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
                 ${t.rewardCurrent}/${t.rewardMax}
                 <small>보상횟수</small>
               </div>
@@ -1505,19 +1558,22 @@ function renderCell(character, taskName){
   }
 
   if(t.name === '원정' || t.name === '초월'){
+    const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
+    const challengeCls = getMiniClass(t.challengeCurrent, t.challengeMax);
+
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
           <div class="cube-row">
             <div>
-              <div class="cube" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
+              <div class="cube${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
                 ${t.rewardCurrent}/${t.rewardMax}
                 <small>보상횟수</small>
               </div>
               <div class="sub-count" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
             </div>
             <div>
-              <div class="cube" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
+              <div class="cube${challengeCls}" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
                 ${t.challengeCurrent}/${t.challengeMax}
                 <small>보스처치횟수</small>
               </div>
@@ -1541,11 +1597,13 @@ function renderCell(character, taskName){
   }
 
   if(t.name === '⚡오드'){
+    const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
+    const chargeCls = getMiniClass(t.chargeCurrent, t.chargeMax);
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
-          <div class="main-count" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}</div>
-          <div class="sub-count" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})</div>
+          <div class="main-count${rewardCls}" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}</div>
+          <div class="sub-count${chargeCls}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent}/${t.chargeMax})<small>충전</small></div>
           <div class="mini-row">
             <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',-40)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',40)">-</button>
             <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',40)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',-40)">+</button>
