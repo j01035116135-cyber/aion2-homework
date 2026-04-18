@@ -863,14 +863,19 @@ function normalizeOfficialCharacterUrl(url){
   return value;
 }
 async function fetchProfileHtml(url){
-  const proxies = [
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-    `https://r.jina.ai/http://${url.replace(/^https?:\/\//,'')}`
+  const cleanUrl = String(url || '').trim();
+  if(!cleanUrl) throw new Error('링크가 비어 있습니다.');
+
+  const proxyCandidates = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(cleanUrl)}`,
+    `https://corsproxy.io/?${encodeURIComponent(cleanUrl)}`,
+    `https://r.jina.ai/http://${cleanUrl.replace(/^https?:\/\//,'')}`
   ];
+
   let lastError = null;
-  for(const proxyUrl of proxies){
+  for(const proxyUrl of proxyCandidates){
     try{
-      const res = await fetch(proxyUrl);
+      const res = await fetch(proxyUrl, { method:'GET' });
       if(!res.ok) throw new Error(`HTTP ${res.status}`);
       const html = await res.text();
       if(html && html.length > 200) return html;
@@ -878,6 +883,7 @@ async function fetchProfileHtml(url){
       lastError = err;
     }
   }
+
   throw lastError || new Error('프로필 HTML을 가져오지 못했습니다.');
 }
 function extractProfileFromHtml(html, fallbackUrl=''){
@@ -886,6 +892,21 @@ function extractProfileFromHtml(html, fallbackUrl=''){
   const text = (doc.body?.innerText || doc.documentElement?.textContent || '')
     .replace(/\s+/g, ' ')
     .trim();
+  const raw = String(html || '');
+
+  function normalizeNum(v){
+    if(v == null) return '';
+    const s = String(v).replace(/,/g,'').trim();
+    if(!s) return '';
+    const n = Number(s);
+    return Number.isFinite(n) ? String(n) : '';
+  }
+
+  function pickBest(nums, min=0, max=Infinity){
+    const arr = nums.map(normalizeNum).filter(Boolean).map(Number).filter(n => n >= min && n <= max);
+    if(!arr.length) return '';
+    return String(Math.max(...arr));
+  }
 
   function findMetaContent(selector){
     const el = doc.querySelector(selector);
@@ -909,26 +930,55 @@ function extractProfileFromHtml(html, fallbackUrl=''){
     return '';
   }
 
-  function findNumberAfterLabel(labels, sourceText){
+  function findNumberAfterLabel(labels, sourceText, min=0, max=Infinity, windowSize=220){
+    const collected = [];
     for (const label of labels) {
-      const idx = sourceText.indexOf(label);
-      if (idx === -1) continue;
-      const slice = sourceText.slice(idx, idx + 160);
-      const matches = slice.match(/\d[\d,]*(?:\.\d+)?/g);
-      if (matches && matches.length) return matches[matches.length - 1].replace(/,/g, '');
+      let idx = sourceText.indexOf(label);
+      while (idx !== -1) {
+        const slice = sourceText.slice(idx, idx + windowSize);
+        const matches = slice.match(/\d[\d,]*(?:\.\d+)?/g);
+        if (matches && matches.length) collected.push(...matches);
+        idx = sourceText.indexOf(label, idx + label.length);
+      }
     }
-    return '';
+    return pickBest(collected, min, max);
+  }
+
+  function findByRegexList(regexList, sourceText, min=0, max=Infinity){
+    const collected = [];
+    for(const re of regexList){
+      let m;
+      const flags = re.flags.includes('g') ? re.flags : re.flags + 'g';
+      const rr = new RegExp(re.source, flags);
+      while((m = rr.exec(sourceText)) !== null){
+        if(m[1]) collected.push(m[1]);
+      }
+    }
+    return pickBest(collected, min, max);
   }
 
   const name = findTitleName() || decodeNameFromProfileUrl(fallbackUrl) || '';
-  const itemLevel = findNumberAfterLabel(
-    ['아이템 레벨', '아이템레벨', '레벨', 'Item Level', 'item level'],
-    text
-  );
-  const power = findNumberAfterLabel(
-    ['달성 최고 전투력', '최고 전투력', '전투력', 'Combat Power', 'combat power', 'power'],
-    text
-  );
+
+  const itemLevel =
+    findByRegexList([
+      /["']itemLevel["']\s*[:=]\s*["']?(\d[\d,]*(?:\.\d+)?)/i,
+      /["']item_level["']\s*[:=]\s*["']?(\d[\d,]*(?:\.\d+)?)/i,
+      /아이템\s*레벨[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
+      /아이템레벨[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
+      /Item\s*Level[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i
+    ], raw, 1, 9999)
+    || findNumberAfterLabel(['아이템 레벨','아이템레벨','Item Level','item level'], text, 1, 9999, 220);
+
+  const power =
+    findByRegexList([
+      /["']combatPower["']\s*[:=]\s*["']?(\d[\d,]*(?:\.\d+)?)/i,
+      /["']combat_power["']\s*[:=]\s*["']?(\d[\d,]*(?:\.\d+)?)/i,
+      /달성\s*최고\s*전투력[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
+      /최고\s*전투력[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
+      /전투력[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
+      /Combat\s*Power[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i
+    ], raw, 1, 99999999)
+    || findNumberAfterLabel(['달성 최고 전투력','최고 전투력','전투력','Combat Power','combat power'], text, 1, 99999999, 220);
 
   return { name, itemLevel, power };
 }
