@@ -28,6 +28,27 @@
     background:#151d34;border:1px solid #32436e;color:#dfe7ff;border-radius:999px;
     padding:8px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center;
   }
+
+  .header-actions-row{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    width:100%;
+    margin-top:6px;
+  }
+  .header-link-btn{
+    background:#1a2644;
+    color:#eef2ff;
+    border:1px solid #32436e;
+    border-radius:12px;
+    padding:15px 24px;
+    font-size:19px;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow:0 6px 16px rgba(0,0,0,.22);
+  }
   button,input,select{font-family:inherit}
   button{border:0;border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:800}
   .btn-primary{background:#6c63b5;color:#fff}
@@ -339,6 +360,10 @@
     font-size:16px;
     padding:12px;
   }
+  .header-link-btn{
+    padding:13px 18px;
+    font-size:16px;
+  }
 }
 </style>
 </head>
@@ -349,9 +374,10 @@
       <div class="title">아이온2 [무쌍] 마르쿠탄  by 브루마 (문의)</div>
       <div class="sub">가로형 전용 · 숫자 직접 수정 · 체크박스 완료 · ⚡오드 충전 관리</div>
     </div>
-<div class="row">
-  <button class="btn-dark" type="button" onclick="openNotice()">공지사항</button>
-  <button class="btn-dark" type="button" onclick="openAion2ToolSearch()">아툴 검색</button>
+<div class="header-actions-row">
+  <button class="header-link-btn" type="button" onclick="openNotice()">공지사항</button>
+  <button class="header-link-btn" type="button" onclick="openAion2ToolSearch()">아툴 검색</button>
+  <button class="header-link-btn" type="button" onclick="openOfficialCharacterSearch()">캐릭터 검색</button>
   <button class="btn-primary" type="button" id="logoutBtn">로그아웃</button>
   <span class="pill" id="nowTime">현재 시간 -</span>
   <span class="pill" id="nextResetGlobal">다음 리셋 -</span>
@@ -692,6 +718,9 @@ function openNotice(){
 }
 function openAion2ToolSearch(){
   window.open('https://www.aion2tool.com/', '_blank', 'noopener');
+}
+function openOfficialCharacterSearch(){
+  window.open('https://aion2.plaync.com/ko-kr/characters/index', '_blank', 'noopener');
 }
 function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='none', color=''}) {
   name = normalizeTaskName(name);
