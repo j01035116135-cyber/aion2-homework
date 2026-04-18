@@ -350,6 +350,8 @@
       <div class="sub">가로형 전용 · 숫자 직접 수정 · 체크박스 완료 · ⚡오드 충전 관리</div>
     </div>
 <div class="row">
+  <button class="btn-dark" type="button" onclick="openNotice()">공지사항</button>
+  <button class="btn-dark" type="button" onclick="openAion2ToolSearch()">아툴 검색</button>
   <button class="btn-primary" type="button" id="logoutBtn">로그아웃</button>
   <span class="pill" id="nowTime">현재 시간 -</span>
   <span class="pill" id="nextResetGlobal">다음 리셋 -</span>
@@ -365,9 +367,8 @@
           <input id="characterNameInput" type="text" placeholder="캐릭터 이름" style="flex:1" />
           <button class="btn-primary" type="button" onclick="addCharacter()">추가</button>
         </div>
-        <input id="characterProfileUrlInput" type="text" placeholder="AION2TOOL 링크 붙여넣기 (선택)" />
         <div id="characterList" class="character-list"></div>
-        <div class="small muted">캐릭터 이름 또는 링크로 추가할 수 있습니다.</div>
+        <div class="small muted">캐릭터 이름으로 추가한 뒤, 아래 표에서 공식 홈페이지 링크를 넣어주세요.</div>
       </div>
 
       <div class="divider"></div>
@@ -686,6 +687,12 @@ async function saveState(){
 function setupAuth(){
   // no-op: login/requireLogin is handled by index.html and module auth scripts below
 }
+function openNotice(){
+  alert('공지사항은 아직 준비중입니다.');
+}
+function openAion2ToolSearch(){
+  window.open('https://www.aion2tool.com/', '_blank', 'noopener');
+}
 function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='none', color=''}) {
   name = normalizeTaskName(name);
   if(!chargeMax && EXTRA_CHARGE_DEFAULTS[name]) chargeMax = EXTRA_CHARGE_DEFAULTS[name];
@@ -814,10 +821,17 @@ function decodeNameFromProfileUrl(url){
   try{
     const clean = url.split('?')[0].replace(/\/$/, '');
     const last = clean.substring(clean.lastIndexOf('/') + 1);
-    return decodeURIComponent(last || '').trim();
+    const decoded = decodeURIComponent(last || '').trim();
+    if(/^[가-힣a-zA-Z0-9 _-]{2,20}$/.test(decoded)) return decoded;
+    return '';
   }catch(e){
     return '';
   }
+}
+function normalizeOfficialCharacterUrl(url){
+  const value = String(url || '').trim();
+  if(!value) return '';
+  return value;
 }
 async function fetchProfileHtml(url){
   const proxies = [
@@ -844,29 +858,46 @@ function extractProfileFromHtml(html, fallbackUrl=''){
     .replace(/\s+/g, ' ')
     .trim();
 
-  function findNumberAfterLabel(labels, sourceText){
-    for (const label of labels) {
-      const idx = sourceText.indexOf(label);
-      if (idx === -1) continue;
+  function findMetaContent(selector){
+    const el = doc.querySelector(selector);
+    return (el?.getAttribute('content') || '').trim();
+  }
 
-      const slice = sourceText.slice(idx, idx + 120);
-      const matches = slice.match(/\d[\d,]*(?:\.\d+)?/g);
-      if (matches && matches.length) {
-        return matches[matches.length - 1].replace(/,/g, '');
+  function findTitleName(){
+    const candidates = [
+      (doc.querySelector('h1')?.textContent || '').trim(),
+      (doc.querySelector('title')?.textContent || '').trim(),
+      findMetaContent('meta[property="og:title"]')
+    ].filter(Boolean);
+
+    for(const candidate of candidates){
+      const match = candidate.match(/[가-힣A-Za-z0-9_ -]{2,20}/g);
+      if(match && match.length){
+        const best = match.sort((a,b)=>b.length-a.length)[0].trim();
+        if(best && !/AION2|캐릭터|정보실|PLAYNC|공식|랭킹/i.test(best)) return best;
       }
     }
     return '';
   }
 
-  const name = decodeNameFromProfileUrl(fallbackUrl) || '';
+  function findNumberAfterLabel(labels, sourceText){
+    for (const label of labels) {
+      const idx = sourceText.indexOf(label);
+      if (idx === -1) continue;
+      const slice = sourceText.slice(idx, idx + 160);
+      const matches = slice.match(/\d[\d,]*(?:\.\d+)?/g);
+      if (matches && matches.length) return matches[matches.length - 1].replace(/,/g, '');
+    }
+    return '';
+  }
 
+  const name = findTitleName() || decodeNameFromProfileUrl(fallbackUrl) || '';
   const itemLevel = findNumberAfterLabel(
-    ['아이템 레벨', '아이템레벨', 'item level', 'Item Level'],
+    ['아이템 레벨', '아이템레벨', '레벨', 'Item Level', 'item level'],
     text
   );
-
   const power = findNumberAfterLabel(
-    ['달성 최고 전투력', '전투력', 'combat power', 'power'],
+    ['달성 최고 전투력', '최고 전투력', '전투력', 'Combat Power', 'combat power', 'power'],
     text
   );
 
@@ -909,7 +940,7 @@ async function refreshCharacterProfile(characterId){
 async function handleProfileUrlChange(characterId, value){
   const c = state.characters.find(x=>x.id===characterId);
   if(!c) return;
-  c.profileUrl = (value || '').trim();
+  c.profileUrl = normalizeOfficialCharacterUrl(value);
   saveState();
   if(c.profileUrl){
     try{
@@ -1706,7 +1737,7 @@ function renderTable(){
                 <td>
 <div class="char-box">
   <input class="char-input" value="${escapeHtml(c.name || '')}" oninput="c.name=this.value; saveState()" />
-  <input class="note profile-link-input" value="${escapeHtml(c.profileUrl || '')}" placeholder="AION2TOOL 링크" onchange="handleProfileUrlChange('${c.id}', this.value)" onkeydown="handleProfileUrlKeydown(event, '${c.id}', this.value)" />
+  <input class="note profile-link-input" value="${escapeHtml(c.profileUrl || '')}" placeholder="공식홈페이지 캐릭터 링크" onchange="handleProfileUrlChange('${c.id}', this.value)" onkeydown="handleProfileUrlKeydown(event, '${c.id}', this.value)" />
 </div>
                 </td>
                 <td class="profile-col">
