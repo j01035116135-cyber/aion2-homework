@@ -473,6 +473,7 @@ const defaultTaskColors = {
   '각성전':'#4f628f',
   '🌀회랑 -하':'#4f628f',
   '🌀회랑 -중':'#4f628f',
+  '🌀회랑':'#4f628f',
   '슈고':'#4f628f',
   '⚔️루드라':'#6f3f56',
   '⚔️침식':'#6f3f56',
@@ -1237,7 +1238,11 @@ function removeTaskFromSelected(name){
 function setTaskColor(name, color){
   state.taskColors[name] = color;
   state.characters.forEach(c=>{
-    c.tasks.forEach(t=>{ if(t.name===name) t.color = color; });
+    c.tasks.forEach(t=>{
+      if(t.name===name || (name === '🌀회랑' && (t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중'))){
+        t.color = color;
+      }
+    });
   });
   saveState(); renderTable();
 }
@@ -1597,18 +1602,22 @@ function orderedTaskNames(){
   const hiddenTasks = ['저주'];
 
   const preferred = [
-    '사명','🌀회랑 -하','🌀회랑 -중','⚡오드','원정',
+    '사명','🌀회랑','⚡오드','원정',
     '초월','악몽','각성전','슈고','⚔️루드라','⚔️침식'
   ];
 
   const all = [];
+  let hasCorridor = false;
   state.characters.forEach(c => {
     c.tasks.forEach(t => {
-      if (!hiddenTasks.includes(t.name) && !all.includes(t.name)) {
+      if(t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중') hasCorridor = true;
+      if (!hiddenTasks.includes(t.name) && t.name !== '🌀회랑 -하' && t.name !== '🌀회랑 -중' && !all.includes(t.name)) {
         all.push(t.name);
       }
     });
   });
+
+  if(hasCorridor && !all.includes('🌀회랑')) all.push('🌀회랑');
 
   return preferred
     .filter(n => !hiddenTasks.includes(n) && all.includes(n))
@@ -1635,8 +1644,8 @@ function renderHeader(names){
   return names.map((name, index)=>{
     const t = sampleTaskByName(name);
     let color = state.taskColors[name] || (t ? t.color : getDefaultColor(name));
-    const rule = t ? getRuleLabel(t.resetRule) : '';
-    const next = t ? getNextResetDate(t.resetRule) : null;
+    const rule = name === '🌀회랑' ? '화/목/토 21시 초기화' : (t ? getRuleLabel(t.resetRule) : '');
+    const next = name === '🌀회랑' ? getNextResetDate('tue_thu_sat_21_reset') : (t ? getNextResetDate(t.resetRule) : null);
 
     const odeGroup = ['⚡오드','원정','초월'];
     const isOdeGroup = odeGroup.includes(name);
@@ -1657,6 +1666,36 @@ function renderHeader(names){
 }
 
 function renderCell(character, taskName){
+  if(taskName === '🌀회랑'){
+    const low = character.tasks.find(x=>x.name==='🌀회랑 -하');
+    const mid = character.tasks.find(x=>x.name==='🌀회랑 -중');
+    if(!low && !mid) return `<td><div class="cell-wrap"><span class="muted small">-</span></div></td>`;
+
+    const lowCls = low ? getMiniClass(low.rewardCurrent, low.rewardMax) : '';
+    const midCls = mid ? getMiniClass(mid.rewardCurrent, mid.rewardMax) : '';
+
+    return `
+      <td style="background:transparent">
+        <div class="cell-wrap">
+          <div class="cube-row" style="gap:10px; justify-content:center;">
+            <div>
+              <div class="cube${lowCls}" ${low ? `onclick="changeTaskCount('${low.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${low.id}','rewardCurrent',1)"` : ''}>
+                ${low ? `${low.rewardCurrent}/${low.rewardMax}` : '-'}
+                <small>하</small>
+              </div>
+            </div>
+            <div>
+              <div class="cube${midCls}" ${mid ? `onclick="changeTaskCount('${mid.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${mid.id}','rewardCurrent',1)"` : ''}>
+                ${mid ? `${mid.rewardCurrent}/${mid.rewardMax}` : '-'}
+                <small>중</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </td>
+    `;
+  }
+
   const t = character.tasks.find(x=>x.name===taskName);
   if(!t) return `<td><div class="cell-wrap"><span class="muted small">-</span></div></td>`;
 
