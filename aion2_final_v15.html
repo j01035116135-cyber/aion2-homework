@@ -20,7 +20,10 @@
     font-family:Arial,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
   }
   .app{zoom:.72;max-width:none;margin:0;padding:12px 14px 14px 30px}
-  .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin-bottom:12px}
+  .topbar-left{min-width:0}
+  .topbar-center{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}
+  .topbar-right{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap}
   .title{font-size:30px;font-weight:900}
   .sub{color:var(--muted);margin-top:4px}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -29,25 +32,17 @@
     padding:8px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center;
   }
 
-  .header-actions-row{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:12px;
-    flex-wrap:wrap;
-    width:100%;
-    margin-top:6px;
-  }
   .header-link-btn{
     background:#1a2644;
     color:#eef2ff;
     border:1px solid #32436e;
     border-radius:12px;
-    padding:15px 24px;
-    font-size:19px;
+    padding:18px 30px;
+    font-size:20px;
     font-weight:900;
     cursor:pointer;
     box-shadow:0 6px 16px rgba(0,0,0,.22);
+    min-height:58px;
   }
   button,input,select{font-family:inherit}
   button{border:0;border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:800}
@@ -331,6 +326,13 @@
 
 .week-item,.progress-card,.table-wrap{contain:layout paint;}
 
+
+  @media (max-width:1400px){
+    .topbar{grid-template-columns:minmax(0,1fr);}
+    .topbar-left,.topbar-center,.topbar-right{justify-content:center;}
+    .topbar-right{justify-content:center;}
+  }
+
 @media (max-width:1200px){
   .layout{grid-template-columns:1fr}
   .weekly-grid{grid-template-columns:repeat(3,1fr)}
@@ -370,19 +372,21 @@
 <body>
 <div class="app">
   <div class="topbar">
-    <div>
+    <div class="topbar-left">
       <div class="title">아이온2 [무쌍] 마르쿠탄  by 브루마 (문의)</div>
       <div class="sub">가로형 전용 · 숫자 직접 수정 · 체크박스 완료 · ⚡오드 충전 관리</div>
     </div>
-<div class="header-actions-row">
-  <button class="header-link-btn" type="button" onclick="openNotice()">공지사항</button>
-  <button class="header-link-btn" type="button" onclick="openAion2ToolSearch()">아툴 검색</button>
-  <button class="header-link-btn" type="button" onclick="openOfficialCharacterSearch()">캐릭터 검색</button>
-  <button class="btn-primary" type="button" id="logoutBtn">로그아웃</button>
-  <span class="pill" id="nowTime">현재 시간 -</span>
-  <span class="pill" id="nextResetGlobal">다음 리셋 -</span>
-  <button class="btn-red" type="button" onclick="resetAllData()">전체 초기화</button>
-</div>
+    <div class="topbar-center">
+      <button class="header-link-btn" type="button" onclick="openNotice()">공지사항</button>
+      <button class="header-link-btn" type="button" onclick="openAion2ToolSearch()">아툴 검색</button>
+      <button class="header-link-btn" type="button" onclick="openOfficialCharacterSearch()">캐릭터 검색</button>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-primary" type="button" id="logoutBtn">로그아웃</button>
+      <span class="pill" id="nowTime">현재 시간 -</span>
+      <span class="pill" id="nextResetGlobal">다음 리셋 -</span>
+      <button class="btn-red" type="button" onclick="resetAllData()">전체 초기화</button>
+    </div>
   </div>
 
   <div class="layout">
@@ -714,7 +718,7 @@ function setupAuth(){
   // no-op: login/requireLogin is handled by index.html and module auth scripts below
 }
 function openNotice(){
-  alert('공지사항은 아직 준비중입니다.');
+  window.open('https://discord.com/channels/1050421920232906782/1458890808924049478', '_blank', 'noopener');
 }
 function openAion2ToolSearch(){
   window.open('https://www.aion2tool.com/', '_blank', 'noopener');
