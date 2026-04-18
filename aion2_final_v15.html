@@ -520,7 +520,6 @@ function normalizeLoadedState(parsed){
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
-        if(!t.lastWeeklyChallengeResetKey) t.lastWeeklyChallengeResetKey = null;
       } else if(t.name === '초월'){
         t.rewardMax = 7;
         t.challengeMax = 28;
@@ -532,12 +531,20 @@ function normalizeLoadedState(parsed){
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
-        if(!t.lastWeeklyChallengeResetKey) t.lastWeeklyChallengeResetKey = null;
       } else if(t.name === '⚔️루드라' || t.name === '⚔️침식'){
         t.challengeChargeMax = 10;
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
+      } else if(t.name === '⚡오드'){
+        t.chargeMax = 2000;
+        if(typeof t.rewardMax !== 'number' || t.rewardMax <= 0) t.rewardMax = 840;
+        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
+        if(typeof t.chargeCurrent !== 'number') t.chargeCurrent = 0;
+        t.challengeChargeMax = 0;
+        t.rewardChargeMax = 0;
+        t.challengeChargeCurrent = 0;
+        t.rewardChargeCurrent = 0;
       } else if(EXTRA_CHARGE_DEFAULTS[t.name]){
         t.chargeMax = EXTRA_CHARGE_DEFAULTS[t.name];
         if(typeof t.chargeCurrent !== 'number') t.chargeCurrent = 0;
@@ -700,6 +707,9 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
   } else if(name === '⚔️루드라' || name === '⚔️침식'){
     challengeChargeMax = 10;
     rewardChargeMax = 10;
+  } else if(name === '⚡오드'){
+    if(!rewardMax) rewardMax = 840;
+    chargeMax = 2000;
   } else if(EXTRA_CHARGE_DEFAULTS[name]){
     chargeMax = EXTRA_CHARGE_DEFAULTS[name];
   }
@@ -711,8 +721,7 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     chargeMax, chargeCurrent:0,
     challengeChargeMax, challengeChargeCurrent,
     rewardChargeMax, rewardChargeCurrent,
-    resetRule,
-    lastResetAppliedKey:null,
+    resetRule, lastResetAppliedKey:null,
     lastWeeklyChallengeResetKey:null,
     color:color || state.taskColors[name] || getDefaultColor(name),
     note:''
@@ -1062,6 +1071,30 @@ function changeTaskCount(taskId, key, delta){
   const t = findTask(taskId);
   if(!t) return;
   const maxKey = key.replace('Current','Max');
+
+  if(t.name === '⚡오드' && key === 'rewardCurrent'){
+    let amount = Math.abs(delta);
+
+    if(delta < 0){
+      const baseSpend = Math.min(t.rewardCurrent, amount);
+      t.rewardCurrent = clamp(t.rewardCurrent - baseSpend, 0, t.rewardMax);
+      amount -= baseSpend;
+      if(amount > 0){
+        t.chargeCurrent = clamp(t.chargeCurrent - amount, 0, t.chargeMax);
+      }
+    } else if(delta > 0){
+      const baseFill = Math.min(t.rewardMax - t.rewardCurrent, amount);
+      t.rewardCurrent = clamp(t.rewardCurrent + baseFill, 0, t.rewardMax);
+      amount -= baseFill;
+      if(amount > 0){
+        t.chargeCurrent = clamp(t.chargeCurrent + amount, 0, t.chargeMax);
+      }
+    }
+
+    saveState(); renderTable();
+    return;
+  }
+
   t[key] = clamp(t[key] + delta, 0, t[maxKey]);
   saveState(); renderTable();
 }
@@ -1202,8 +1235,8 @@ function applyRuleToTask(task){
   }
 
   let changed = false;
-
   const hit = getLatestReset(task.resetRule);
+
   if(hit && task.lastResetAppliedKey !== hit.key){
     if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset'){
       if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
@@ -1532,7 +1565,6 @@ function renderCell(character, taskName){
   if(t.name === '⚔️루드라' || t.name === '⚔️침식'){
     const challengeCls = getMiniClass(t.challengeCurrent, t.challengeMax);
     const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
-
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
@@ -1560,7 +1592,6 @@ function renderCell(character, taskName){
   if(t.name === '원정' || t.name === '초월'){
     const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
     const challengeCls = getMiniClass(t.challengeCurrent, t.challengeMax);
-
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
@@ -1602,8 +1633,8 @@ function renderCell(character, taskName){
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
-          <div class="main-count${rewardCls}" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}</div>
-          <div class="sub-count${chargeCls}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent}/${t.chargeMax})<small>충전</small></div>
+          <div class="main-count${rewardCls}" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}/${t.rewardMax}</div>
+          <div class="sub-count${chargeCls}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent}/${t.chargeMax})<small>추가충전</small></div>
           <div class="mini-row">
             <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',-40)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',40)">-</button>
             <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',40)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',-40)">+</button>
@@ -1614,22 +1645,28 @@ function renderCell(character, taskName){
   }
 
   if(t.name !== '⚔️루드라' && t.name !== '⚔️침식' && t.chargeMax > 0){
+    const mainZero = t.rewardCurrent === 0;
+    const mainCls2 = getMiniClass(t.rewardCurrent, t.rewardMax);
+    const chargeCls2 = getMiniClass(t.chargeCurrent, t.chargeMax);
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
-          <div class="main-count" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
-          ${t.rewardCurrent === 0 ? `<div class="done-label">완료</div>` : ''}
-          <div class="sub-count" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})</div>
+          <div class="main-count${mainCls2}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
+          ${mainZero ? `<div class="done-label">완료</div>` : ''}
+          <div class="sub-count${chargeCls2}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent}/${t.chargeMax})</div>
         </div>
       </td>
     `;
   }
 
   const targetKey = t.rewardMax > 0 ? 'rewardCurrent' : 'challengeCurrent';
+  const targetCur = t.rewardMax > 0 ? t.rewardCurrent : t.challengeCurrent;
+  const targetMax = t.rewardMax > 0 ? t.rewardMax : t.challengeMax;
+  const targetCls = getMiniClass(targetCur, targetMax);
   return `
     <td class="${tdGroupClass}" style="background:${bg}">
       <div class="cell-wrap" style="${cellAccent}">
-        <div class="main-count" onclick="changeTaskCount('${t.id}','${targetKey}',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','${targetKey}',1)">
+        <div class="main-count${targetCls}" onclick="changeTaskCount('${t.id}','${targetKey}',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','${targetKey}',1)">
           ${t.rewardMax > 0 ? `${t.rewardCurrent}/${t.rewardMax}` : `${t.challengeCurrent}/${t.challengeMax}`}
         </div>
         ${(t.rewardMax > 0 ? t.rewardCurrent === 0 : t.challengeCurrent === 0) ? `<div class="done-label">완료</div>` : ''}
