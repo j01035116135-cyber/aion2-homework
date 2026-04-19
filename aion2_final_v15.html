@@ -450,7 +450,7 @@
             <div class="small muted">모든 숫자는 클릭해서 직접 수정 가능</div>
           </div>
           <div class="row">
-            <span class="pill">사명/회랑 체크박스 완료 · 슈고 추가</span>
+            <span class="pill">사명/회랑 체크박스 완료 · 회랑 통합 표시 · 슈고 추가</span>
           </div>
         </div>
         <div id="tableArea"></div>
@@ -473,7 +473,6 @@ const defaultTaskColors = {
   '각성전':'#4f628f',
   '🌀회랑 -하':'#4f628f',
   '🌀회랑 -중':'#4f628f',
-  '🌀회랑':'#4f628f',
   '슈고':'#4f628f',
   '⚔️루드라':'#6f3f56',
   '⚔️침식':'#6f3f56',
@@ -1238,11 +1237,7 @@ function removeTaskFromSelected(name){
 function setTaskColor(name, color){
   state.taskColors[name] = color;
   state.characters.forEach(c=>{
-    c.tasks.forEach(t=>{
-      if(t.name===name || (name === '🌀회랑' && (t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중'))){
-        t.color = color;
-      }
-    });
+    c.tasks.forEach(t=>{ if(t.name===name) t.color = color; });
   });
   saveState(); renderTable();
 }
@@ -1305,7 +1300,7 @@ function getNextResetDate(rule, now = new Date()){
   if(rule === 'od_charge'){
     for(let i=0;i<10;i++){
       const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()+i, 0,0,0,0);
-      for(const h of [2,5,8,11,14,17,20,23]){
+      for(const h of [0,2,5,8,11,14,17,20,23]){
         const dt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, 0, 0, 0);
         if(dt > now) return dt;
       }
@@ -1337,7 +1332,7 @@ function getLatestReset(rule, now = new Date()){
 function getLatestOdCharge(now = new Date()){
   for(let i=0;i<3;i++){
     const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()-i, 0,0,0,0);
-    for(const h of [23,20,17,14,11,8,5,2]){
+    for(const h of [23,20,17,14,11,8,5,2,0]){
       const dt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, 0, 0, 0);
       if(dt <= now) return {key:dt.toISOString(), date:dt};
     }
@@ -1348,7 +1343,7 @@ function applyRuleToTask(task){
   if(task.resetRule === 'od_charge'){
     const hit = getLatestOdCharge();
     if(!hit || task.lastResetAppliedKey === hit.key) return false;
-    task.chargeCurrent = clamp((task.chargeCurrent || 0) + 15, 0, task.chargeMax || 0);
+    task.rewardCurrent = clamp((task.rewardCurrent || 0) + 15, 0, task.rewardMax || 0);
     task.lastResetAppliedKey = hit.key;
     return true;
   }
@@ -1599,7 +1594,11 @@ function renderWeekly(){
   `;
 }
 function orderedTaskNames(){
-  const hiddenTasks = ['저주'];
+  const hiddenTasks = ['저주','🌀회랑 -하','🌀회랑 -중'];
+
+  const hasCorridor = state.characters.some(c =>
+    (c.tasks || []).some(t => t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중')
+  );
 
   const preferred = [
     '사명','🌀회랑','⚡오드','원정',
@@ -1607,12 +1606,11 @@ function orderedTaskNames(){
   ];
 
   const all = [];
-  let hasCorridor = false;
   state.characters.forEach(c => {
     c.tasks.forEach(t => {
-      if(t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중') hasCorridor = true;
-      if (!hiddenTasks.includes(t.name) && t.name !== '🌀회랑 -하' && t.name !== '🌀회랑 -중' && !all.includes(t.name)) {
-        all.push(t.name);
+      const normalizedName = (t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중') ? '🌀회랑' : t.name;
+      if (!hiddenTasks.includes(t.name) && !all.includes(normalizedName)) {
+        all.push(normalizedName);
       }
     });
   });
@@ -1620,11 +1618,16 @@ function orderedTaskNames(){
   if(hasCorridor && !all.includes('🌀회랑')) all.push('🌀회랑');
 
   return preferred
-    .filter(n => !hiddenTasks.includes(n) && all.includes(n))
-    .concat(all.filter(n => !preferred.includes(n) && !hiddenTasks.includes(n)));
+    .filter(n => all.includes(n))
+    .concat(all.filter(n => !preferred.includes(n)));
 }
 function sampleTaskByName(name){
   for(const c of state.characters){
+    if(name === '🌀회랑'){
+      const lower = c.tasks.find(x=>x.name==='🌀회랑 -하');
+      const upper = c.tasks.find(x=>x.name==='🌀회랑 -중');
+      if(lower || upper) return lower || upper;
+    }
     const t = c.tasks.find(x=>x.name===name);
     if(t) return t;
   }
@@ -1644,8 +1647,15 @@ function renderHeader(names){
   return names.map((name, index)=>{
     const t = sampleTaskByName(name);
     let color = state.taskColors[name] || (t ? t.color : getDefaultColor(name));
-    const rule = name === '🌀회랑' ? '화/목/토 21시 초기화' : (t ? getRuleLabel(t.resetRule) : '');
-    const next = name === '🌀회랑' ? getNextResetDate('tue_thu_sat_21_reset') : (t ? getNextResetDate(t.resetRule) : null);
+    let rule = t ? getRuleLabel(t.resetRule) : '';
+    let next = t ? getNextResetDate(t.resetRule) : null;
+
+    if(name === '🌀회랑'){
+      const corridorSample = sampleTaskByName('🌀회랑 -하') || sampleTaskByName('🌀회랑 -중') || t;
+      color = state.taskColors['🌀회랑 -하'] || state.taskColors['🌀회랑 -중'] || (corridorSample ? corridorSample.color : getDefaultColor('🌀회랑 -하'));
+      rule = '화/목/토 21시 초기화';
+      next = getNextResetDate('tue_thu_sat_21_reset');
+    }
 
     const odeGroup = ['⚡오드','원정','초월'];
     const isOdeGroup = odeGroup.includes(name);
@@ -1666,36 +1676,6 @@ function renderHeader(names){
 }
 
 function renderCell(character, taskName){
-  if(taskName === '🌀회랑'){
-    const low = character.tasks.find(x=>x.name==='🌀회랑 -하');
-    const mid = character.tasks.find(x=>x.name==='🌀회랑 -중');
-    if(!low && !mid) return `<td><div class="cell-wrap"><span class="muted small">-</span></div></td>`;
-
-    const lowCls = low ? getMiniClass(low.rewardCurrent, low.rewardMax) : '';
-    const midCls = mid ? getMiniClass(mid.rewardCurrent, mid.rewardMax) : '';
-
-    return `
-      <td style="background:transparent">
-        <div class="cell-wrap">
-          <div class="cube-row" style="gap:10px; justify-content:center;">
-            <div>
-              <div class="cube${lowCls}" ${low ? `onclick="changeTaskCount('${low.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${low.id}','rewardCurrent',1)"` : ''}>
-                ${low ? `${low.rewardCurrent}/${low.rewardMax}` : '-'}
-                <small>하</small>
-              </div>
-            </div>
-            <div>
-              <div class="cube${midCls}" ${mid ? `onclick="changeTaskCount('${mid.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${mid.id}','rewardCurrent',1)"` : ''}>
-                ${mid ? `${mid.rewardCurrent}/${mid.rewardMax}` : '-'}
-                <small>중</small>
-              </div>
-            </div>
-          </div>
-        </div>
-      </td>
-    `;
-  }
-
   const t = character.tasks.find(x=>x.name===taskName);
   if(!t) return `<td><div class="cell-wrap"><span class="muted small">-</span></div></td>`;
 
@@ -1769,12 +1749,44 @@ function renderCell(character, taskName){
     `;
   }
 
-  if(t.name === '사명' || t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중'){
+  if(taskName === '🌀회랑'){
+    const lower = character.tasks.find(x=>x.name==='🌀회랑 -하');
+    const upper = character.tasks.find(x=>x.name==='🌀회랑 -중');
+    const checked = !!(lower && upper && lower.rewardCurrent === 0 && upper.rewardCurrent === 0);
+
+    return `
+      <td class="${tdGroupClass}" style="background:${bg}">
+        <div class="cell-wrap" style="${cellAccent}">
+          <input class="check" type="checkbox" ${checked ? 'checked' : ''} onchange="
+            if(this.checked){
+              ${lower ? `completeTask('${lower.id}', true);` : ''}
+              ${upper ? `completeTask('${upper.id}', true);` : ''}
+            }else{
+              ${lower ? `completeTask('${lower.id}', false);` : ''}
+              ${upper ? `completeTask('${upper.id}', false);` : ''}
+            }
+          " />
+          <div class="cube-row">
+            <div>
+              <div class="main-count${lower ? getMiniClass(lower.rewardCurrent, lower.rewardMax) : ''}" ${lower ? `onclick="changeTaskCount('${lower.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${lower.id}','rewardCurrent',1)"` : ''}>${lower ? `${lower.rewardCurrent}/${lower.rewardMax}` : '-'}</div>
+              <div class="small muted" style="margin-top:4px;">하층</div>
+            </div>
+            <div>
+              <div class="main-count${upper ? getMiniClass(upper.rewardCurrent, upper.rewardMax) : ''}" ${upper ? `onclick="changeTaskCount('${upper.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${upper.id}','rewardCurrent',1)"` : ''}>${upper ? `${upper.rewardCurrent}/${upper.rewardMax}` : '-'}</div>
+              <div class="small muted" style="margin-top:4px;">중층</div>
+            </div>
+          </div>
+        </div>
+      </td>
+    `;
+  }
+
+  if(t.name === '사명'){
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
           <input class="check" type="checkbox" ${t.rewardCurrent === 0 ? 'checked' : ''} onchange="completeTask('${t.id}', this.checked)" />
-          <div class="main-count" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
+          <div class="main-count${getMiniClass(t.rewardCurrent, t.rewardMax)}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
         </div>
       </td>
     `;
