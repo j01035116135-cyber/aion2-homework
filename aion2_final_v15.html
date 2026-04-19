@@ -20,29 +20,13 @@
     font-family:Arial,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
   }
   .app{zoom:.72;max-width:none;margin:0;padding:12px 14px 14px 30px}
-  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin-bottom:12px}
-  .topbar-left{min-width:0}
-  .topbar-center{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}
-  .topbar-right{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
   .title{font-size:30px;font-weight:900}
   .sub{color:var(--muted);margin-top:4px}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .pill{
     background:#151d34;border:1px solid #32436e;color:#dfe7ff;border-radius:999px;
     padding:8px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center;
-  }
-
-  .header-link-btn{
-    background:#1a2644;
-    color:#eef2ff;
-    border:1px solid #32436e;
-    border-radius:12px;
-    padding:18px 30px;
-    font-size:20px;
-    font-weight:900;
-    cursor:pointer;
-    box-shadow:0 6px 16px rgba(0,0,0,.22);
-    min-height:58px;
   }
   button,input,select{font-family:inherit}
   button{border:0;border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:800}
@@ -248,24 +232,6 @@
     background:#131d35;color:#fff;font-weight:900;cursor:pointer;user-select:none;
   }
   .cube small{display:block;font-size:11px;color:#b8c4eb;margin-top:2px;font-weight:700}
-  .cube.zero,
-  .main-count.zero,
-  .sub-count.zero{
-    background:linear-gradient(180deg, rgba(170,50,50,.42), rgba(120,30,30,.30)) !important;
-    border-color:#d26a6a !important;
-    color:#fff5f5 !important;
-    box-shadow:
-      inset 0 0 0 1px rgba(255,170,170,.28),
-      0 0 0 1px rgba(210,106,106,.18);
-  }
-  .cube.warn,
-  .main-count.warn,
-  .sub-count.warn{
-    background:linear-gradient(180deg, rgba(120,100,36,.22), rgba(120,100,36,.10)) !important;
-    border-color:#8b7631 !important;
-    color:#fff7d6 !important;
-    box-shadow:inset 0 0 0 1px rgba(255,220,120,.10);
-  }
   .note{
     width:120px;background:#070c18;color:#fff;border:1px solid #3b4d7e;border-radius:10px;padding:8px 10px;
   }
@@ -326,13 +292,6 @@
 
 .week-item,.progress-card,.table-wrap{contain:layout paint;}
 
-
-  @media (max-width:1400px){
-    .topbar{grid-template-columns:minmax(0,1fr);}
-    .topbar-left,.topbar-center,.topbar-right{justify-content:center;}
-    .topbar-right{justify-content:center;}
-  }
-
 @media (max-width:1200px){
   .layout{grid-template-columns:1fr}
   .weekly-grid{grid-template-columns:repeat(3,1fr)}
@@ -362,31 +321,22 @@
     font-size:16px;
     padding:12px;
   }
-  .header-link-btn{
-    padding:13px 18px;
-    font-size:16px;
-  }
 }
 </style>
 </head>
 <body>
 <div class="app">
   <div class="topbar">
-    <div class="topbar-left">
+    <div>
       <div class="title">아이온2 [무쌍] 마르쿠탄  by 브루마 (문의)</div>
       <div class="sub">가로형 전용 · 숫자 직접 수정 · 체크박스 완료 · ⚡오드 충전 관리</div>
     </div>
-    <div class="topbar-center">
-      <button class="header-link-btn" type="button" onclick="openNotice()">공지사항</button>
-      <button class="header-link-btn" type="button" onclick="openAion2ToolSearch()">아툴 검색</button>
-      <button class="header-link-btn" type="button" onclick="openOfficialCharacterSearch()">캐릭터 검색</button>
-    </div>
-    <div class="topbar-right">
-      <button class="btn-primary" type="button" id="logoutBtn">로그아웃</button>
-      <span class="pill" id="nowTime">현재 시간 -</span>
-      <span class="pill" id="nextResetGlobal">다음 리셋 -</span>
-      <button class="btn-red" type="button" onclick="resetAllData()">전체 초기화</button>
-    </div>
+<div class="row">
+  <button class="btn-primary" type="button" id="logoutBtn">로그아웃</button>
+  <span class="pill" id="nowTime">현재 시간 -</span>
+  <span class="pill" id="nextResetGlobal">다음 리셋 -</span>
+  <button class="btn-red" type="button" onclick="resetAllData()">전체 초기화</button>
+</div>
   </div>
 
   <div class="layout">
@@ -397,8 +347,9 @@
           <input id="characterNameInput" type="text" placeholder="캐릭터 이름" style="flex:1" />
           <button class="btn-primary" type="button" onclick="addCharacter()">추가</button>
         </div>
+        <input id="characterProfileUrlInput" type="text" placeholder="AION2TOOL 링크 붙여넣기 (선택)" />
         <div id="characterList" class="character-list"></div>
-        <div class="small muted">캐릭터 이름으로 추가한 뒤, 아래 표에서 공식 홈페이지 링크를 넣어주세요.</div>
+        <div class="small muted">캐릭터 이름 또는 링크로 추가할 수 있습니다.</div>
       </div>
 
       <div class="divider"></div>
@@ -432,7 +383,7 @@
       <div class="panel weekly-box">
         <div class="weekly-head">
           <div>
-            <div class="section-title" style="margin-bottom:4px">주간 미션</div>
+            <div class="section-title" style="margin-bottom:4px">주간 숙제</div>
             <div class="small muted">숫자 클릭 시 직접 입력 · 체크박스 클릭 시 전부 완료</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
@@ -450,7 +401,7 @@
             <div class="small muted">모든 숫자는 클릭해서 직접 수정 가능</div>
           </div>
           <div class="row">
-            <span class="pill">사명/회랑 체크박스 완료 · 회랑 통합 표시 · 슈고 추가</span>
+            <span class="pill">사명/회랑 체크박스 완료</span>
           </div>
         </div>
         <div id="tableArea"></div>
@@ -479,7 +430,6 @@ const defaultTaskColors = {
 };
 
 const EXTRA_CHARGE_DEFAULTS = {
-  '⚡오드':2000,
   '슈고':10,
   '원정':10,
   '초월':10,
@@ -492,12 +442,12 @@ function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
 function normalizeTaskName(name){ return name === '원정-정복' ? '원정' : name; }
 function getDefaultColor(name){ return defaultTaskColors[normalizeTaskName(name)] || '#4a4578'; }
 
-function makeWeekly(name, max, resetRule='weekly_wed_05_reset'){
-  return {id:uid(), name, current:max, max, resetRule, lastResetAppliedKey:null};
+function makeWeekly(name,max){
+  return {id:uid(), name, current:max, max, resetRule:'weekly_wed_05_reset', lastResetAppliedKey:null};
 }
 function makeDefaultWeeklyTasks(){
   return [
-    makeWeekly('슈고',14,'daily_05_plus2'),
+    {id:uid(), name:'슈고', current:14, max:14, resetRule:'daily_05_plus2', lastResetAppliedKey:null},
     makeWeekly('일일던전',14),
     makeWeekly('아티쟁',3),
     makeWeekly('나흐마',2),
@@ -534,22 +484,21 @@ function normalizeLoadedState(parsed){
     parsed.taskColors['원정'] = parsed.taskColors['원정-정복'];
   }
 
-  let migratedShugoCurrent = null;
-  let migratedShugoMax = null;
-  parsed.characters.forEach(c => {
-    const shugoTask = (c.tasks || []).find(t => t.name === '슈고');
-    if(shugoTask && migratedShugoCurrent === null){
-      migratedShugoCurrent = typeof shugoTask.rewardCurrent === 'number'
-        ? shugoTask.rewardCurrent
-        : (typeof shugoTask.current === 'number' ? shugoTask.current : 14);
-      migratedShugoMax = typeof shugoTask.rewardMax === 'number'
-        ? shugoTask.rewardMax
-        : (typeof shugoTask.max === 'number' ? shugoTask.max : 14);
-    }
-  });
-
   parsed.characters.forEach(c => {
     if (!c.tasks) return;
+    const legacyShugo = (c.tasks || []).find(t => t.name === '슈고');
+    if(legacyShugo){
+      if(!parsed.weeklyTasks) parsed.weeklyTasks = [];
+      let weeklyShugo = parsed.weeklyTasks.find(w => w.name === '슈고');
+      if(!weeklyShugo){
+        weeklyShugo = {id:uid(), name:'슈고', current:legacyShugo.rewardCurrent || 0, max:legacyShugo.rewardMax || 14, resetRule:'daily_05_plus2', lastResetAppliedKey:null};
+        parsed.weeklyTasks.push(weeklyShugo);
+      } else {
+        weeklyShugo.current = typeof weeklyShugo.current === 'number' ? weeklyShugo.current : (legacyShugo.rewardCurrent || 0);
+        weeklyShugo.max = typeof weeklyShugo.max === 'number' ? weeklyShugo.max : (legacyShugo.rewardMax || 14);
+        if(!weeklyShugo.resetRule) weeklyShugo.resetRule = 'daily_05_plus2';
+      }
+    }
     c.tasks = c.tasks.filter(t => t.name !== '저주' && t.name !== '슈고');
 
     c.tasks.forEach(t => {
@@ -582,17 +531,8 @@ function normalizeLoadedState(parsed){
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
-      } else if(t.name === '⚡오드'){
-        t.chargeMax = 2000;
-        if(typeof t.rewardMax !== 'number' || t.rewardMax <= 0) t.rewardMax = 840;
-        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
-        if(typeof t.chargeCurrent !== 'number') t.chargeCurrent = 0;
-        t.challengeChargeMax = 0;
-        t.rewardChargeMax = 0;
-        t.challengeChargeCurrent = 0;
-        t.rewardChargeCurrent = 0;
       } else if(EXTRA_CHARGE_DEFAULTS[t.name]){
-        t.chargeMax = EXTRA_CHARGE_DEFAULTS[t.name];
+        t.chargeMax = 10;
         if(typeof t.chargeCurrent !== 'number') t.chargeCurrent = 0;
         t.challengeChargeMax = 0;
         t.rewardChargeMax = 0;
@@ -633,15 +573,6 @@ function normalizeLoadedState(parsed){
       parsed.weeklyTasks.push(def);
     }
   });
-
-  const shugoWeekly = parsed.weeklyTasks.find(w => w.name === '슈고');
-  if(shugoWeekly){
-    shugoWeekly.max = migratedShugoMax || shugoWeekly.max || 14;
-    if(migratedShugoCurrent !== null){
-      shugoWeekly.current = clamp(migratedShugoCurrent, 0, shugoWeekly.max);
-    }
-    shugoWeekly.resetRule = 'daily_05_plus2';
-  }
 
   return parsed;
 }
@@ -741,15 +672,6 @@ async function saveState(){
 function setupAuth(){
   // no-op: login/requireLogin is handled by index.html and module auth scripts below
 }
-function openNotice(){
-  window.open('https://discord.com/channels/1050421920232906782/1458890808924049478', '_blank', 'noopener');
-}
-function openAion2ToolSearch(){
-  window.open('https://www.aion2tool.com/', '_blank', 'noopener');
-}
-function openOfficialCharacterSearch(){
-  window.open('https://aion2.plaync.com/ko-kr/characters/index', '_blank', 'noopener');
-}
 function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='none', color=''}) {
   name = normalizeTaskName(name);
   if(!chargeMax && EXTRA_CHARGE_DEFAULTS[name]) chargeMax = EXTRA_CHARGE_DEFAULTS[name];
@@ -771,11 +693,8 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
   } else if(name === '⚔️루드라' || name === '⚔️침식'){
     challengeChargeMax = 10;
     rewardChargeMax = 10;
-  } else if(name === '⚡오드'){
-    if(!rewardMax) rewardMax = 840;
-    chargeMax = 2000;
-  } else if(EXTRA_CHARGE_DEFAULTS[name]){
-    chargeMax = EXTRA_CHARGE_DEFAULTS[name];
+  } else if(chargeMax > 0){
+    chargeMax = 10;
   }
 
   return {
@@ -786,7 +705,6 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     challengeChargeMax, challengeChargeCurrent,
     rewardChargeMax, rewardChargeCurrent,
     resetRule, lastResetAppliedKey:null,
-    lastWeeklyChallengeResetKey:null,
     color:color || state.taskColors[name] || getDefaultColor(name),
     note:''
   };
@@ -817,7 +735,7 @@ async function addCharacter(){
   const c = {
     id: uid(),
     name: rawName || profile?.name || '새 캐릭터',
-    power: profile?.power || '',
+    power: profile?.power ? formatPowerCompact(profile.power) : '',
     itemLevel: profile?.itemLevel || '',
     profileUrl: rawUrl || '',
     tasks: []
@@ -878,32 +796,20 @@ function decodeNameFromProfileUrl(url){
   try{
     const clean = url.split('?')[0].replace(/\/$/, '');
     const last = clean.substring(clean.lastIndexOf('/') + 1);
-    const decoded = decodeURIComponent(last || '').trim();
-    if(/^[가-힣a-zA-Z0-9 _-]{2,20}$/.test(decoded)) return decoded;
-    return '';
+    return decodeURIComponent(last || '').trim();
   }catch(e){
     return '';
   }
 }
-function normalizeOfficialCharacterUrl(url){
-  const value = String(url || '').trim();
-  if(!value) return '';
-  return value;
-}
 async function fetchProfileHtml(url){
-  const cleanUrl = String(url || '').trim();
-  if(!cleanUrl) throw new Error('링크가 비어 있습니다.');
-
-  const proxyCandidates = [
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(cleanUrl)}`,
-    `https://corsproxy.io/?${encodeURIComponent(cleanUrl)}`,
-    `https://r.jina.ai/http://${cleanUrl.replace(/^https?:\/\//,'')}`
+  const proxies = [
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    `https://r.jina.ai/http://${url.replace(/^https?:\/\//,'')}`
   ];
-
   let lastError = null;
-  for(const proxyUrl of proxyCandidates){
+  for(const proxyUrl of proxies){
     try{
-      const res = await fetch(proxyUrl, { method:'GET' });
+      const res = await fetch(proxyUrl);
       if(!res.ok) throw new Error(`HTTP ${res.status}`);
       const html = await res.text();
       if(html && html.length > 200) return html;
@@ -911,7 +817,6 @@ async function fetchProfileHtml(url){
       lastError = err;
     }
   }
-
   throw lastError || new Error('프로필 HTML을 가져오지 못했습니다.');
 }
 function extractProfileFromHtml(html, fallbackUrl=''){
@@ -920,93 +825,32 @@ function extractProfileFromHtml(html, fallbackUrl=''){
   const text = (doc.body?.innerText || doc.documentElement?.textContent || '')
     .replace(/\s+/g, ' ')
     .trim();
-  const raw = String(html || '');
 
-  function normalizeNum(v){
-    if(v == null) return '';
-    const s = String(v).replace(/,/g,'').trim();
-    if(!s) return '';
-    const n = Number(s);
-    return Number.isFinite(n) ? String(n) : '';
-  }
+  function findNumberAfterLabel(labels, sourceText){
+    for (const label of labels) {
+      const idx = sourceText.indexOf(label);
+      if (idx === -1) continue;
 
-  function pickBest(nums, min=0, max=Infinity){
-    const arr = nums.map(normalizeNum).filter(Boolean).map(Number).filter(n => n >= min && n <= max);
-    if(!arr.length) return '';
-    return String(Math.max(...arr));
-  }
-
-  function findMetaContent(selector){
-    const el = doc.querySelector(selector);
-    return (el?.getAttribute('content') || '').trim();
-  }
-
-  function findTitleName(){
-    const candidates = [
-      (doc.querySelector('h1')?.textContent || '').trim(),
-      (doc.querySelector('title')?.textContent || '').trim(),
-      findMetaContent('meta[property="og:title"]')
-    ].filter(Boolean);
-
-    for(const candidate of candidates){
-      const match = candidate.match(/[가-힣A-Za-z0-9_ -]{2,20}/g);
-      if(match && match.length){
-        const best = match.sort((a,b)=>b.length-a.length)[0].trim();
-        if(best && !/AION2|캐릭터|정보실|PLAYNC|공식|랭킹/i.test(best)) return best;
+      const slice = sourceText.slice(idx, idx + 120);
+      const matches = slice.match(/\d[\d,]*(?:\.\d+)?/g);
+      if (matches && matches.length) {
+        return matches[matches.length - 1].replace(/,/g, '');
       }
     }
     return '';
   }
 
-  function findNumberAfterLabel(labels, sourceText, min=0, max=Infinity, windowSize=220){
-    const collected = [];
-    for (const label of labels) {
-      let idx = sourceText.indexOf(label);
-      while (idx !== -1) {
-        const slice = sourceText.slice(idx, idx + windowSize);
-        const matches = slice.match(/\d[\d,]*(?:\.\d+)?/g);
-        if (matches && matches.length) collected.push(...matches);
-        idx = sourceText.indexOf(label, idx + label.length);
-      }
-    }
-    return pickBest(collected, min, max);
-  }
+  const name = decodeNameFromProfileUrl(fallbackUrl) || '';
 
-  function findByRegexList(regexList, sourceText, min=0, max=Infinity){
-    const collected = [];
-    for(const re of regexList){
-      let m;
-      const flags = re.flags.includes('g') ? re.flags : re.flags + 'g';
-      const rr = new RegExp(re.source, flags);
-      while((m = rr.exec(sourceText)) !== null){
-        if(m[1]) collected.push(m[1]);
-      }
-    }
-    return pickBest(collected, min, max);
-  }
+  const itemLevel = findNumberAfterLabel(
+    ['아이템 레벨', '아이템레벨', 'item level', 'Item Level'],
+    text
+  );
 
-  const name = findTitleName() || decodeNameFromProfileUrl(fallbackUrl) || '';
-
-  const itemLevel =
-    findByRegexList([
-      /["']itemLevel["']\s*[:=]\s*["']?(\d[\d,]*(?:\.\d+)?)/i,
-      /["']item_level["']\s*[:=]\s*["']?(\d[\d,]*(?:\.\d+)?)/i,
-      /아이템\s*레벨[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
-      /아이템레벨[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
-      /Item\s*Level[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i
-    ], raw, 1, 9999)
-    || findNumberAfterLabel(['아이템 레벨','아이템레벨','Item Level','item level'], text, 1, 9999, 220);
-
-  const power =
-    findByRegexList([
-      /["']combatPower["']\s*[:=]\s*["']?(\d[\d,]*(?:\.\d+)?)/i,
-      /["']combat_power["']\s*[:=]\s*["']?(\d[\d,]*(?:\.\d+)?)/i,
-      /달성\s*최고\s*전투력[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
-      /최고\s*전투력[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
-      /전투력[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i,
-      /Combat\s*Power[^\d]{0,30}(\d[\d,]*(?:\.\d+)?)/i
-    ], raw, 1, 99999999)
-    || findNumberAfterLabel(['달성 최고 전투력','최고 전투력','전투력','Combat Power','combat power'], text, 1, 99999999, 220);
+  const power = findNumberAfterLabel(
+    ['달성 최고 전투력', '전투력', 'combat power', 'power'],
+    text
+  );
 
   return { name, itemLevel, power };
 }
@@ -1047,7 +891,7 @@ async function refreshCharacterProfile(characterId){
 async function handleProfileUrlChange(characterId, value){
   const c = state.characters.find(x=>x.id===characterId);
   if(!c) return;
-  c.profileUrl = normalizeOfficialCharacterUrl(value);
+  c.profileUrl = (value || '').trim();
   saveState();
   if(c.profileUrl){
     try{
@@ -1208,30 +1052,6 @@ function changeTaskCount(taskId, key, delta){
   const t = findTask(taskId);
   if(!t) return;
   const maxKey = key.replace('Current','Max');
-
-  if(t.name === '⚡오드' && key === 'rewardCurrent'){
-    let amount = Math.abs(delta);
-
-    if(delta < 0){
-      const baseSpend = Math.min(t.rewardCurrent, amount);
-      t.rewardCurrent = clamp(t.rewardCurrent - baseSpend, 0, t.rewardMax);
-      amount -= baseSpend;
-      if(amount > 0){
-        t.chargeCurrent = clamp(t.chargeCurrent - amount, 0, t.chargeMax);
-      }
-    } else if(delta > 0){
-      const baseFill = Math.min(t.rewardMax - t.rewardCurrent, amount);
-      t.rewardCurrent = clamp(t.rewardCurrent + baseFill, 0, t.rewardMax);
-      amount -= baseFill;
-      if(amount > 0){
-        t.chargeCurrent = clamp(t.chargeCurrent + amount, 0, t.chargeMax);
-      }
-    }
-
-    saveState(); renderTable();
-    return;
-  }
-
   t[key] = clamp(t[key] + delta, 0, t[maxKey]);
   saveState(); renderTable();
 }
@@ -1323,7 +1143,7 @@ function getNextResetDate(rule, now = new Date()){
   if(rule === 'od_charge'){
     for(let i=0;i<10;i++){
       const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()+i, 0,0,0,0);
-      for(const h of [0,2,5,8,11,14,17,20,23]){
+      for(const h of [2,5,8,11,14,17,20,23]){
         const dt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, 0, 0, 0);
         if(dt > now) return dt;
       }
@@ -1355,7 +1175,7 @@ function getLatestReset(rule, now = new Date()){
 function getLatestOdCharge(now = new Date()){
   for(let i=0;i<3;i++){
     const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()-i, 0,0,0,0);
-    for(const h of [23,20,17,14,11,8,5,2,0]){
+    for(const h of [23,20,17,14,11,8,5,2]){
       const dt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, 0, 0, 0);
       if(dt <= now) return {key:dt.toISOString(), date:dt};
     }
@@ -1366,59 +1186,30 @@ function applyRuleToTask(task){
   if(task.resetRule === 'od_charge'){
     const hit = getLatestOdCharge();
     if(!hit || task.lastResetAppliedKey === hit.key) return false;
-    task.rewardCurrent = clamp((task.rewardCurrent || 0) + 15, 0, task.rewardMax || 0);
+    task.rewardCurrent = clamp(task.rewardCurrent + 15, 0, task.rewardMax);
     task.lastResetAppliedKey = hit.key;
     return true;
   }
-
-  let changed = false;
   const hit = getLatestReset(task.resetRule);
-
-  if(hit && task.lastResetAppliedKey !== hit.key){
-    if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset'){
-      if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
-      if(task.rewardMax > 0) task.rewardCurrent = task.rewardMax;
-      if(task.chargeMax > 0) task.chargeCurrent = 0;
-      if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
-      if(task.rewardChargeMax > 0 || task.rewardChargeCurrent > 0) task.rewardChargeCurrent = 0;
-      changed = true;
-    }else if(task.resetRule === 'daily_05_plus2'){
-      task.rewardCurrent = clamp(task.rewardCurrent + 2, 0, task.rewardMax);
-      changed = true;
-    }else if(task.resetRule === 'daily_05_plus1'){
-      task.rewardCurrent = clamp(task.rewardCurrent + 1, 0, task.rewardMax);
-      changed = true;
-    }
-
-    task.lastResetAppliedKey = hit.key;
+  if(!hit || task.lastResetAppliedKey === hit.key) return false;
+  if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset'){
+    if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
+    if(task.rewardMax > 0) task.rewardCurrent = task.rewardMax;
+    if(task.chargeMax > 0) task.chargeCurrent = 0;
+    if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
+    if(task.rewardChargeMax > 0 || task.rewardChargeCurrent > 0) task.rewardChargeCurrent = 0;
+  }else if(task.resetRule === 'daily_05_plus2'){
+    task.rewardCurrent = clamp(task.rewardCurrent + 2, 0, task.rewardMax);
+  }else if(task.resetRule === 'daily_05_plus1'){
+    task.rewardCurrent = clamp(task.rewardCurrent + 1, 0, task.rewardMax);
   }
-
-  if(task.name === '원정' || task.name === '초월'){
-    const weeklyHit = getLatestReset('weekly_wed_05_reset');
-    if(weeklyHit && task.lastWeeklyChallengeResetKey !== weeklyHit.key){
-      task.challengeCurrent = task.challengeMax;
-      task.lastWeeklyChallengeResetKey = weeklyHit.key;
-      changed = true;
-    }
-  }
-
-  return changed;
+  task.lastResetAppliedKey = hit.key;
+  return true;
 }
 function applyRuleToWeekly(task){
   const hit = getLatestReset(task.resetRule);
   if(!hit || task.lastResetAppliedKey === hit.key) return false;
-
-  if(task.resetRule === 'daily_05_plus2'){
-    task.current = clamp(task.current + 2, 0, task.max);
-  } else if(task.resetRule === 'daily_05_plus1'){
-    task.current = clamp(task.current + 1, 0, task.max);
-  } else {
-    task.current = task.max;
-    if(Array.isArray(task.segmentStates)){
-      task.segmentStates = task.segmentStates.map(() => 1);
-    }
-  }
-
+  task.current = task.max;
   task.lastResetAppliedKey = hit.key;
   return true;
 }
@@ -1462,12 +1253,6 @@ function getMainClass(cur,max){
   if(max === 0) return '';
   if(cur === 0) return 'zero';
   if(cur <= Math.max(1, Math.floor(max*0.2))) return 'warn';
-  return '';
-}
-function getMiniClass(cur, max){
-  if(max === 0) return '';
-  if(cur === 0) return ' zero';
-  if(cur <= Math.max(1, Math.floor(max * 0.2))) return ' warn';
   return '';
 }
 function getGlobalNearest(){
@@ -1625,40 +1410,28 @@ function renderWeekly(){
   `;
 }
 function orderedTaskNames(){
-  const hiddenTasks = ['저주','🌀회랑 -하','🌀회랑 -중'];
-
-  const hasCorridor = state.characters.some(c =>
-    (c.tasks || []).some(t => t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중')
-  );
+  const hiddenTasks = ['저주'];
 
   const preferred = [
-    '사명','🌀회랑','⚡오드','원정',
+    '사명','🌀회랑 -하','🌀회랑 -중','⚡오드','원정',
     '초월','악몽','각성전','⚔️루드라','⚔️침식'
   ];
 
   const all = [];
   state.characters.forEach(c => {
     c.tasks.forEach(t => {
-      const normalizedName = (t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중') ? '🌀회랑' : t.name;
-      if (!hiddenTasks.includes(t.name) && !all.includes(normalizedName)) {
-        all.push(normalizedName);
+      if (!hiddenTasks.includes(t.name) && !all.includes(t.name)) {
+        all.push(t.name);
       }
     });
   });
 
-  if(hasCorridor && !all.includes('🌀회랑')) all.push('🌀회랑');
-
   return preferred
-    .filter(n => all.includes(n))
-    .concat(all.filter(n => !preferred.includes(n)));
+    .filter(n => !hiddenTasks.includes(n) && all.includes(n))
+    .concat(all.filter(n => !preferred.includes(n) && !hiddenTasks.includes(n)));
 }
 function sampleTaskByName(name){
   for(const c of state.characters){
-    if(name === '🌀회랑'){
-      const lower = c.tasks.find(x=>x.name==='🌀회랑 -하');
-      const upper = c.tasks.find(x=>x.name==='🌀회랑 -중');
-      if(lower || upper) return lower || upper;
-    }
     const t = c.tasks.find(x=>x.name===name);
     if(t) return t;
   }
@@ -1678,15 +1451,8 @@ function renderHeader(names){
   return names.map((name, index)=>{
     const t = sampleTaskByName(name);
     let color = state.taskColors[name] || (t ? t.color : getDefaultColor(name));
-    let rule = t ? getRuleLabel(t.resetRule) : '';
-    let next = t ? getNextResetDate(t.resetRule) : null;
-
-    if(name === '🌀회랑'){
-      const corridorSample = sampleTaskByName('🌀회랑 -하') || sampleTaskByName('🌀회랑 -중') || t;
-      color = state.taskColors['🌀회랑 -하'] || state.taskColors['🌀회랑 -중'] || (corridorSample ? corridorSample.color : getDefaultColor('🌀회랑 -하'));
-      rule = '화/목/토 21시 초기화';
-      next = getNextResetDate('tue_thu_sat_21_reset');
-    }
+    const rule = t ? getRuleLabel(t.resetRule) : '';
+    const next = t ? getNextResetDate(t.resetRule) : null;
 
     const odeGroup = ['⚡오드','원정','초월'];
     const isOdeGroup = odeGroup.includes(name);
@@ -1707,4 +1473,352 @@ function renderHeader(names){
 }
 
 function renderCell(character, taskName){
->
+  const t = character.tasks.find(x=>x.name===taskName);
+  if(!t) return `<td><div class="cell-wrap"><span class="muted small">-</span></div></td>`;
+
+  const baseCurrent = t.rewardMax > 0 ? t.rewardCurrent : t.challengeCurrent;
+  const baseMax = t.rewardMax > 0 ? t.rewardMax : t.challengeMax;
+  const mainCls = getMainClass(baseCurrent, baseMax);
+  const bg = mainCls === 'zero' ? 'rgba(146,61,61,.16)' : mainCls === 'warn' ? 'rgba(120,100,36,.14)' : 'transparent';
+
+  let cellAccent = '';
+  if(t.name === '사명'){
+    cellAccent = 'border:2px solid #d7b14a; box-shadow: inset 0 0 0 1px rgba(255,230,140,.18); border-radius:14px; padding:8px;';
+  }
+
+  const odeGroup = ['⚡오드','원정','초월'];
+  const isOdeGroup = odeGroup.includes(t.name);
+  const tdGroupClass = isOdeGroup
+    ? `task-group-ode-cell ${t.name === '⚡오드' ? 'task-group-start' : ''} ${t.name === '초월' ? 'task-group-end' : ''}`
+    : '';
+
+  if(t.name === '⚔️루드라' || t.name === '⚔️침식'){
+    return `
+      <td class="${tdGroupClass}" style="background:${bg}">
+        <div class="cell-wrap" style="${cellAccent}">
+          <div class="cube-row">
+            <div>
+              <div class="cube" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
+                ${t.challengeCurrent}/${t.challengeMax}
+                <small>도전횟수</small>
+              </div>
+              <div class="sub-count" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
+            </div>
+            <div>
+              <div class="cube" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
+                ${t.rewardCurrent}/${t.rewardMax}
+                <small>보상횟수</small>
+              </div>
+              <div class="sub-count" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
+            </div>
+          </div>
+        </div>
+      </td>
+    `;
+  }
+
+  if(t.name === '원정' || t.name === '초월'){
+    return `
+      <td class="${tdGroupClass}" style="background:${bg}">
+        <div class="cell-wrap" style="${cellAccent}">
+          <div class="cube-row">
+            <div>
+              <div class="cube" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
+                ${t.rewardCurrent}/${t.rewardMax}
+                <small>보상횟수</small>
+              </div>
+              <div class="sub-count" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
+            </div>
+            <div>
+              <div class="cube" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
+                ${t.challengeCurrent}/${t.challengeMax}
+                <small>보스처치횟수</small>
+              </div>
+              <div class="sub-count" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
+            </div>
+          </div>
+        </div>
+      </td>
+    `;
+  }
+
+  if(t.name === '사명' || t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중'){
+    return `
+      <td class="${tdGroupClass}" style="background:${bg}">
+        <div class="cell-wrap" style="${cellAccent}">
+          <input class="check" type="checkbox" ${t.rewardCurrent === 0 ? 'checked' : ''} onchange="completeTask('${t.id}', this.checked)" />
+          <div class="main-count" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
+        </div>
+      </td>
+    `;
+  }
+
+  if(t.name === '⚡오드'){
+    return `
+      <td class="${tdGroupClass}" style="background:${bg}">
+        <div class="cell-wrap" style="${cellAccent}">
+          <div class="main-count" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}</div>
+          <div class="sub-count" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})</div>
+          <div class="mini-row">
+            <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',-40)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',40)">-</button>
+            <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',40)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',-40)">+</button>
+          </div>
+        </div>
+      </td>
+    `;
+  }
+
+  if(t.name !== '⚔️루드라' && t.name !== '⚔️침식' && t.chargeMax > 0){
+    return `
+      <td class="${tdGroupClass}" style="background:${bg}">
+        <div class="cell-wrap" style="${cellAccent}">
+          <div class="main-count" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
+          ${t.rewardCurrent === 0 ? `<div class="done-label">완료</div>` : ''}
+          <div class="sub-count" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})</div>
+        </div>
+      </td>
+    `;
+  }
+
+  const targetKey = t.rewardMax > 0 ? 'rewardCurrent' : 'challengeCurrent';
+  return `
+    <td class="${tdGroupClass}" style="background:${bg}">
+      <div class="cell-wrap" style="${cellAccent}">
+        <div class="main-count" onclick="changeTaskCount('${t.id}','${targetKey}',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','${targetKey}',1)">
+          ${t.rewardMax > 0 ? `${t.rewardCurrent}/${t.rewardMax}` : `${t.challengeCurrent}/${t.challengeMax}`}
+        </div>
+        ${(t.rewardMax > 0 ? t.rewardCurrent === 0 : t.challengeCurrent === 0) ? `<div class="done-label">완료</div>` : ''}
+        <input class="note" value="${escapeHtml(t.note || '')}" placeholder="메모" oninput="t.note=this.value" />
+      </div>
+    </td>
+  `;
+}
+
+function renderTable(){
+  const area = document.getElementById('tableArea');
+  if(!state.characters.length){
+    area.innerHTML = '<div class="empty">캐릭터를 먼저 추가해주세요.</div>';
+    return;
+  }
+  const names = orderedTaskNames();
+  area.innerHTML = `
+    <div class="table-center">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="char-col">
+                <div class="th-title">캐릭터</div>
+                <div class="th-sub">이름 / 링크</div>
+              </th>
+              <th class="profile-col">
+                <div class="th-title">정보</div>
+                <div class="th-sub">아이템레벨 / 전투력</div>
+              </th>
+              ${renderHeader(names)}
+            </tr>
+          </thead>
+          <tbody>
+            ${state.characters.map(c=>`
+              <tr>
+                <td>
+<div class="char-box">
+  <input class="char-input" value="${escapeHtml(c.name || '')}" oninput="c.name=this.value; saveState()" />
+  <input class="note profile-link-input" value="${escapeHtml(c.profileUrl || '')}" placeholder="AION2TOOL 링크" onchange="handleProfileUrlChange('${c.id}', this.value)" onkeydown="handleProfileUrlKeydown(event, '${c.id}', this.value)" />
+</div>
+                </td>
+                <td class="profile-col">
+                  <div class="profile-compact-row">
+                    ${getProfileSummaryHtml(c)}
+                  </div>
+                </td>
+                ${names.map(name=>renderCell(c,name)).join('')}
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function renderTop(){
+  const now = new Date();
+  document.getElementById('nowTime').textContent = '현재 시간 ' + formatDateTime(now);
+  const nearest = getGlobalNearest();
+  document.getElementById('nextResetGlobal').textContent = '다음 리셋 ' + (nearest ? `${formatDateTime(nearest)} · ${diffText(nearest, now)}` : '없음');
+}
+function resetAllData(){
+  if(!confirm('모든 데이터를 초기화할까요?')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  state = loadState();
+  ensureSample();
+  render();
+}
+function ensureSample(){
+  if(state.characters.length) return;
+  const c = {id:uid(), name:'메인캐릭', power:'', itemLevel:'', tasks:[]};
+  ensureDefaultTasksForCharacter(c);
+  state.characters.push(c);
+  state.selectedCharacterId = c.id;
+  saveState();
+}
+
+
+
+function getCharacterCompletion(character){
+  let remaining = 0;
+  let total = 0;
+
+  (character.tasks || []).forEach(t => {
+    if(!t) return;
+
+    if(t.name === '⚡오드'){
+      return;
+    }
+
+    if(t.name === '원정' || t.name === '초월' || t.name === '⚔️루드라' || t.name === '⚔️침식'){
+      total += Math.max(0, t.rewardMax || 0) + Math.max(0, t.challengeMax || 0);
+      remaining += Math.max(0, t.rewardCurrent || 0) + Math.max(0, t.challengeCurrent || 0);
+      return;
+    }
+
+    total += Math.max(0, t.rewardMax || 0);
+    remaining += Math.max(0, t.rewardCurrent || 0);
+  });
+
+  const done = Math.max(0, total - remaining);
+  const percent = total > 0 ? Math.round((done / total) * 100) : 0;
+  return {done, total, percent, remaining};
+}
+
+function renderCharacterProgress(){
+  const el = document.getElementById('characterProgressArea');
+  if(!el) return;
+  if(!state.characters.length){
+    el.innerHTML = '<div class="progress-panel-title">캐릭터 진행률</div><div class="small muted">캐릭터를 추가하면 진행률이 표시됩니다.</div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="progress-panel-title">캐릭터 진행률</div>
+    <div class="progress-list">
+      ${state.characters.map(c => {
+        const stats = getCharacterCompletion(c);
+        return `
+          <div class="progress-card">
+            <div class="progress-name">${escapeHtml(c.name || '캐릭터')}</div>
+            <div class="progress-meta">
+              <div class="progress-bar-track">
+                <div class="progress-bar-fill" style="width:${stats.percent}%"></div>
+              </div>
+            </div>
+            <div class="progress-percent">${stats.percent}%</div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+document.addEventListener('click', function(e){
+  const inside = e.target.closest('.palette-pop') || e.target.closest('.task-header-click');
+  if(!inside){
+    document.querySelectorAll('.palette-pop').forEach(el=>el.classList.remove('show'));
+  }
+});
+
+function render(){
+  applyAllRules();
+  renderCharacterList();
+  renderWeekly();
+  renderCharacterProgress();
+  renderTable();
+  renderTop();
+}
+window.addEventListener('DOMContentLoaded', async () => {
+  setupAuth();
+
+  state = await loadStateFromCloud();
+
+  if(!state.characters || !state.characters.length){
+    ensureSample();
+    await saveState();
+  }
+
+  render();
+
+  setInterval(function(){
+    applyAllRules();
+    renderWeekly();
+    renderCharacterProgress();
+    renderTable();
+    renderTop();
+  }, 60000);
+});
+</script>
+<script type="module">
+  import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.8";
+
+  const SUPABASE_URL = "https://fpkqdodltalcaspqdpqk.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_9pL-aHb6w2w-n5l4poOAlw_FeuQk4S2";
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  window.supabaseClient = supabase;
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  async function requireLogin() {
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error || !data.session) {
+      localStorage.removeItem("musang_user_id");
+      localStorage.removeItem("musang_username");
+      localStorage.removeItem("musang_role");
+      window.location.href = "index.html";
+      return false;
+    }
+
+    localStorage.setItem("musang_user_id", data.session.user.id);
+    return true;
+  }
+
+  async function logout() {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      alert("로그아웃 실패: " + error.message);
+      return;
+    }
+
+    localStorage.removeItem("musang_user_id");
+    localStorage.removeItem("musang_username");
+    localStorage.removeItem("musang_role");
+    window.location.href = "index.html";
+  }
+
+async function updateGuildStats(userId, characters) {
+  for (const char of characters) {
+    await window.supabaseClient
+      .from("guild_public_stats")
+      .upsert({
+        user_id: userId,
+        nickname: userId,
+        character_name: char.name,
+        combat_power: char.combat_power || 0,
+        item_level: char.item_level || 0,
+        weekly_completion: char.weekly_completion || 0,
+        updated_at: new Date().toISOString()
+      });
+  }
+}
+
+  
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", logout);
+  }
+
+  await requireLogin();
+  
+</script>
+</body>
+</html>
