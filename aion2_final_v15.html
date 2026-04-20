@@ -24,7 +24,7 @@
     color:var(--text);
     font-family:Arial,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
   }
-  .app{zoom:.72;max-width:none;margin:0;padding:12px 14px 14px 30px}
+  .app{zoom:.72;max-width:none;margin:0;padding:12px 14px 14px 30px;background:#000}
   .topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
   .title{font-size:30px;font-weight:900}
   .sub{color:var(--muted);margin-top:4px}
@@ -47,7 +47,7 @@
   input::placeholder{color:#6f7bad}
   .layout{display:grid;grid-template-columns:320px 1fr;gap:14px}
   .panel{
-    background:#000;border:1px solid #141414;border-radius:18px;
+    background:rgba(11,16,32,.96);border:1px solid #28365b;border-radius:18px;
     box-shadow:0 6px 16px rgba(0,0,0,.24);
   }
   .side{padding:14px}
@@ -64,12 +64,12 @@
   .char-name{font-weight:900}
   .muted{color:var(--muted)}
   .small{font-size:12px}
-  .weekly-box{padding:14px;margin-bottom:12px;background:#000 !important;border-color:#161616 !important;box-shadow:none !important}
+  .weekly-box{padding:14px;margin-bottom:12px}
   .weekly-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
   .weekly-grid{display:grid;gap:10px}
 
   .weekly-summary-layout{display:grid;grid-template-columns:minmax(0,1fr) 500px;gap:14px;align-items:start}
-  .weekly-progress-panel{background:#000;border:1px solid #161616;border-radius:16px;padding:14px 16px;min-height:100%}
+  .weekly-progress-panel{background:#0d1427;border:1px solid #28365b;border-radius:16px;padding:14px 16px;min-height:100%}
   .progress-panel-title{font-size:15px;font-weight:900;margin-bottom:12px}
   .progress-list{display:grid;grid-template-columns:1fr;gap:10px}
   .progress-card{display:grid;grid-template-columns:110px minmax(0,1fr) 56px;align-items:center;gap:12px;background:#10182c;border:1px solid #2c3b60;border-radius:16px;padding:12px 14px;min-height:0}
@@ -331,14 +331,14 @@
 
 .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin-bottom:12px}
 
-  .main > .panel{background:#000 !important;border-color:#161616 !important;box-shadow:none !important;}
+  .main > .panel{background:rgba(11,16,32,.96) !important;border-color:#28365b !important;box-shadow:0 6px 16px rgba(0,0,0,.20) !important;}
 .topbar-left{min-width:0}
 .topbar-center{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}
 .topbar-right{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap}
 .header-link-btn{
-    background:#121212;
-    color:#f3f4f6;
-    border:1px solid #282828;
+    background:#1a2644;
+    color:#eef2ff;
+    border:1px solid #32436e;
     border-radius:12px;
     padding:18px 30px;
     font-size:20px;
@@ -510,7 +510,7 @@ const ODE_CHARGE_MAX = 2000;
 const ODE_CHARGE_INCREMENT = 15;
 const ODE_MANUAL_STEP = 40;
 const ODE_LINKED_REWARD_STEP = 80;
-const ODE_LINKED_TASK_NAMES = ['원정','⚔️루드라','⚔️침식'];
+const ODE_LINKED_TASK_NAMES = ['원정','초월','⚔️루드라','⚔️침식'];
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
@@ -1831,7 +1831,7 @@ function renderCell(character, taskName){
   const baseCurrent = t.rewardMax > 0 ? t.rewardCurrent : t.challengeCurrent;
   const baseMax = t.rewardMax > 0 ? t.rewardMax : t.challengeMax;
   const mainCls = getMainClass(baseCurrent, baseMax);
-  const bg = mainCls === 'zero' ? 'rgba(146,61,61,.16)' : mainCls === 'warn' ? 'rgba(120,100,36,.14)' : 'transparent';
+  const bg = mainCls === 'zero' ? 'rgba(146,61,61,.16)' : mainCls === 'warn' ? 'rgba(120,100,36,.14)' : '#0d1427';
 
   let cellAccent = '';
   if(t.name === '사명'){
