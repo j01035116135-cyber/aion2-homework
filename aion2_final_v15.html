@@ -534,66 +534,119 @@ const DEFAULT_STATE = {
 };
 
 
-function makeCorridorTaskFromLegacy(lowerTask=null, middleTask=null){
-  const rewardMax = Math.max(0, (lowerTask?.rewardMax || 3)) + Math.max(0, (middleTask?.rewardMax || 3));
-  const rewardCurrent = clamp(
-    Math.max(0, lowerTask?.rewardCurrent ?? (lowerTask ? lowerTask.rewardMax || 3 : 3)) +
-    Math.max(0, middleTask?.rewardCurrent ?? (middleTask ? middleTask.rewardMax || 3 : 3)),
-    0,
-    rewardMax
-  );
-  const resetRule = lowerTask?.resetRule || middleTask?.resetRule || 'tue_thu_sat_21_reset';
-  const lastResetAppliedKey = middleTask?.lastResetAppliedKey || lowerTask?.lastResetAppliedKey || null;
+
+function syncCorridorTask(task){
+  if(!task || task.name !== CORRIDOR_NAME) return task;
+  const lowerMax = Number.isFinite(Number(task.lowerMax)) ? Number(task.lowerMax) : 3;
+  const middleMax = Number.isFinite(Number(task.middleMax)) ? Number(task.middleMax) : 3;
+  const lowerCurrentRaw = Number.isFinite(Number(task.lowerCurrent)) ? Number(task.lowerCurrent) : lowerMax;
+  const middleCurrentRaw = Number.isFinite(Number(task.middleCurrent)) ? Number(task.middleCurrent) : middleMax;
+
+  task.lowerMax = Math.max(0, lowerMax);
+  task.middleMax = Math.max(0, middleMax);
+  task.lowerCurrent = clamp(lowerCurrentRaw, 0, task.lowerMax);
+  task.middleCurrent = clamp(middleCurrentRaw, 0, task.middleMax);
+
+  task.rewardMax = task.lowerMax + task.middleMax;
+  task.rewardCurrent = task.lowerCurrent + task.middleCurrent;
+  task.challengeMax = 0;
+  task.challengeCurrent = 0;
+  task.chargeMax = 0;
+  task.chargeCurrent = 0;
+  task.challengeChargeMax = 0;
+  task.challengeChargeCurrent = 0;
+  task.rewardChargeMax = 0;
+  task.rewardChargeCurrent = 0;
+  task.color = task.color || getDefaultColor(CORRIDOR_NAME);
+  return task;
+}
+
+function splitMergedCorridorCount(totalCurrent, lowerMax=3, middleMax=3){
+  const safeTotal = Math.max(0, Number(totalCurrent) || 0);
+  const lowerCurrent = clamp(safeTotal, 0, lowerMax);
+  const middleCurrent = clamp(safeTotal - lowerCurrent, 0, middleMax);
+  return { lowerCurrent, middleCurrent };
+}
+
+function makeCorridorTaskFromLegacy(lowerTask=null, middleTask=null, mergedTask=null){
+  const lowerMax = Math.max(0, lowerTask?.rewardMax || mergedTask?.lowerMax || 3);
+  const middleMax = Math.max(0, middleTask?.rewardMax || mergedTask?.middleMax || 3);
+
+  let lowerCurrent;
+  let middleCurrent;
+
+  if(mergedTask && (mergedTask.lowerCurrent != null || mergedTask.middleCurrent != null)){
+    lowerCurrent = mergedTask.lowerCurrent ?? lowerMax;
+    middleCurrent = mergedTask.middleCurrent ?? middleMax;
+  } else if(mergedTask && typeof mergedTask.rewardCurrent === 'number'){
+    const split = splitMergedCorridorCount(mergedTask.rewardCurrent, lowerMax, middleMax);
+    lowerCurrent = split.lowerCurrent;
+    middleCurrent = split.middleCurrent;
+  } else {
+    lowerCurrent = lowerTask?.rewardCurrent ?? lowerMax;
+    middleCurrent = middleTask?.rewardCurrent ?? middleMax;
+  }
+
+  return syncCorridorTask({
+    id: mergedTask?.id || uid(),
+    name: CORRIDOR_NAME,
+    lowerMax,
+    lowerCurrent,
+    middleMax,
+    middleCurrent,
+    challengeMax: 0,
+    challengeCurrent: 0,
+    rewardMax: lowerMax + middleMax,
+    rewardCurrent: 0,
+    chargeMax: 0,
+    chargeCurrent: 0,
+    challengeChargeMax: 0,
+    challengeChargeCurrent: 0,
+    rewardChargeMax: 0,
+    rewardChargeCurrent: 0,
+    resetRule: lowerTask?.resetRule || middleTask?.resetRule || mergedTask?.resetRule || 'tue_thu_sat_21_reset',
+    lastResetAppliedKey: middleTask?.lastResetAppliedKey || lowerTask?.lastResetAppliedKey || mergedTask?.lastResetAppliedKey || null,
+    color: mergedTask?.color || getDefaultColor(CORRIDOR_NAME),
+    note: mergedTask?.note || ''
+  });
+}
+
 function mergeLegacyCorridorTasks(tasks){
   if(!Array.isArray(tasks)) return [];
   const corridorTasks = tasks.filter(t => CORRIDOR_LEGACY_NAMES.includes(t?.name) || t?.name === CORRIDOR_NAME);
   const otherTasks = tasks.filter(t => !CORRIDOR_LEGACY_NAMES.includes(t?.name) && t?.name !== CORRIDOR_NAME);
   if(!corridorTasks.length) return tasks;
 
-  let merged = corridorTasks.find(t => t?.name === CORRIDOR_NAME) || null;
-  if(!merged){
-    const lowerTask = corridorTasks.find(t => t?.name === '🌀회랑 -하') || null;
-    const middleTask = corridorTasks.find(t => t?.name === '🌀회랑 -중') || null;
-    merged = {
-      id: uid(),
-      name: CORRIDOR_NAME,
-      challengeMax: 0,
-      challengeCurrent: 0,
-      rewardMax: Math.max(0, lowerTask?.rewardMax || 3) + Math.max(0, middleTask?.rewardMax || 3),
-      rewardCurrent: 0,
-      chargeMax: 0,
-      chargeCurrent: 0,
-      challengeChargeMax: 0,
-      challengeChargeCurrent: 0,
-      rewardChargeMax: 0,
-      rewardChargeCurrent: 0,
-      resetRule: lowerTask?.resetRule || middleTask?.resetRule || 'tue_thu_sat_21_reset',
-      lastResetAppliedKey: middleTask?.lastResetAppliedKey || lowerTask?.lastResetAppliedKey || null,
-      color: getDefaultColor(CORRIDOR_NAME),
-      note:''
-    };
-    merged.rewardCurrent = clamp(
-      Math.max(0, lowerTask?.rewardCurrent ?? (lowerTask ? lowerTask.rewardMax || 3 : 3)) +
-      Math.max(0, middleTask?.rewardCurrent ?? (middleTask ? middleTask.rewardMax || 3 : 3)),
-      0,
-      merged.rewardMax
-    );
-  }
+  const lowerTask = corridorTasks.find(t => t?.name === '🌀회랑 -하') || null;
+  const middleTask = corridorTasks.find(t => t?.name === '🌀회랑 -중') || null;
+  const mergedTask = corridorTasks.find(t => t?.name === CORRIDOR_NAME) || null;
+  const corridorTask = makeCorridorTaskFromLegacy(lowerTask, middleTask, mergedTask);
 
-  merged.name = CORRIDOR_NAME;
-  merged.rewardMax = typeof merged.rewardMax === 'number' ? merged.rewardMax : 6;
-  merged.rewardCurrent = clamp(typeof merged.rewardCurrent === 'number' ? merged.rewardCurrent : merged.rewardMax, 0, merged.rewardMax);
-  merged.challengeMax = 0;
-  merged.challengeCurrent = 0;
-  merged.chargeMax = 0;
-  merged.chargeCurrent = 0;
-  merged.challengeChargeMax = 0;
-  merged.challengeChargeCurrent = 0;
-  merged.rewardChargeMax = 0;
-  merged.rewardChargeCurrent = 0;
-  merged.color = merged.color || getDefaultColor(CORRIDOR_NAME);
+  return [...otherTasks, corridorTask];
+}
 
-  return [...otherTasks, merged];
+function changeCorridorCount(taskId, lane, delta){
+  const t = findTask(taskId);
+  if(!t || t.name !== CORRIDOR_NAME) return;
+  const currentKey = lane === 'lower' ? 'lowerCurrent' : 'middleCurrent';
+  const maxKey = lane === 'lower' ? 'lowerMax' : 'middleMax';
+  t[currentKey] = clamp((t[currentKey] || 0) + delta, 0, t[maxKey] || 0);
+  syncCorridorTask(t);
+  saveState(); renderTable();
+}
+
+function changeCorridorByContext(event, taskId, lane, delta){
+  event.preventDefault();
+  changeCorridorCount(taskId, lane, delta);
+}
+
+function completeCorridorTask(taskId, checked){
+  const t = findTask(taskId);
+  if(!t || t.name !== CORRIDOR_NAME) return;
+  t.lowerCurrent = checked ? 0 : (t.lowerMax || 3);
+  t.middleCurrent = checked ? 0 : (t.middleMax || 3);
+  syncCorridorTask(t);
+  saveState(); renderTable();
 }
 
 function normalizeOdeTask(task){
@@ -680,17 +733,7 @@ function normalizeLoadedState(parsed){
         normalizeOdeTask(t);
       } else if(isCorridorTaskName(t.name)){
         t.name = CORRIDOR_NAME;
-        t.rewardMax = typeof t.rewardMax === 'number' ? t.rewardMax : 6;
-        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
-        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
-        t.challengeMax = 0;
-        t.challengeCurrent = 0;
-        t.chargeMax = 0;
-        t.chargeCurrent = 0;
-        t.challengeChargeMax = 0;
-        t.rewardChargeMax = 0;
-        t.challengeChargeCurrent = 0;
-        t.rewardChargeCurrent = 0;
+        syncCorridorTask(t);
       } else if(EXTRA_CHARGE_DEFAULTS[t.name]){
         t.chargeMax = 10;
         if(typeof t.chargeCurrent !== 'number') t.chargeCurrent = 0;
@@ -881,7 +924,7 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     chargeMax = 10;
   }
 
-  return {
+  const task = {
     id:uid(), name,
     challengeMax, challengeCurrent:challengeMax,
     rewardMax, rewardCurrent:rewardMax,
@@ -892,6 +935,16 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     color:color || state.taskColors[name] || getDefaultColor(name),
     note:''
   };
+
+  if(name === CORRIDOR_NAME){
+    task.lowerMax = 3;
+    task.lowerCurrent = 3;
+    task.middleMax = 3;
+    task.middleCurrent = 3;
+    syncCorridorTask(task);
+  }
+
+  return task;
 }
 function getSelectedCharacter(){ return state.characters.find(c=>c.id===state.selectedCharacterId) || null; }
 
@@ -1302,6 +1355,10 @@ function closePalette(taskName){
 function completeTask(taskId, checked){
   const t = findTask(taskId);
   if(!t) return;
+  if(t.name === CORRIDOR_NAME){
+    completeCorridorTask(taskId, checked);
+    return;
+  }
   t.rewardCurrent = checked ? 0 : t.rewardMax;
   saveState(); renderTable();
 }
@@ -1397,8 +1454,13 @@ function applyRuleToTask(task){
   const hit = getLatestReset(task.resetRule);
   if(!hit || task.lastResetAppliedKey === hit.key) return false;
   if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset'){
+    if(task.name === CORRIDOR_NAME){
+      task.lowerCurrent = task.lowerMax || 3;
+      task.middleCurrent = task.middleMax || 3;
+      syncCorridorTask(task);
+    }
     if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
-    if(task.rewardMax > 0) task.rewardCurrent = task.rewardMax;
+    if(task.rewardMax > 0 && task.name !== CORRIDOR_NAME) task.rewardCurrent = task.rewardMax;
     if(task.chargeMax > 0) task.chargeCurrent = 0;
     if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
     if(task.rewardChargeMax > 0 || task.rewardChargeCurrent > 0) task.rewardChargeCurrent = 0;
@@ -1713,6 +1775,8 @@ function renderCell(character, taskName){
   const t = character.tasks.find(x=>x.name===taskName);
   if(!t) return `<td><div class="cell-wrap"><span class="muted small">-</span></div></td>`;
 
+  if(t.name === CORRIDOR_NAME) syncCorridorTask(t);
+
   const baseCurrent = t.rewardMax > 0 ? t.rewardCurrent : t.challengeCurrent;
   const baseMax = t.rewardMax > 0 ? t.rewardMax : t.challengeMax;
   const mainCls = getMainClass(baseCurrent, baseMax);
@@ -1783,13 +1847,41 @@ function renderCell(character, taskName){
     `;
   }
 
-  if(t.name === '사명' || t.name === '🌀회랑'){
+  if(t.name === '사명'){
     const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
           <input class="check" type="checkbox" ${t.rewardCurrent === 0 ? 'checked' : ''} onchange="completeTask('${t.id}', this.checked)" />
           <div class="main-count${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
+        </div>
+      </td>
+    `;
+  }
+
+  if(t.name === CORRIDOR_NAME){
+    syncCorridorTask(t);
+    const totalDone = (t.lowerCurrent || 0) === 0 && (t.middleCurrent || 0) === 0;
+    const lowerCls = getMiniClass(t.lowerCurrent, t.lowerMax);
+    const middleCls = getMiniClass(t.middleCurrent, t.middleMax);
+    return `
+      <td class="${tdGroupClass}" style="background:${bg}">
+        <div class="cell-wrap" style="${cellAccent}">
+          <input class="check" type="checkbox" ${totalDone ? 'checked' : ''} onchange="completeCorridorTask('${t.id}', this.checked)" />
+          <div class="cube-row" style="gap:10px; flex-wrap:nowrap;">
+            <div style="text-align:center;">
+              <div class="cube${lowerCls}" onclick="changeCorridorCount('${t.id}','lower',-1)" oncontextmenu="changeCorridorByContext(event,'${t.id}','lower',1)" style="min-width:70px;">
+                ${t.lowerCurrent}/${t.lowerMax}
+              </div>
+              <div class="small muted" style="margin-top:4px;">하층</div>
+            </div>
+            <div style="text-align:center;">
+              <div class="cube${middleCls}" onclick="changeCorridorCount('${t.id}','middle',-1)" oncontextmenu="changeCorridorByContext(event,'${t.id}','middle',1)" style="min-width:70px;">
+                ${t.middleCurrent}/${t.middleMax}
+              </div>
+              <div class="small muted" style="margin-top:4px;">중층</div>
+            </div>
+          </div>
         </div>
       </td>
     `;
@@ -1924,6 +2016,12 @@ function getCharacterCompletion(character){
     if(t.name === '원정' || t.name === '초월' || t.name === '⚔️루드라' || t.name === '⚔️침식'){
       total += Math.max(0, t.rewardMax || 0) + Math.max(0, t.challengeMax || 0);
       remaining += Math.max(0, t.rewardCurrent || 0) + Math.max(0, t.challengeCurrent || 0);
+      return;
+    }
+
+    if(t.name === CORRIDOR_NAME){
+      total += Math.max(0, t.lowerMax || 0) + Math.max(0, t.middleMax || 0);
+      remaining += Math.max(0, t.lowerCurrent || 0) + Math.max(0, t.middleCurrent || 0);
       return;
     }
 
