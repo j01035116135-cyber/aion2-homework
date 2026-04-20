@@ -7,15 +7,15 @@
 <style>
   :root{
     --bg:#000000;
-    --panel:#090909;
-    --panel-soft:#111111;
-    --panel-strong:#151515;
-    --line:#242424;
-    --line-soft:#1b1b1b;
-    --text:#f3f4f6;
-    --muted:#8e949d;
-    --accent:#b7bcc6;
-    --warn:#a58a45;
+    --panel:#000000;
+    --panel-soft:#000000;
+    --panel-strong:#000000;
+    --line:#28365b;
+    --line-soft:#1e2a49;
+    --text:#eef2ff;
+    --muted:#9aa7d6;
+    --accent:#dfe7ff;
+    --warn:#8b7631;
   }
   *{box-sizing:border-box}
   body{
@@ -30,37 +30,37 @@
   .sub{color:var(--muted);margin-top:4px}
   .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
   .pill{
-    background:#101010;border:1px solid #252525;color:#e5e7eb;border-radius:999px;
+    background:#151d34;border:1px solid #32436e;color:#dfe7ff;border-radius:999px;
     padding:8px 12px;font-size:13px;display:inline-flex;gap:6px;align-items:center;
   }
   button,input,select{font-family:inherit}
   button{border:0;border-radius:10px;padding:10px 12px;cursor:pointer;font-weight:800}
-  .btn-primary{background:#2a2a2a;color:#fff;border:1px solid #3a3a3a}
-  .btn-dark{background:#141414;color:#f3f4f6;border:1px solid #2a2a2a}
-  .btn-green{background:#1b1f1c;color:#f3f4f6;border:1px solid #2e3a31}
-  .btn-red{background:#26191d;color:#f3f4f6;border:1px solid #413036}
+  .btn-primary{background:#6c63b5;color:#fff}
+  .btn-dark{background:#1a2644;color:#eef2ff}
+  .btn-green{background:#3f8a63;color:#fff}
+  .btn-red{background:#7b3b49;color:#fff}
   .btn-sm{padding:7px 10px;font-size:13px;border-radius:8px}
   input,select{
-    background:#0e0e0e;color:var(--text);border:1px solid #262626;border-radius:10px;
+    background:#0a1020;color:var(--text);border:1px solid #28365b;border-radius:10px;
     padding:10px 12px;outline:none;
   }
-  input::placeholder{color:#666c74}
+  input::placeholder{color:#6f7bad}
   .layout{display:grid;grid-template-columns:320px 1fr;gap:14px}
   .panel{
-    background:rgba(9,9,9,.98);border:1px solid #202020;border-radius:18px;
-    box-shadow:0 10px 24px rgba(0,0,0,.34);
+    background:#000;border:1px solid #141414;border-radius:18px;
+    box-shadow:0 6px 16px rgba(0,0,0,.24);
   }
   .side{padding:14px}
   .main{padding:14px}
   .section-title{font-size:16px;font-weight:900;margin-bottom:10px}
   .stack{display:flex;flex-direction:column;gap:10px}
-  .divider{height:1px;background:#1d1d1d;margin:14px 0}
+  .divider{height:1px;background:#1e2a49;margin:14px 0}
   .character-list{display:flex;flex-direction:column;gap:8px}
   .char-item{
-    background:#111111;border:1px solid #232323;border-radius:12px;padding:10px 12px;
+    background:#0d152b;border:1px solid #28365b;border-radius:12px;padding:10px 12px;
     display:flex;justify-content:space-between;align-items:center;gap:8px;
   }
-  .char-item.active{background:#181818;border-color:#4a4a4a;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04)}
+  .char-item.active{background:#1a2750;border-color:#667de0}
   .char-name{font-weight:900}
   .muted{color:var(--muted)}
   .small{font-size:12px}
@@ -69,17 +69,17 @@
   .weekly-grid{display:grid;gap:10px}
 
   .weekly-summary-layout{display:grid;grid-template-columns:minmax(0,1fr) 500px;gap:14px;align-items:start}
-  .weekly-progress-panel{background:#0d0d0d;border:1px solid #212121;border-radius:16px;padding:14px 16px;min-height:100%}
+  .weekly-progress-panel{background:#000;border:1px solid #161616;border-radius:16px;padding:14px 16px;min-height:100%}
   .progress-panel-title{font-size:15px;font-weight:900;margin-bottom:12px}
   .progress-list{display:grid;grid-template-columns:1fr;gap:10px}
-  .progress-card{display:grid;grid-template-columns:110px minmax(0,1fr) 56px;align-items:center;gap:12px;background:#121212;border:1px solid #232323;border-radius:16px;padding:12px 14px;min-height:0}
-  .progress-bar-track{position:relative;width:100%;height:18px;background:#161616;border:1px solid #262626;border-radius:999px;overflow:hidden}
-  .progress-bar-fill{height:100%;background:linear-gradient(90deg,#5f6670,#d1d5db);border-radius:999px}
+  .progress-card{display:grid;grid-template-columns:110px minmax(0,1fr) 56px;align-items:center;gap:12px;background:#10182c;border:1px solid #2c3b60;border-radius:16px;padding:12px 14px;min-height:0}
+  .progress-bar-track{position:relative;width:100%;height:18px;background:#18233d;border:1px solid #32466f;border-radius:999px;overflow:hidden}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,#7fe08a,#b6ff77);border-radius:999px}
   .progress-name{font-size:16px;font-weight:900;margin-bottom:8px}
   .progress-meta{min-width:0}
   .progress-percent{font-size:22px;font-weight:900;color:#eef2ff;text-align:right}
   .progress-sub{display:none}
-  .week-item{border:1px solid #232323;border-radius:14px;padding:10px;background:#0e0e0e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.015)}
+  .week-item{border:1px solid #28365b;border-radius:14px;padding:10px;background:#0d1427}
   .week-item.zero{
     background:#090909 !important;
     border-color:#171717 !important;
@@ -91,44 +91,44 @@
     color:#818792;
   }
   .week-item.warn{
-    background:linear-gradient(180deg, rgba(78,64,30,.22), rgba(78,64,30,.08)) !important;
-    border-color:#5f5130 !important;
-    box-shadow:inset 0 0 0 1px rgba(201,171,95,.10);
+    background:linear-gradient(180deg, rgba(120,100,36,.22), rgba(120,100,36,.10)) !important;
+    border-color:#8b7631 !important;
+    box-shadow:inset 0 0 0 1px rgba(255,220,120,.10);
   }
   .w-head{display:flex;justify-content:space-between;gap:6px;align-items:center;margin-bottom:10px}
   .w-title{font-weight:900;font-size:17px}
   .check{width:18px;height:18px;cursor:pointer}
   .w-value{
     font-size:21px;font-weight:900;margin-bottom:8px;cursor:pointer;
-    padding:6px 8px;border-radius:10px;background:#121212;border:1px solid #262626;text-align:center;
+    padding:6px 8px;border-radius:10px;background:#0a101d;border:1px solid #2d3b62;text-align:center;
   }
   .w-controls{display:flex;gap:6px}
   .w-controls button{flex:1;background:#182440;color:#fff;border:1px solid #34456f;padding:6px 0}
   .table-center{display:flex;justify-content:center}
   .table-wrap{
-    overflow:auto;border:1px solid #181818;border-radius:18px;background:#000;width:fit-content;max-width:100%;
+    overflow:auto;border:1px solid #141414;border-radius:18px;background:#000;width:fit-content;max-width:100%;
   }
   table{width:max-content;min-width:2200px;border-collapse:collapse}
   th,td{
-    border-top:1px solid #1c1c1c;
-    border-bottom:1px solid #1c1c1c;
+    border-top:1px solid #314064;
+    border-bottom:1px solid #314064;
     border-left:none;
     border-right:none;
     padding:6px 5px;text-align:center;vertical-align:middle;
   }
-  thead th{color:#e5e7eb;min-width:138px;position:relative}
+  thead th{color:#ddd8ff;min-width:138px;position:relative}
   thead th:first-child{min-width:170px;position:sticky;left:0;z-index:3;background:#000}
   tbody td:first-child{position:sticky;left:0;background:#000;z-index:2;min-width:170px}
   .th-title{font-size:19px;font-weight:900;margin-bottom:5px;line-height:1.15}
  .th-sub{
   font-size:10px;
-  color:#8f96a0;
+  color:#d7def8;
   line-height:1.15;
   margin-bottom:4px;
 }
   .head-actions{display:flex;justify-content:center;gap:6px;align-items:center}
   .head-mini{
-    background:rgba(255,255,255,.03);color:#f3f4f6;border:1px solid rgba(255,255,255,.10);
+    background:rgba(0,0,0,.20);color:#fff;border:1px solid rgba(255,255,255,.18);
     padding:5px 8px;border-radius:8px;font-size:12px;font-weight:800;
   }
   .cell-wrap{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;min-height:88px}
@@ -136,8 +136,8 @@
 .char-input{
   width:128px;
   text-align:center;
-  background:#0c0c0c;
-  border:1px solid #262626;
+  background:#070c18;
+  border:1px solid #3b4d7e;
   color:#fff;
   font-size:18px;
   font-weight:900;
@@ -154,8 +154,8 @@
 .stat-input{
   width:78px;
   text-align:center;
-  background:#0c0c0c;
-  border:1px solid #262626;
+  background:#070c18;
+  border:1px solid #3b4d7e;
   border-radius:10px;
   padding:7px 6px;
   font-size:18px;
@@ -186,8 +186,8 @@
   justify-content:center;
   width:92px;
   min-width:92px;
-  background:#0c0c0c;
-  border:1px solid #262626;
+  background:#070c18;
+  border:1px solid #3b4d7e;
   border-radius:10px;
   padding:5px 6px;
   line-height:1.1;
@@ -223,7 +223,7 @@
 
   .main-count{
     font-size:21px;font-weight:900;line-height:1;cursor:pointer;
-    padding:4px 8px;border-radius:10px;background:#111111;border:1px solid #262626;
+    padding:4px 8px;border-radius:10px;background:#0a101d;border:1px solid #2d3b62;
   }
   .cube.zero,
   .main-count.zero,
@@ -237,16 +237,16 @@
   .cube.warn,
   .main-count.warn,
   .sub-count.warn{
-    background:linear-gradient(180deg, rgba(78,64,30,.20), rgba(78,64,30,.08)) !important;
-    border-color:#5f5130 !important;
-    color:#f1e4bf !important;
-    box-shadow:inset 0 0 0 1px rgba(201,171,95,.10);
+    background:linear-gradient(180deg, rgba(120,100,36,.22), rgba(120,100,36,.10)) !important;
+    border-color:#8b7631 !important;
+    color:#fff7d6 !important;
+    box-shadow:inset 0 0 0 1px rgba(255,220,120,.10);
   }
   .sub-count{
-    font-size:17px;font-weight:800;color:#e5e7eb;line-height:1;cursor:pointer;
-    padding:4px 8px;border-radius:10px;background:#121212;border:1px solid #252525;
+    font-size:17px;font-weight:800;color:#d9e0ff;line-height:1;cursor:pointer;
+    padding:4px 8px;border-radius:10px;background:#151a28;border:1px solid #2a3350;
   }
-  .sub-count small{display:block;font-size:11px;color:#888f98;margin-top:2px;font-weight:700}
+  .sub-count small{display:block;font-size:11px;color:#b8c4eb;margin-top:2px;font-weight:700}
   .sub-count.zero{
     background:#090909 !important;
     border-color:#171717 !important;
@@ -260,15 +260,15 @@
   .task-header-click{cursor:pointer;}
   .mini-row{display:flex;gap:6px;align-items:center;justify-content:center}
   .mini-btn{
-    width:27px;height:27px;border-radius:8px;padding:0;background:#141414;color:#fff;
-    border:1px solid #2b2b2b;font-size:15px;font-weight:900;
+    width:27px;height:27px;border-radius:8px;padding:0;background:#16213b;color:#fff;
+    border:1px solid #34456f;font-size:15px;font-weight:900;
   }
   .cube-row{display:flex;gap:8px;justify-content:center;align-items:flex-start;flex-wrap:wrap}
   .cube{
-    min-width:72px;padding:8px 10px;border-radius:12px;border:1px solid #2a2a2a;
-    background:#111111;color:#fff;font-weight:900;cursor:pointer;user-select:none;
+    min-width:72px;padding:8px 10px;border-radius:12px;border:1px solid #3f5388;
+    background:#131d35;color:#fff;font-weight:900;cursor:pointer;user-select:none;
   }
-  .cube small{display:block;font-size:11px;color:#8a919a;margin-top:2px;font-weight:700}
+  .cube small{display:block;font-size:11px;color:#b8c4eb;margin-top:2px;font-weight:700}
   .note{
     width:120px;background:#070c18;color:#fff;border:1px solid #3b4d7e;border-radius:10px;padding:8px 10px;
   }
@@ -287,12 +287,12 @@
   }
   .swatch.active{outline:2px solid #fff;outline-offset:2px}
 
-  .task-group-ode-header{background:#1a1a1a !important;border-top:2px solid #444 !important;border-bottom:2px solid #444 !important;}
-  .task-group-ode-header.task-group-start{border-left:2px solid #444 !important;}
-  .task-group-ode-header.task-group-end{border-right:2px solid #444 !important;}
-  .task-group-ode-cell{background:rgba(255,255,255,.02) !important;border-top:1px solid rgba(255,255,255,.10) !important;border-bottom:1px solid rgba(255,255,255,.10) !important;}
-  .task-group-ode-cell.task-group-start{border-left:2px solid rgba(255,255,255,.12) !important;}
-  .task-group-ode-cell.task-group-end{border-right:2px solid rgba(255,255,255,.12) !important;}
+  .task-group-ode-header{background:#4d7d62 !important;border-top:3px solid #86c79c !important;border-bottom:3px solid #86c79c !important;}
+  .task-group-ode-header.task-group-start{border-left:3px solid #86c79c !important;}
+  .task-group-ode-header.task-group-end{border-right:3px solid #86c79c !important;}
+  .task-group-ode-cell{background:rgba(77,125,98,.12) !important;border-top:2px solid rgba(134,199,156,.7) !important;border-bottom:2px solid rgba(134,199,156,.7) !important;}
+  .task-group-ode-cell.task-group-start{border-left:3px solid rgba(134,199,156,.9) !important;}
+  .task-group-ode-cell.task-group-end{border-right:3px solid rgba(134,199,156,.9) !important;}
   .done-label{
   margin-top:4px;
   font-size:13px;
@@ -1856,14 +1856,14 @@ function renderCell(character, taskName){
                 ${t.challengeCurrent}/${t.challengeMax}
                 <small>도전횟수</small>
               </div>
-              <div class="sub-count" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
+              <div class="sub-count${getMiniClass(t.challengeChargeCurrent, t.challengeChargeMax)}" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
             </div>
             <div>
               <div class="cube${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
                 ${t.rewardCurrent}/${t.rewardMax}
                 <small>보상횟수</small>
               </div>
-              <div class="sub-count" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
+              <div class="sub-count${getMiniClass(t.rewardChargeCurrent, t.rewardChargeMax)}" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
             </div>
           </div>
         </div>
@@ -1883,14 +1883,14 @@ function renderCell(character, taskName){
                 ${t.rewardCurrent}/${t.rewardMax}
                 <small>보상횟수</small>
               </div>
-              <div class="sub-count" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
+              <div class="sub-count${getMiniClass(t.rewardChargeCurrent, t.rewardChargeMax)}" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
             </div>
             <div>
               <div class="cube${challengeCls}" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
                 ${t.challengeCurrent}/${t.challengeMax}
                 <small>보스처치횟수</small>
               </div>
-              <div class="sub-count" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
+              <div class="sub-count${getMiniClass(t.challengeChargeCurrent, t.challengeChargeMax)}" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
             </div>
           </div>
         </div>
@@ -1961,7 +1961,7 @@ function renderCell(character, taskName){
         <div class="cell-wrap" style="${cellAccent}">
           <div class="main-count" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
           ${t.rewardCurrent === 0 ? `<div class="done-label">완료</div>` : ''}
-          <div class="sub-count" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})</div>
+          <div class="sub-count${getMiniClass(t.chargeCurrent, t.chargeMax)}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})</div>
         </div>
       </td>
     `;
