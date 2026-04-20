@@ -470,8 +470,7 @@ const defaultTaskColors = {
   '초월':'#4f628f',
   '악몽':'#4f628f',
   '각성전':'#4f628f',
-  '🌀회랑 -하':'#4f628f',
-  '🌀회랑 -중':'#4f628f',
+  '🌀회랑':'#4f628f',
   '슈고':'#4f628f',
   '⚔️루드라':'#6f3f56',
   '⚔️침식':'#6f3f56',
@@ -485,9 +484,21 @@ const EXTRA_CHARGE_DEFAULTS = {
   '각성전':10,
 };
 
+const CORRIDOR_LEGACY_NAMES = ['🌀회랑 -하','🌀회랑 -중'];
+const CORRIDOR_NAME = '🌀회랑';
+const ODE_REWARD_MAX = 840;
+const ODE_CHARGE_MAX = 2000;
+const ODE_CHARGE_INCREMENT = 15;
+const ODE_MANUAL_STEP = 40;
+
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
-function normalizeTaskName(name){ return name === '원정-정복' ? '원정' : name; }
+function normalizeTaskName(name){
+  if(name === '원정-정복') return '원정';
+  if(CORRIDOR_LEGACY_NAMES.includes(name)) return CORRIDOR_NAME;
+  return name;
+}
+function isCorridorTaskName(name){ return normalizeTaskName(name) === CORRIDOR_NAME; }
 function getDefaultColor(name){ return defaultTaskColors[normalizeTaskName(name)] || '#4a4578'; }
 
 function makeWeekly(name,max){
@@ -522,6 +533,85 @@ const DEFAULT_STATE = {
   weeklyTasks: makeDefaultWeeklyTasks()
 };
 
+
+function makeCorridorTaskFromLegacy(lowerTask=null, middleTask=null){
+  const rewardMax = Math.max(0, (lowerTask?.rewardMax || 3)) + Math.max(0, (middleTask?.rewardMax || 3));
+  const rewardCurrent = clamp(
+    Math.max(0, lowerTask?.rewardCurrent ?? (lowerTask ? lowerTask.rewardMax || 3 : 3)) +
+    Math.max(0, middleTask?.rewardCurrent ?? (middleTask ? middleTask.rewardMax || 3 : 3)),
+    0,
+    rewardMax
+  );
+  const resetRule = lowerTask?.resetRule || middleTask?.resetRule || 'tue_thu_sat_21_reset';
+  const lastResetAppliedKey = middleTask?.lastResetAppliedKey || lowerTask?.lastResetAppliedKey || null;
+function mergeLegacyCorridorTasks(tasks){
+  if(!Array.isArray(tasks)) return [];
+  const corridorTasks = tasks.filter(t => CORRIDOR_LEGACY_NAMES.includes(t?.name) || t?.name === CORRIDOR_NAME);
+  const otherTasks = tasks.filter(t => !CORRIDOR_LEGACY_NAMES.includes(t?.name) && t?.name !== CORRIDOR_NAME);
+  if(!corridorTasks.length) return tasks;
+
+  let merged = corridorTasks.find(t => t?.name === CORRIDOR_NAME) || null;
+  if(!merged){
+    const lowerTask = corridorTasks.find(t => t?.name === '🌀회랑 -하') || null;
+    const middleTask = corridorTasks.find(t => t?.name === '🌀회랑 -중') || null;
+    merged = {
+      id: uid(),
+      name: CORRIDOR_NAME,
+      challengeMax: 0,
+      challengeCurrent: 0,
+      rewardMax: Math.max(0, lowerTask?.rewardMax || 3) + Math.max(0, middleTask?.rewardMax || 3),
+      rewardCurrent: 0,
+      chargeMax: 0,
+      chargeCurrent: 0,
+      challengeChargeMax: 0,
+      challengeChargeCurrent: 0,
+      rewardChargeMax: 0,
+      rewardChargeCurrent: 0,
+      resetRule: lowerTask?.resetRule || middleTask?.resetRule || 'tue_thu_sat_21_reset',
+      lastResetAppliedKey: middleTask?.lastResetAppliedKey || lowerTask?.lastResetAppliedKey || null,
+      color: getDefaultColor(CORRIDOR_NAME),
+      note:''
+    };
+    merged.rewardCurrent = clamp(
+      Math.max(0, lowerTask?.rewardCurrent ?? (lowerTask ? lowerTask.rewardMax || 3 : 3)) +
+      Math.max(0, middleTask?.rewardCurrent ?? (middleTask ? middleTask.rewardMax || 3 : 3)),
+      0,
+      merged.rewardMax
+    );
+  }
+
+  merged.name = CORRIDOR_NAME;
+  merged.rewardMax = typeof merged.rewardMax === 'number' ? merged.rewardMax : 6;
+  merged.rewardCurrent = clamp(typeof merged.rewardCurrent === 'number' ? merged.rewardCurrent : merged.rewardMax, 0, merged.rewardMax);
+  merged.challengeMax = 0;
+  merged.challengeCurrent = 0;
+  merged.chargeMax = 0;
+  merged.chargeCurrent = 0;
+  merged.challengeChargeMax = 0;
+  merged.challengeChargeCurrent = 0;
+  merged.rewardChargeMax = 0;
+  merged.rewardChargeCurrent = 0;
+  merged.color = merged.color || getDefaultColor(CORRIDOR_NAME);
+
+  return [...otherTasks, merged];
+}
+
+function normalizeOdeTask(task){
+  if(!task || task.name !== '⚡오드') return;
+  task.rewardMax = ODE_REWARD_MAX;
+  task.chargeMax = ODE_CHARGE_MAX;
+  if(typeof task.rewardCurrent !== 'number') task.rewardCurrent = task.rewardMax;
+  if(typeof task.chargeCurrent !== 'number') task.chargeCurrent = 0;
+  task.rewardCurrent = clamp(task.rewardCurrent, 0, task.rewardMax);
+  task.chargeCurrent = clamp(task.chargeCurrent, 0, task.chargeMax);
+  task.challengeMax = 0;
+  task.challengeCurrent = 0;
+  task.challengeChargeMax = 0;
+  task.challengeChargeCurrent = 0;
+  task.rewardChargeMax = 0;
+  task.rewardChargeCurrent = 0;
+}
+
 function normalizeLoadedState(parsed){
   if(!parsed || typeof parsed !== 'object'){
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -530,6 +620,13 @@ function normalizeLoadedState(parsed){
   if(!parsed.characters) parsed.characters = [];
   if(parsed.taskColors && parsed.taskColors['원정-정복'] && !parsed.taskColors['원정']){
     parsed.taskColors['원정'] = parsed.taskColors['원정-정복'];
+  }
+  if(parsed.taskColors){
+    if(!parsed.taskColors[CORRIDOR_NAME]){
+      parsed.taskColors[CORRIDOR_NAME] = parsed.taskColors['🌀회랑 -중'] || parsed.taskColors['🌀회랑 -하'] || getDefaultColor(CORRIDOR_NAME);
+    }
+    delete parsed.taskColors['🌀회랑 -하'];
+    delete parsed.taskColors['🌀회랑 -중'];
   }
 
   parsed.characters.forEach(c => {
@@ -547,7 +644,7 @@ function normalizeLoadedState(parsed){
         if(!weeklyShugo.resetRule) weeklyShugo.resetRule = 'daily_05_plus2';
       }
     }
-    c.tasks = c.tasks.filter(t => t.name !== '저주' && t.name !== '슈고');
+    c.tasks = mergeLegacyCorridorTasks((c.tasks || []).filter(t => t.name !== '저주' && t.name !== '슈고'));
 
     c.tasks.forEach(t => {
       t.name = normalizeTaskName(t.name);
@@ -579,6 +676,21 @@ function normalizeLoadedState(parsed){
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
+      } else if(t.name === '⚡오드'){
+        normalizeOdeTask(t);
+      } else if(isCorridorTaskName(t.name)){
+        t.name = CORRIDOR_NAME;
+        t.rewardMax = typeof t.rewardMax === 'number' ? t.rewardMax : 6;
+        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
+        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
+        t.challengeMax = 0;
+        t.challengeCurrent = 0;
+        t.chargeMax = 0;
+        t.chargeCurrent = 0;
+        t.challengeChargeMax = 0;
+        t.rewardChargeMax = 0;
+        t.challengeChargeCurrent = 0;
+        t.rewardChargeCurrent = 0;
       } else if(EXTRA_CHARGE_DEFAULTS[t.name]){
         t.chargeMax = 10;
         if(typeof t.chargeCurrent !== 'number') t.chargeCurrent = 0;
@@ -756,6 +868,15 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
   } else if(name === '⚔️루드라' || name === '⚔️침식'){
     challengeChargeMax = 10;
     rewardChargeMax = 10;
+  } else if(name === '⚡오드'){
+    rewardMax = ODE_REWARD_MAX;
+    chargeMax = ODE_CHARGE_MAX;
+    challengeMax = 0;
+  } else if(isCorridorTaskName(name)){
+    name = CORRIDOR_NAME;
+    rewardMax = rewardMax || 6;
+    challengeMax = 0;
+    chargeMax = 0;
   } else if(chargeMax > 0){
     chargeMax = 10;
   }
@@ -975,10 +1096,9 @@ function handleProfileUrlKeydown(event, characterId, value){
 function addTaskToCharacter(character, data){ character.tasks.push(createTask(data)); }
 function getDefaultPresetTasks(){
   return [
-    { name:'⚡오드', rewardMax:840, chargeMax:2000, resetRule:'od_charge' },
+    { name:'⚡오드', rewardMax:ODE_REWARD_MAX, chargeMax:ODE_CHARGE_MAX, resetRule:'od_charge' },
     { name:'사명', rewardMax:5, resetRule:'daily_05_reset' },
-    { name:'🌀회랑 -하', rewardMax:3, resetRule:'tue_thu_sat_21_reset' },
-    { name:'🌀회랑 -중', rewardMax:3, resetRule:'tue_thu_sat_21_reset' },
+    { name:'🌀회랑', rewardMax:6, resetRule:'tue_thu_sat_21_reset' },
     { name:'원정', rewardMax:14, challengeMax:35, resetRule:'daily_05_plus1' },
     { name:'초월', challengeMax:28, rewardMax:7, resetRule:'daily_05_plus1' },
     { name:'악몽', rewardMax:14, resetRule:'daily_05_plus2' },
@@ -1270,7 +1390,7 @@ function applyRuleToTask(task){
   if(task.resetRule === 'od_charge'){
     const hit = getLatestOdCharge();
     if(!hit || task.lastResetAppliedKey === hit.key) return false;
-    task.rewardCurrent = clamp(task.rewardCurrent + 15, 0, task.rewardMax);
+    task.chargeCurrent = clamp((task.chargeCurrent || 0) + ODE_CHARGE_INCREMENT, 0, task.chargeMax || ODE_CHARGE_MAX);
     task.lastResetAppliedKey = hit.key;
     return true;
   }
@@ -1530,7 +1650,7 @@ function orderedTaskNames(){
   const hiddenTasks = ['저주'];
 
   const preferred = [
-    '사명','🌀회랑 -하','🌀회랑 -중','⚡오드','원정',
+    '사명','🌀회랑','⚡오드','원정',
     '초월','악몽','각성전','⚔️루드라','⚔️침식'
   ];
 
@@ -1663,7 +1783,7 @@ function renderCell(character, taskName){
     `;
   }
 
-  if(t.name === '사명' || t.name === '🌀회랑 -하' || t.name === '🌀회랑 -중'){
+  if(t.name === '사명' || t.name === '🌀회랑'){
     const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
@@ -1681,11 +1801,11 @@ function renderCell(character, taskName){
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
-          <div class="main-count${rewardCls}" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}</div>
-          <div class="sub-count${chargeCls}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})</div>
+          <div class="main-count${rewardCls}" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}<small>보유 오드 / ${t.rewardMax}</small></div>
+          <div class="sub-count${chargeCls}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})<small>충전량 / ${t.chargeMax}</small></div>
           <div class="mini-row">
-            <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',-40)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',40)">-</button>
-            <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',40)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',-40)">+</button>
+            <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',-${ODE_MANUAL_STEP})" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',${ODE_MANUAL_STEP})">-</button>
+            <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',${ODE_MANUAL_STEP})" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',-${ODE_MANUAL_STEP})">+</button>
           </div>
         </div>
       </td>
