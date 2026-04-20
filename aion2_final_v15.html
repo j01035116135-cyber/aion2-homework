@@ -490,6 +490,8 @@ const ODE_REWARD_MAX = 840;
 const ODE_CHARGE_MAX = 2000;
 const ODE_CHARGE_INCREMENT = 15;
 const ODE_MANUAL_STEP = 40;
+const ODE_LINKED_REWARD_STEP = 80;
+const ODE_LINKED_TASK_NAMES = ['원정','⚔️루드라','⚔️침식'];
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
@@ -1289,13 +1291,11 @@ function weeklyRightClickSegment(event, id, index){
 function setNumeric(taskId, key){
   const t = findTask(taskId);
   if(!t) return;
-  const maxKey = key.replace('Current','Max');
   const v = prompt(`${t.name} 값을 입력하세요`, String(t[key]));
   if(v === null) return;
   const num = Number(v);
   if(Number.isNaN(num)){ alert('숫자만 입력해주세요.'); return; }
-  const max = typeof t[maxKey] === 'number' ? t[maxKey] : num;
-  t[key] = clamp(num, 0, max);
+  if(!setTaskCurrentValue(taskId, key, num)) return;
   saveState(); renderTable();
 }
 function findTask(taskId){
@@ -1305,11 +1305,43 @@ function findTask(taskId){
   }
   return null;
 }
+
+function findCharacterByTaskId(taskId){
+  for(const c of state.characters){
+    if(c.tasks.some(x => x.id === taskId)) return c;
+  }
+  return null;
+}
+function getLinkedOdeTaskForTask(taskId){
+  const character = findCharacterByTaskId(taskId);
+  if(!character) return null;
+  const odeTask = character.tasks.find(x => x.name === '⚡오드') || null;
+  if(odeTask) normalizeOdeTask(odeTask);
+  return odeTask;
+}
+function applyLinkedOdeDeltaForTask(taskId, key, deltaValue){
+  if(key !== 'rewardCurrent' || !deltaValue) return;
+  const task = findTask(taskId);
+  if(!task || !ODE_LINKED_TASK_NAMES.includes(task.name)) return;
+  const odeTask = getLinkedOdeTaskForTask(taskId);
+  if(!odeTask) return;
+  odeTask.chargeCurrent = clamp((odeTask.chargeCurrent || 0) + (deltaValue * ODE_LINKED_REWARD_STEP), 0, odeTask.chargeMax || ODE_CHARGE_MAX);
+}
+function setTaskCurrentValue(taskId, key, nextValue){
+  const t = findTask(taskId);
+  if(!t) return false;
+  const maxKey = key.replace('Current','Max');
+  const max = typeof t[maxKey] === 'number' ? t[maxKey] : nextValue;
+  const safeNext = clamp(Number(nextValue) || 0, 0, max);
+  const prev = Number(t[key]) || 0;
+  t[key] = safeNext;
+  applyLinkedOdeDeltaForTask(taskId, key, safeNext - prev);
+  return true;
+}
 function changeTaskCount(taskId, key, delta){
   const t = findTask(taskId);
   if(!t) return;
-  const maxKey = key.replace('Current','Max');
-  t[key] = clamp(t[key] + delta, 0, t[maxKey]);
+  if(!setTaskCurrentValue(taskId, key, (Number(t[key]) || 0) + delta)) return;
   saveState(); renderTable();
 }
 function changeTaskByContext(event, taskId, key, delta){ event.preventDefault(); changeTaskCount(taskId, key, delta); }
@@ -1359,14 +1391,14 @@ function completeTask(taskId, checked){
     completeCorridorTask(taskId, checked);
     return;
   }
-  t.rewardCurrent = checked ? 0 : t.rewardMax;
+  if(!setTaskCurrentValue(taskId, 'rewardCurrent', checked ? 0 : t.rewardMax)) return;
   saveState(); renderTable();
 }
 function completeTaskDual(taskId, checked){
   const t = findTask(taskId);
   if(!t) return;
-  t.challengeCurrent = checked ? 0 : t.challengeMax;
-  t.rewardCurrent = checked ? 0 : t.rewardMax;
+  setTaskCurrentValue(taskId, 'challengeCurrent', checked ? 0 : t.challengeMax);
+  setTaskCurrentValue(taskId, 'rewardCurrent', checked ? 0 : t.rewardMax);
   saveState(); renderTable();
 }
 
@@ -1893,8 +1925,8 @@ function renderCell(character, taskName){
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
-          <div class="main-count${rewardCls}" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}<small>보유 오드 / ${t.rewardMax}</small></div>
-          <div class="sub-count${chargeCls}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})<small>충전량 / ${t.chargeMax}</small></div>
+          <div class="main-count${rewardCls}" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}</div>
+          <div class="sub-count${chargeCls}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})</div>
           <div class="mini-row">
             <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',-${ODE_MANUAL_STEP})" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',${ODE_MANUAL_STEP})">-</button>
             <button class="mini-btn" type="button" onclick="changeTaskCount('${t.id}','rewardCurrent',${ODE_MANUAL_STEP})" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',-${ODE_MANUAL_STEP})">+</button>
