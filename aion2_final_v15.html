@@ -704,6 +704,7 @@ function normalizeLoadedState(parsed){
   }
 
   parsed.characters.forEach(c => {
+    if(typeof c.isNameManuallyEdited !== 'boolean') c.isNameManuallyEdited = false;
     if (!c.tasks) return;
     const legacyShugo = (c.tasks || []).find(t => t.name === '슈고');
     if(legacyShugo){
@@ -993,6 +994,7 @@ async function addCharacter(){
   const c = {
     id: uid(),
     name: rawName || profile?.name || '새 캐릭터',
+    isNameManuallyEdited: !!rawName,
     power: profile?.power ? formatPowerCompact(profile.power) : '',
     itemLevel: profile?.itemLevel || '',
     profileUrl: rawUrl || '',
@@ -1018,6 +1020,9 @@ function updateCharacterField(id,key,value){
   const c = state.characters.find(x=>x.id===id);
   if(!c) return;
   c[key] = value;
+  if(key === 'name'){
+    c.isNameManuallyEdited = true;
+  }
   saveState();
   renderCharacterList();
 }
@@ -1058,6 +1063,11 @@ function decodeNameFromProfileUrl(url){
   }catch(e){
     return '';
   }
+}
+function isLikelyCharacterIdName(name=''){
+  const value = String(name || '').trim();
+  if(!value) return false;
+  return /^z\d+-/i.test(value) || /^[A-Za-z0-9_%\-=]{20,}$/.test(value);
 }
 function isAonProfileUrl(url=''){
   return /https?:\/\/(www\.)?aon2\.info\/character\//i.test(String(url || '').trim());
@@ -1185,7 +1195,7 @@ async function fetchAonProfile(url){
   const decryptedText = await decryptAonPayload(raw.data, raw.timestamp);
   const parsed = JSON.parse(decryptedText);
   return {
-    name: parsed?.characterName || parsed?.name || decodeNameFromProfileUrl(url) || '',
+    name: parsed?.characterName || parsed?.name || '',
     itemLevel: parseNumberText(parsed?.totalItemLevel),
     power: parseNumberText(parsed?.combatPower || parsed?.maxCombatPower),
     profileUrl: url,
@@ -1209,7 +1219,15 @@ async function importProfileFromUrl(url, targetCharacterId=null){
   if(targetCharacterId){
     const c = state.characters.find(x=>x.id===targetCharacterId);
     if(!c) throw new Error('캐릭터를 찾지 못했습니다.');
-    if(profile.name) c.name = profile.name;
+    const currentName = String(c.name || '').trim();
+    const decodedUrlName = decodeNameFromProfileUrl(cleanUrl);
+    const canAutoRename = !c.isNameManuallyEdited && (
+      !currentName ||
+      currentName === '새 캐릭터' ||
+      currentName === decodedUrlName ||
+      isLikelyCharacterIdName(currentName)
+    );
+    if(profile.name && canAutoRename) c.name = profile.name;
     if(profile.itemLevel) c.itemLevel = profile.itemLevel;
     if(profile.power) c.power = profile.power;
     c.profileUrl = cleanUrl;
@@ -2099,7 +2117,7 @@ function renderTable(){
               <tr>
                 <td>
 <div class="char-box">
-  <input class="char-input" value="${escapeHtml(c.name || '')}" oninput="c.name=this.value; saveState()" />
+  <input class="char-input" value="${escapeHtml(c.name || '')}" oninput="updateCharacterField('${c.id}','name', this.value)" />
   <input class="note profile-link-input" value="${escapeHtml(c.profileUrl || '')}" placeholder="아온이/공식/AION2TOOL 링크" onchange="handleProfileUrlChange('${c.id}', this.value)" onkeydown="handleProfileUrlKeydown(event, '${c.id}', this.value)" />
 </div>
                 </td>
