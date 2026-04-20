@@ -1049,6 +1049,17 @@ function setWeeklyChargeValue(id){
   w.chargeCurrent = clamp(num, 0, w.chargeMax);
   saveState(); renderWeekly();
 }
+
+function changeWeeklyCharge(id, delta){
+  const w = state.weeklyTasks.find(x=>x.id===id);
+  if(!w || typeof w.chargeMax !== 'number') return;
+  w.chargeCurrent = clamp((w.chargeCurrent || 0) + delta, 0, w.chargeMax);
+  saveState(); renderWeekly();
+}
+function changeWeeklyChargeByContext(event, id, delta){
+  event.preventDefault();
+  changeWeeklyCharge(id, delta);
+}
 function weeklyComplete(id, checked){
   const w = state.weeklyTasks.find(x=>x.id===id);
   if(!w) return;
@@ -1401,8 +1412,8 @@ function renderWeekly(){
             <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
           </div>
           <div class="row" style="justify-content:center; flex-direction:column; gap:6px;">
-            <div class="w-value" style="margin:0; min-width:96px;" onclick="setWeeklyValue('${w.id}')">${w.current}/${w.max}</div>
-            <div class="sub-count${chargeCls === 'zero' ? ' zero' : chargeCls === 'warn' ? ' warn' : ''}" onclick="setWeeklyChargeValue('${w.id}')">(${w.chargeCurrent || 0}/${w.chargeMax || 10})<small>충전</small></div>
+            <div class="w-value" style="margin:0; min-width:96px;" onclick="changeWeekly('${w.id}',-1)" oncontextmenu="changeWeeklyByContext(event,'${w.id}',1)">${w.current}/${w.max}</div>
+            <div class="sub-count${chargeCls === 'zero' ? ' zero' : chargeCls === 'warn' ? ' warn' : ''}" onclick="changeWeeklyCharge('${w.id}',-1)" oncontextmenu="changeWeeklyChargeByContext(event,'${w.id}',1)">(${w.chargeCurrent || 0})</div>
           </div>
         </div>
       `;
