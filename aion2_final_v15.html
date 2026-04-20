@@ -416,7 +416,7 @@
         </div>
         <input id="characterProfileUrlInput" type="text" placeholder="AION2TOOL 링크 붙여넣기 (선택)" />
         <div id="characterList" class="character-list"></div>
-        <div class="small muted">캐릭터 이름 또는 링크로 추가할 수 있습니다.</div>
+        <div class="small muted">캐릭터 이름 또는 링크로 추가할 수 있습니다. 아온이 링크는 자동 복호화 테스트가 포함됩니다.</div>
       </div>
 
       <div class="divider"></div>
@@ -1059,6 +1059,66 @@ function decodeNameFromProfileUrl(url){
     return '';
   }
 }
+function isAonProfileUrl(url=''){
+  return /https?:\/\/(www\.)?aon2\.info\/character\//i.test(String(url || '').trim());
+}
+function parseAonProfileUrl(url=''){
+  const match = String(url || '').trim().match(/^https?:\/\/(?:www\.)?aon2\.info\/character\/(\d+)\/([^/?#]+)/i);
+  if(!match) throw new Error('아온이 캐릭터 링크 형식이 아닙니다.');
+  return {
+    serverId: match[1],
+    characterId: decodeURIComponent(match[2])
+  };
+}
+function normalizeAonTimestamp(ts){
+  const raw = String(ts ?? '').replace(/\D/g, '');
+  if(!raw) throw new Error('아온이 timestamp를 찾지 못했습니다.');
+  if(raw.length >= 16) return raw.slice(0, 16);
+  return raw.padEnd(16, '0');
+}
+function base64ToUint8Array(base64){
+  const clean = String(base64 || '').replace(/\s+/g, '');
+  const binary = atob(clean);
+  const bytes = new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+async function decryptAonPayload(data, timestamp){
+  const normalizedTs = normalizeAonTimestamp(timestamp);
+  const keyBytes = new TextEncoder().encode(normalizedTs);
+  const iv = keyBytes.slice(0, 16);
+  const cipherBytes = base64ToUint8Array(data);
+  const cryptoKey = await crypto.subtle.importKey('raw', keyBytes, {name:'AES-CBC'}, false, ['decrypt']);
+  const plainBuffer = await crypto.subtle.decrypt({name:'AES-CBC', iv}, cryptoKey, cipherBytes);
+  return new TextDecoder().decode(plainBuffer).replace(/ +$/g, '').trim();
+}
+async function fetchTextWithFallback(url){
+  const candidates = [
+    { url, label:'direct' },
+    { url:`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`, label:'allorigins' }
+  ];
+  let lastError = null;
+  for(const candidate of candidates){
+    try{
+      const res = await fetch(candidate.url);
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      if(text) return text;
+      throw new Error('응답이 비어 있습니다.');
+    }catch(err){
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('외부 응답을 가져오지 못했습니다.');
+}
+async function fetchJsonWithFallback(url){
+  const text = await fetchTextWithFallback(url);
+  try{
+    return JSON.parse(text);
+  }catch(err){
+    throw new Error('JSON 응답 파싱에 실패했습니다.');
+  }
+}
 async function fetchProfileHtml(url){
   const proxies = [
     `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -1112,10 +1172,39 @@ function extractProfileFromHtml(html, fallbackUrl=''){
 
   return { name, itemLevel, power };
 }
+async function fetchAonProfile(url){
+  const { serverId, characterId } = parseAonProfileUrl(url);
+  const apiUrl = `https://aon2.info/api/v1/aion2/characters/detail?serverId=${encodeURIComponent(serverId)}&characterId=${encodeURIComponent(characterId)}`;
+  const raw = await fetchJsonWithFallback(apiUrl);
+  if(raw?.code && String(raw.code) !== '0'){
+    throw new Error(raw?.message || '아온이 API 응답이 올바르지 않습니다.');
+  }
+  if(!raw?.data || !raw?.timestamp){
+    throw new Error('아온이 응답에 data/timestamp가 없습니다.');
+  }
+  const decryptedText = await decryptAonPayload(raw.data, raw.timestamp);
+  const parsed = JSON.parse(decryptedText);
+  return {
+    name: parsed?.characterName || parsed?.name || decodeNameFromProfileUrl(url) || '',
+    itemLevel: parseNumberText(parsed?.totalItemLevel),
+    power: parseNumberText(parsed?.combatPower || parsed?.maxCombatPower),
+    profileUrl: url,
+    source: 'aon2'
+  };
+}
 async function importProfileFromUrl(url, targetCharacterId=null){
-  const html = await fetchProfileHtml(url);
-  const profile = extractProfileFromHtml(html, url);
-  profile.profileUrl = url;
+  const cleanUrl = String(url || '').trim();
+  if(!cleanUrl) throw new Error('링크를 입력해주세요.');
+
+  let profile;
+  if(isAonProfileUrl(cleanUrl)){
+    profile = await fetchAonProfile(cleanUrl);
+  }else{
+    const html = await fetchProfileHtml(cleanUrl);
+    profile = extractProfileFromHtml(html, cleanUrl);
+    profile.profileUrl = cleanUrl;
+    profile.source = 'html';
+  }
 
   if(targetCharacterId){
     const c = state.characters.find(x=>x.id===targetCharacterId);
@@ -1123,7 +1212,7 @@ async function importProfileFromUrl(url, targetCharacterId=null){
     if(profile.name) c.name = profile.name;
     if(profile.itemLevel) c.itemLevel = profile.itemLevel;
     if(profile.power) c.power = profile.power;
-    c.profileUrl = url;
+    c.profileUrl = cleanUrl;
     saveState();
     render();
   }
@@ -2011,7 +2100,7 @@ function renderTable(){
                 <td>
 <div class="char-box">
   <input class="char-input" value="${escapeHtml(c.name || '')}" oninput="c.name=this.value; saveState()" />
-  <input class="note profile-link-input" value="${escapeHtml(c.profileUrl || '')}" placeholder="AION2TOOL 링크" onchange="handleProfileUrlChange('${c.id}', this.value)" onkeydown="handleProfileUrlKeydown(event, '${c.id}', this.value)" />
+  <input class="note profile-link-input" value="${escapeHtml(c.profileUrl || '')}" placeholder="아온이/공식/AION2TOOL 링크" onchange="handleProfileUrlChange('${c.id}', this.value)" onkeydown="handleProfileUrlKeydown(event, '${c.id}', this.value)" />
 </div>
                 </td>
                 <td class="profile-col">
