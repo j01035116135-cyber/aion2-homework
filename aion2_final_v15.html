@@ -64,7 +64,7 @@
   .char-name{font-weight:900}
   .muted{color:var(--muted)}
   .small{font-size:12px}
-  .weekly-box{padding:14px;margin-bottom:12px}
+  .weekly-box{padding:14px;margin-bottom:12px;background:#000 !important;border-color:#161616 !important;box-shadow:none !important}
   .weekly-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px}
   .weekly-grid{display:grid;gap:10px}
 
@@ -106,13 +106,19 @@
   .w-controls button{flex:1;background:#182440;color:#fff;border:1px solid #34456f;padding:6px 0}
   .table-center{display:flex;justify-content:center}
   .table-wrap{
-    overflow:auto;border:1px solid #212121;border-radius:18px;background:#0c0c0c;width:fit-content;max-width:100%;
+    overflow:auto;border:1px solid #181818;border-radius:18px;background:#000;width:fit-content;max-width:100%;
   }
   table{width:max-content;min-width:2200px;border-collapse:collapse}
-  th,td{border:1px solid #242424;padding:6px 5px;text-align:center;vertical-align:middle}
+  th,td{
+    border-top:1px solid #1c1c1c;
+    border-bottom:1px solid #1c1c1c;
+    border-left:none;
+    border-right:none;
+    padding:6px 5px;text-align:center;vertical-align:middle;
+  }
   thead th{color:#e5e7eb;min-width:138px;position:relative}
-  thead th:first-child{min-width:170px;position:sticky;left:0;z-index:3;background:#111111}
-  tbody td:first-child{position:sticky;left:0;background:#0d0d0d;z-index:2;min-width:170px}
+  thead th:first-child{min-width:170px;position:sticky;left:0;z-index:3;background:#000}
+  tbody td:first-child{position:sticky;left:0;background:#000;z-index:2;min-width:170px}
   .th-title{font-size:19px;font-weight:900;margin-bottom:5px;line-height:1.15}
  .th-sub{
   font-size:10px;
@@ -324,6 +330,8 @@
 .week-item,.progress-card,.table-wrap{contain:layout paint;}
 
 .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin-bottom:12px}
+
+  .main > .panel{background:#000 !important;border-color:#161616 !important;box-shadow:none !important;}
 .topbar-left{min-width:0}
 .topbar-center{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}
 .topbar-right{display:flex;justify-content:flex-end;align-items:center;gap:8px;flex-wrap:wrap}
