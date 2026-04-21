@@ -533,7 +533,6 @@ function makeDefaultWeeklyTasks(){
     makeWeekly('사명',5),
     makeWeekly('아티쟁',2),
     makeWeekly('나흐마',2),
-    makeWeekly('카이라',10),
     makeWeekly('아그로',3),
     makeWeekly('⚔️전장 (승리)',3),
     makeWeekly('어비스사냥',2000),
@@ -793,7 +792,7 @@ function normalizeLoadedState(parsed){
     });
   });
 
-  parsed.weeklyTasks = (parsed.weeklyTasks || []).filter(w => !['원정','초월'].includes(w.name));
+  parsed.weeklyTasks = (parsed.weeklyTasks || []).filter(w => !['원정','초월','카이라'].includes(w.name));
   parsed.taskColors = Object.assign({}, parsed.taskColors || {}, defaultTaskColors);
 
   parsed.characters.forEach(c => {
@@ -1887,7 +1886,7 @@ function renderCharacterList(){
 
 function renderWeekly(){
   const el = document.getElementById('weeklyGrid');
-  const missionOrder = ['사명','슈고','일일던전','아티쟁','나흐마','카이라','아그로','⚔️전장 (승리)','어비스사냥','시공(🗡️공격)','시공(🛡️방어)'];
+  const missionOrder = ['사명','슈고','일일던전','아티쟁','나흐마','아그로','⚔️전장 (승리)','어비스사냥','시공(🗡️공격)','시공(🛡️방어)'];
   const purchaseOrder = ['오드(제작)','심연의 재련','원정/초월 충전','미지의 틈새','즉완권','특수결정','부활석'];
 
   const weeklyMap = new Map(state.weeklyTasks.map(w => [w.name, w]));
@@ -1947,7 +1946,7 @@ function renderWeekly(){
     if(w.name === '아티쟁'){
       const labels = ['수','토'];
       return `
-        <div class="week-item ${cls}" style="min-width:220px; ${specialBg}">
+        <div class="week-item ${cls}" style="min-width:180px; ${specialBg}">
           <div class="w-head">
             <div class="w-title">${escapeHtml(w.name)}</div>
             <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
@@ -1955,7 +1954,7 @@ function renderWeekly(){
           <div class="cube-row" style="margin-top:12px; justify-content:center;">
             ${labels.map((label, idx) => `
               <div style="text-align:center;">
-                <div class="cube" onclick="weeklyLeftClickSegment('${w.id}',${idx})" oncontextmenu="weeklyRightClickSegment(event,'${w.id}',${idx})" style="min-width:56px; text-align:center;">
+                <div class="cube" onclick="weeklyLeftClickSegment('${w.id}',${idx})" oncontextmenu="weeklyRightClickSegment(event,'${w.id}',${idx})" style="min-width:64px; text-align:center;">
                   ${w.segmentStates[idx]}
                 </div>
                 <div class="small muted" style="text-align:center; margin-top:4px;">${label}</div>
