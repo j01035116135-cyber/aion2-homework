@@ -468,7 +468,7 @@
             <div class="small muted">모든 숫자는 클릭해서 직접 수정 가능</div>
           </div>
           <div class="row">
-            <span class="pill">사명/회랑 체크박스 완료</span>
+            <span class="pill">회랑 체크박스 완료</span>
           </div>
         </div>
         <div id="tableArea"></div>
@@ -530,7 +530,8 @@ function makeDefaultWeeklyTasks(){
   return [
     {id:uid(), name:'슈고', current:14, max:14, chargeCurrent:0, chargeMax:10, resetRule:'daily_05_plus2', lastResetAppliedKey:null},
     makeWeekly('일일던전',14),
-    makeWeekly('아티쟁',3),
+    makeWeekly('사명',5),
+    makeWeekly('아티쟁',2),
     makeWeekly('나흐마',2),
     makeWeekly('카이라',10),
     makeWeekly('아그로',3),
@@ -720,7 +721,24 @@ function normalizeLoadedState(parsed){
         if(!weeklyShugo.resetRule) weeklyShugo.resetRule = 'daily_05_plus2';
       }
     }
-    c.tasks = mergeLegacyCorridorTasks((c.tasks || []).filter(t => t.name !== '저주' && t.name !== '슈고'));
+    const legacyMissionTasks = (c.tasks || []).filter(t => t.name === '사명');
+    if(legacyMissionTasks.length){
+      if(!parsed.weeklyTasks) parsed.weeklyTasks = [];
+      let weeklyMission = parsed.weeklyTasks.find(w => w.name === '사명');
+      const missionCurrent = Math.min(...legacyMissionTasks.map(t => typeof t.rewardCurrent === 'number' ? t.rewardCurrent : (typeof t.current === 'number' ? t.current : 5)));
+      if(!weeklyMission){
+        weeklyMission = {id:uid(), name:'사명', current:clamp(missionCurrent, 0, 5), max:5, resetRule:'daily_05_reset', lastResetAppliedKey:null};
+        parsed.weeklyTasks.push(weeklyMission);
+      } else {
+        if(typeof weeklyMission.current !== 'number'){
+          weeklyMission.current = clamp(missionCurrent, 0, 5);
+        }
+        weeklyMission.max = 5;
+        if(!weeklyMission.resetRule) weeklyMission.resetRule = 'daily_05_reset';
+      }
+    }
+
+    c.tasks = mergeLegacyCorridorTasks((c.tasks || []).filter(t => t.name !== '저주' && t.name !== '슈고' && t.name !== '사명'));
 
     c.tasks.forEach(t => {
       t.name = normalizeTaskName(t.name);
@@ -794,6 +812,28 @@ function normalizeLoadedState(parsed){
     if (w.name === '슈고') {
       if(typeof w.chargeCurrent !== 'number') w.chargeCurrent = 0;
       if(typeof w.chargeMax !== 'number') w.chargeMax = 10;
+    }
+    if (w.name === '사명') {
+      w.max = 5;
+      if(typeof w.current !== 'number') w.current = w.max;
+      w.current = clamp(w.current, 0, w.max);
+      if(!w.resetRule) w.resetRule = 'daily_05_reset';
+    }
+    if (w.name === '아티쟁') {
+      w.max = 2;
+      if(typeof w.current !== 'number') w.current = w.max;
+      w.current = clamp(w.current, 0, w.max);
+      if(Array.isArray(w.segmentStates) && w.segmentStates.length !== 2){
+        w.segmentStates = [w.current >= 1 ? 1 : 0, w.current >= 2 ? 1 : 0];
+      }
+    }
+    if (w.name === '나흐마') {
+      w.max = 2;
+      if(typeof w.current !== 'number') w.current = w.max;
+      w.current = clamp(w.current, 0, w.max);
+      if(Array.isArray(w.segmentStates) && w.segmentStates.length !== 2){
+        w.segmentStates = [w.current >= 1 ? 1 : 0, w.current >= 2 ? 1 : 0];
+      }
     }
   });
 
@@ -1285,7 +1325,6 @@ function addTaskToCharacter(character, data){ character.tasks.push(createTask(da
 function getDefaultPresetTasks(){
   return [
     { name:'⚡오드', rewardMax:ODE_REWARD_MAX, chargeMax:ODE_CHARGE_MAX, resetRule:'od_charge' },
-    { name:'사명', rewardMax:5, resetRule:'daily_05_reset' },
     { name:'🌀회랑', rewardMax:6, resetRule:'tue_thu_sat_21_reset' },
     { name:'원정', rewardMax:14, challengeMax:35, resetRule:'daily_05_plus1' },
     { name:'초월', challengeMax:28, rewardMax:7, resetRule:'daily_05_plus1' },
@@ -1387,11 +1426,11 @@ function ensureWeeklySegmentState(w){
     w.current = w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
     w.max = 2;
   } else if(w.name === '아티쟁'){
-    if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 3){
-      w.segmentStates = [w.current >= 1 ? 1 : 0, w.current >= 2 ? 1 : 0, w.current >= 3 ? 1 : 0];
+    if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 2){
+      w.segmentStates = [w.current >= 1 ? 1 : 0, w.current >= 2 ? 1 : 0];
     }
     w.current = w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
-    w.max = 3;
+    w.max = 2;
   }
 }
 
@@ -1452,33 +1491,62 @@ function getLinkedOdeTaskForTask(taskId){
   if(odeTask) normalizeOdeTask(odeTask);
   return odeTask;
 }
-function applyOdeDelta(odeTask, deltaValue){
-  if(!odeTask || !deltaValue) return;
+function consumeOdeAmountWithBreakdown(odeTask, amount){
   normalizeOdeTask(odeTask);
   let main = Number(odeTask.rewardCurrent) || 0;
   let extra = Number(odeTask.chargeCurrent) || 0;
   const mainMax = Number(odeTask.rewardMax) || ODE_REWARD_MAX;
   const extraMax = Number(odeTask.chargeMax) || ODE_CHARGE_MAX;
+  let consume = Math.max(0, Number(amount) || 0);
+  const mainUsed = Math.min(main, consume);
+  main -= mainUsed;
+  consume -= mainUsed;
+  const extraUsed = Math.min(extra, consume);
+  extra -= extraUsed;
+  odeTask.rewardCurrent = clamp(main, 0, mainMax);
+  odeTask.chargeCurrent = clamp(extra, 0, extraMax);
+  return { mainUsed, extraUsed, totalUsed: mainUsed + extraUsed };
+}
+function restoreOdeFromBreakdown(odeTask, breakdown){
+  if(!odeTask || !breakdown) return;
+  normalizeOdeTask(odeTask);
+  let main = Number(odeTask.rewardCurrent) || 0;
+  let extra = Number(odeTask.chargeCurrent) || 0;
+  const mainMax = Number(odeTask.rewardMax) || ODE_REWARD_MAX;
+  const extraMax = Number(odeTask.chargeMax) || ODE_CHARGE_MAX;
+  let mainRestore = Math.max(0, Number(breakdown.mainUsed) || 0);
+  let extraRestore = Math.max(0, Number(breakdown.extraUsed) || 0);
 
+  const mainRoom = Math.max(0, mainMax - main);
+  const toMain = Math.min(mainRoom, mainRestore);
+  main += toMain;
+  mainRestore -= toMain;
+  extraRestore += mainRestore;
+
+  extra = Math.min(extraMax, extra + extraRestore);
+
+  odeTask.rewardCurrent = clamp(main, 0, mainMax);
+  odeTask.chargeCurrent = clamp(extra, 0, extraMax);
+}
+function applyOdeDelta(odeTask, deltaValue){
+  if(!odeTask || !deltaValue) return;
+  normalizeOdeTask(odeTask);
   if(deltaValue < 0){
-    let consume = Math.abs(deltaValue);
-    const mainUsed = Math.min(main, consume);
-    main -= mainUsed;
-    consume -= mainUsed;
-    if(consume > 0){
-      extra = Math.max(0, extra - consume);
-    }
-  } else {
-    let add = deltaValue;
-    const mainRoom = Math.max(0, mainMax - main);
-    const toMain = Math.min(mainRoom, add);
-    main += toMain;
-    add -= toMain;
-    if(add > 0){
-      extra = Math.min(extraMax, extra + add);
-    }
+    consumeOdeAmountWithBreakdown(odeTask, Math.abs(deltaValue));
+    return;
   }
-
+  let main = Number(odeTask.rewardCurrent) || 0;
+  let extra = Number(odeTask.chargeCurrent) || 0;
+  const mainMax = Number(odeTask.rewardMax) || ODE_REWARD_MAX;
+  const extraMax = Number(odeTask.chargeMax) || ODE_CHARGE_MAX;
+  let add = deltaValue;
+  const mainRoom = Math.max(0, mainMax - main);
+  const toMain = Math.min(mainRoom, add);
+  main += toMain;
+  add -= toMain;
+  if(add > 0){
+    extra = Math.min(extraMax, extra + add);
+  }
   odeTask.rewardCurrent = clamp(main, 0, mainMax);
   odeTask.chargeCurrent = clamp(extra, 0, extraMax);
 }
@@ -1488,7 +1556,26 @@ function applyLinkedOdeDeltaForTask(taskId, key, deltaValue){
   if(!task || !ODE_LINKED_TASK_NAMES.includes(task.name)) return;
   const odeTask = getLinkedOdeTaskForTask(taskId);
   if(!odeTask) return;
-  applyOdeDelta(odeTask, deltaValue * ODE_LINKED_REWARD_STEP);
+
+  if(!Array.isArray(task.odeLinkedAdjustments)) task.odeLinkedAdjustments = [];
+  const unitCount = Math.abs(deltaValue);
+
+  if(deltaValue < 0){
+    for(let i = 0; i < unitCount; i++){
+      const breakdown = consumeOdeAmountWithBreakdown(odeTask, ODE_LINKED_REWARD_STEP);
+      task.odeLinkedAdjustments.push(breakdown);
+    }
+    return;
+  }
+
+  for(let i = 0; i < unitCount; i++){
+    const breakdown = task.odeLinkedAdjustments.pop();
+    if(breakdown){
+      restoreOdeFromBreakdown(odeTask, breakdown);
+    } else {
+      applyOdeDelta(odeTask, ODE_LINKED_REWARD_STEP);
+    }
+  }
 }
 function setTaskCurrentValue(taskId, key, nextValue){
   const t = findTask(taskId);
@@ -1800,7 +1887,7 @@ function renderCharacterList(){
 
 function renderWeekly(){
   const el = document.getElementById('weeklyGrid');
-  const missionOrder = ['슈고','일일던전','아티쟁','나흐마','카이라','아그로','⚔️전장 (승리)','어비스사냥','시공(🗡️공격)','시공(🛡️방어)'];
+  const missionOrder = ['사명','슈고','일일던전','아티쟁','나흐마','카이라','아그로','⚔️전장 (승리)','어비스사냥','시공(🗡️공격)','시공(🛡️방어)'];
   const purchaseOrder = ['오드(제작)','심연의 재련','원정/초월 충전','미지의 틈새','즉완권','특수결정','부활석'];
 
   const weeklyMap = new Map(state.weeklyTasks.map(w => [w.name, w]));
@@ -1836,7 +1923,7 @@ function renderWeekly(){
     }
 
     if(w.name === '나흐마'){
-      const labels = ['토','일'];
+      const labels = ['금','일'];
       return `
         <div class="week-item ${cls}" style="min-width:180px; ${specialBg}">
           <div class="w-head">
@@ -1858,7 +1945,7 @@ function renderWeekly(){
     }
 
     if(w.name === '아티쟁'){
-      const labels = ['화','목','토'];
+      const labels = ['수','토'];
       return `
         <div class="week-item ${cls}" style="min-width:220px; ${specialBg}">
           <div class="w-head">
@@ -1946,7 +2033,7 @@ function orderedTaskNames(){
   const hiddenTasks = ['저주'];
 
   const preferred = [
-    '사명','🌀회랑','⚡오드','원정',
+    '🌀회랑','⚡오드','원정',
     '초월','악몽','각성전','⚔️루드라','⚔️침식'
   ];
 
