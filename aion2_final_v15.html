@@ -361,6 +361,11 @@
   .weekly-group-title{font-size:15px;font-weight:900;margin-bottom:10px;color:#eef2ff;display:flex;align-items:center;gap:8px}
   .weekly-group-title .badge{font-size:11px;font-weight:800;color:#d7def8;background:#121b30;border:1px solid #314064;border-radius:999px;padding:4px 8px}
   .weekly-group-row{display:flex;gap:10px;overflow-x:auto}
+
+  .weekly-top-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,520px);gap:12px;align-items:start;margin-bottom:12px}
+  .weekly-top-layout .weekly-group-box{margin-bottom:0}
+  .weekly-group-box.purchase-mission{border-color:#6e5a2f;box-shadow:inset 0 0 0 1px rgba(234,196,98,.08)}
+  .weekly-group-box.purchase-mission .weekly-group-title .badge{background:#1a2234;border-color:#6e5a2f;color:#f0dfb1}
   .profile-manual-stack{display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;width:92px;margin:0 auto}
   .manual-info-input{width:92px;text-align:center;background:#070c18;border:1px solid #3b4d7e;border-radius:10px;padding:7px 6px;font-size:12px;font-weight:900}
   .manual-info-input.item-level-input{color:#7dd3fc}
@@ -371,6 +376,7 @@
   .weekly-grid{grid-template-columns:repeat(3,1fr)}
   .weekly-summary-layout{grid-template-columns:1fr}
   .progress-list{grid-template-columns:1fr}
+  .weekly-top-layout{grid-template-columns:1fr}
 }
 
 @media (max-width:900px){
@@ -447,6 +453,7 @@
           <option value="daily_05_plus1">매일 05시 +1 충전</option>
           <option value="weekly_wed_05_reset">매주 수요일 05시 초기화</option>
           <option value="tue_thu_sat_21_reset">화/목/토 21시 초기화</option>
+          <option value="wed_sat_22_reset">수/토 22시 초기화</option>
           <option value="od_charge">오드 3시간당 +15</option>
         </select>
         <div class="row">
@@ -462,7 +469,7 @@
         <div class="weekly-head">
           <div>
             <div class="section-title" style="margin-bottom:4px">숙제 현황</div>
-            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전</div>
+            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정은 매일 05시 +2 충전</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
         </div>
@@ -554,9 +561,7 @@ function makeDefaultWeeklyTasks(){
     makeWeekly('원정/초월 충전',21),
     makeWeekly('미지의 틈새',21),
     makeWeekly('즉시완료(일던)',21),
-    makeWeekly('즉시완료(악몽)',14),
-    makeWeekly('특수결정',1000),
-    makeWeekly('부활석',7)
+    makeWeekly('즉시완료(악몽)',14)
   ];
 }
 const DEFAULT_STATE = {
@@ -761,6 +766,7 @@ function normalizeLoadedState(parsed){
         t.challengeMax = 35;
         if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
         if(typeof t.challengeCurrent !== 'number') t.challengeCurrent = t.challengeMax;
+        t.resetRule = 'daily_05_plus2';
         t.chargeMax = 0;
         t.chargeCurrent = 0;
         t.challengeChargeMax = 10;
@@ -772,6 +778,7 @@ function normalizeLoadedState(parsed){
         t.challengeMax = 28;
         if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
         if(typeof t.challengeCurrent !== 'number') t.challengeCurrent = t.challengeMax;
+        t.resetRule = 'daily_05_plus2';
         t.chargeMax = 0;
         t.chargeCurrent = 0;
         t.challengeChargeMax = 10;
@@ -1043,7 +1050,7 @@ async function addCharacter(){
   const rawUrl = (urlInput?.value || '').trim();
 
   if(!rawName && !rawUrl){
-    alert('캐릭터 이름 또는 AION2TOOL 링크를 입력해주세요.');
+    alert('캐릭터 이름을 입력해주세요.');
     return;
   }
 
@@ -1111,9 +1118,43 @@ function formatPowerCompact(value){
   }
   return String(Math.round(num));
 }
+
+function normalizeItemLevelInput(value=''){
+  return String(value || '').replace(/\D/g, '');
+}
+function formatItemLevelDisplay(value=''){
+  const digits = normalizeItemLevelInput(value);
+  return digits ? `LV${digits}` : '';
+}
+function normalizePowerInput(value=''){
+  const cleaned = String(value || '').toUpperCase().replace(/,/g,'').replace(/K/g,'').replace(/[^\d.]/g,'');
+  if(!cleaned) return '';
+  const first = cleaned.indexOf('.');
+  if(first === -1) return cleaned;
+  return cleaned.slice(0, first + 1) + cleaned.slice(first + 1).replace(/\./g, '');
+}
+function formatPowerDisplay(value=''){
+  const cleaned = normalizePowerInput(value);
+  if(!cleaned) return '';
+  const num = Number(cleaned);
+  if(!Number.isFinite(num) || num <= 0) return '';
+  if(num >= 1000){
+    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  const text = cleaned.includes('.') ? String(num).replace(/\.0$/, '') : String(Math.round(num));
+  return text + 'K';
+}
+function updateCharacterStatField(id, key, rawValue){
+  const c = state.characters.find(x=>x.id===id);
+  if(!c) return;
+  if(key === 'itemLevel') c.itemLevel = normalizeItemLevelInput(rawValue);
+  if(key === 'power') c.power = normalizePowerInput(rawValue);
+  saveState();
+  renderCharacterList();
+}
 function getProfileSummaryHtml(c){
-  const itemLevel = c.itemLevel ? 'Lv ' + escapeHtml(String(c.itemLevel)) : 'Lv -';
-  const power = c.power ? escapeHtml(formatPowerCompact(c.power) || String(c.power)) : '-';
+  const itemLevel = c.itemLevel ? escapeHtml(formatItemLevelDisplay(c.itemLevel)) : 'LV-';
+  const power = c.power ? escapeHtml(formatPowerDisplay(c.power)) : '-';
   return `
     <div class="profile-summary" title="아이템레벨 / 전투력">
       <div class="level-line">${itemLevel}</div>
@@ -1344,8 +1385,8 @@ function addTaskToCharacter(character, data){ character.tasks.push(createTask(da
 function getDefaultPresetTasks(){
   return [
     { name:'⚡오드', rewardMax:ODE_REWARD_MAX, chargeMax:ODE_CHARGE_MAX, resetRule:'od_charge' },
-    { name:'🌀회랑', rewardMax:6, resetRule:'tue_thu_sat_21_reset' },
-    { name:'원정', rewardMax:14, challengeMax:35, resetRule:'daily_05_plus1' },
+    { name:'🌀회랑', rewardMax:6, resetRule:'wed_sat_22_reset' },
+    { name:'원정', rewardMax:14, challengeMax:35, resetRule:'daily_05_plus2' },
     { name:'초월', challengeMax:28, rewardMax:7, resetRule:'daily_05_plus1' },
     { name:'악몽', rewardMax:14, resetRule:'daily_05_plus2' },
     { name:'각성전', rewardMax:3, resetRule:'weekly_wed_05_reset' },
@@ -1695,6 +1736,7 @@ function getRuleLabel(rule){
     daily_05_plus1:'매일 05시 +1 충전',
     weekly_wed_05_reset:'매주 수요일 05시 초기화',
     tue_thu_sat_21_reset:'화/목/토 21시 초기화',
+    wed_sat_22_reset:'수/토 22시 초기화',
     od_charge:'3시간당 +15 충전'
   };
   return map[rule] || rule;
@@ -1716,6 +1758,12 @@ function getNextResetDate(rule, now = new Date()){
     for(let i=0;i<8;i++){
       const dtBase = new Date(now.getFullYear(), now.getMonth(), now.getDate()+i, 21, 0, 0, 0);
       if([2,4,6].includes(dtBase.getDay()) && dtBase > now) return dtBase;
+    }
+  }
+  if(rule === 'wed_sat_22_reset'){
+    for(let i=0;i<8;i++){
+      const dtBase = new Date(now.getFullYear(), now.getMonth(), now.getDate()+i, 22, 0, 0, 0);
+      if([3,6].includes(dtBase.getDay()) && dtBase > now) return dtBase;
     }
   }
   if(rule === 'od_charge'){
@@ -1746,6 +1794,12 @@ function getLatestReset(rule, now = new Date()){
     for(let i=0;i<8;i++){
       const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate()-i, 21, 0, 0, 0);
       if([2,4,6].includes(dt.getDay()) && dt<=now) return {key:dt.toISOString(), date:dt};
+    }
+  }
+  if(rule === 'wed_sat_22_reset'){
+    for(let i=0;i<8;i++){
+      const dt = new Date(now.getFullYear(), now.getMonth(), now.getDate()-i, 22, 0, 0, 0);
+      if([3,6].includes(dt.getDay()) && dt<=now) return {key:dt.toISOString(), date:dt};
     }
   }
   return null;
@@ -1799,7 +1853,7 @@ function applyRuleToTask(task){
   }
   const hit = getLatestReset(task.resetRule);
   if(!hit || task.lastResetAppliedKey === hit.key) return false;
-  if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset'){
+  if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset' || task.resetRule === 'wed_sat_22_reset'){
     if(task.name === CORRIDOR_NAME){
       task.lowerCurrent = task.lowerMax || 3;
       task.middleCurrent = task.middleMax || 3;
@@ -1902,7 +1956,7 @@ function renderCharacterList(){
     <div class="char-item ${c.id===state.selectedCharacterId ? 'active' : ''}">
       <div style="flex:1;cursor:pointer" onclick="selectCharacter('${c.id}')">
         <div class="char-name">${escapeHtml(c.name)}</div>
-        <div class="small muted">${c.power ? '전투력 ' + escapeHtml(formatPowerCompact(c.power) || c.power) : '전투력 미입력'}</div>
+        <div class="small muted">${c.power ? '전투력 ' + escapeHtml(formatPowerDisplay(c.power) || c.power) : '전투력 미입력'}</div>
       </div>
       <button class="btn-red btn-sm" type="button" onclick="removeCharacter('${c.id}')">삭제</button>
     </div>
@@ -1913,7 +1967,7 @@ function renderCharacterList(){
 function renderWeekly(){
   const el = document.getElementById('weeklyGrid');
   const missionOrder = ['사명','슈고','일일던전','아티쟁','나흐마','아그로','⚔️전장 (승리)','어비스사냥','시공(🗡️공격)','시공(🛡️방어)'];
-  const purchaseOrder = ['오드(제작)','심연의 재련','원정/초월 충전','미지의 틈새','즉완권','특수결정','부활석'];
+  const purchaseOrder = ['오드(제작)','심연의 재련','원정/초월 충전','미지의 틈새','즉완권'];
 
   const weeklyMap = new Map(state.weeklyTasks.map(w => [w.name, w]));
   const dailyMissionNames = ['사명','슈고'];
@@ -2043,22 +2097,24 @@ function renderWeekly(){
   }).join('');
 
   el.innerHTML = `
-    <div class="weekly-group-box daily-mission">
-      <div class="weekly-group-title">일일미션 <span class="badge">사명 · 슈고</span></div>
-      <div class="weekly-group-row">
-        ${dailyMissions.map(w => weeklyCard(w, 'mission')).join('')}
+    <div class="weekly-top-layout">
+      <div class="weekly-group-box daily-mission">
+        <div class="weekly-group-title">일일미션 <span class="badge">사명 · 슈고</span></div>
+        <div class="weekly-group-row">
+          ${dailyMissions.map(w => weeklyCard(w, 'mission')).join('')}
+        </div>
+      </div>
+      <div class="weekly-group-box purchase-mission">
+        <div class="weekly-group-title">주간 구매 / 제작 <span class="badge">특수결정 · 부활석 제외</span></div>
+        <div class="weekly-group-row">
+          ${purchaseHtml}
+        </div>
       </div>
     </div>
     <div class="weekly-group-box weekly-mission">
       <div class="weekly-group-title">주간미션 <span class="badge">일일던전 ~ 시공 방어</span></div>
       <div class="weekly-group-row">
         ${weeklyMissions.map(w => weeklyCard(w, 'mission')).join('')}
-      </div>
-    </div>
-    <div>
-      <div class="section-title" style="margin-bottom:8px;font-size:15px;">주간 구매 / 제작</div>
-      <div style="display:flex; gap:10px; overflow-x:auto;">
-        ${purchaseHtml}
       </div>
     </div>
   `;
@@ -2319,8 +2375,8 @@ function renderTable(){
                 </td>
                 <td class="profile-col">
                   <div class="profile-manual-stack">
-                    <input class="manual-info-input item-level-input" type="text" inputmode="decimal" value="${escapeHtml(c.itemLevel || '')}" placeholder="아이템 레벨" oninput="updateCharacterField('${c.id}','itemLevel', this.value)" />
-                    <input class="manual-info-input power-input" type="text" inputmode="decimal" value="${escapeHtml(c.power || '')}" placeholder="전투력" oninput="updateCharacterField('${c.id}','power', this.value)" />
+                    <input class="manual-info-input item-level-input" type="text" inputmode="decimal" value="${escapeHtml(formatItemLevelDisplay(c.itemLevel))}" placeholder="LV4255" oninput="updateCharacterStatField('${c.id}','itemLevel', this.value)" onblur="renderTable()" />
+                    <input class="manual-info-input power-input" type="text" inputmode="decimal" value="${escapeHtml(formatPowerDisplay(c.power))}" placeholder="474.7K" oninput="updateCharacterStatField('${c.id}','power', this.value)" onblur="renderTable()" />
                   </div>
                 </td>
                 ${names.map(name=>renderCell(c,name)).join('')}
