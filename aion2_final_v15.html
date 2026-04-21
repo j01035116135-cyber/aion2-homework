@@ -1452,13 +1452,43 @@ function getLinkedOdeTaskForTask(taskId){
   if(odeTask) normalizeOdeTask(odeTask);
   return odeTask;
 }
+function applyOdeDelta(odeTask, deltaValue){
+  if(!odeTask || !deltaValue) return;
+  normalizeOdeTask(odeTask);
+  let main = Number(odeTask.rewardCurrent) || 0;
+  let extra = Number(odeTask.chargeCurrent) || 0;
+  const mainMax = Number(odeTask.rewardMax) || ODE_REWARD_MAX;
+  const extraMax = Number(odeTask.chargeMax) || ODE_CHARGE_MAX;
+
+  if(deltaValue < 0){
+    let consume = Math.abs(deltaValue);
+    const mainUsed = Math.min(main, consume);
+    main -= mainUsed;
+    consume -= mainUsed;
+    if(consume > 0){
+      extra = Math.max(0, extra - consume);
+    }
+  } else {
+    let add = deltaValue;
+    const mainRoom = Math.max(0, mainMax - main);
+    const toMain = Math.min(mainRoom, add);
+    main += toMain;
+    add -= toMain;
+    if(add > 0){
+      extra = Math.min(extraMax, extra + add);
+    }
+  }
+
+  odeTask.rewardCurrent = clamp(main, 0, mainMax);
+  odeTask.chargeCurrent = clamp(extra, 0, extraMax);
+}
 function applyLinkedOdeDeltaForTask(taskId, key, deltaValue){
   if(key !== 'rewardCurrent' || !deltaValue) return;
   const task = findTask(taskId);
   if(!task || !ODE_LINKED_TASK_NAMES.includes(task.name)) return;
   const odeTask = getLinkedOdeTaskForTask(taskId);
   if(!odeTask) return;
-  odeTask.chargeCurrent = clamp((odeTask.chargeCurrent || 0) + (deltaValue * ODE_LINKED_REWARD_STEP), 0, odeTask.chargeMax || ODE_CHARGE_MAX);
+  applyOdeDelta(odeTask, deltaValue * ODE_LINKED_REWARD_STEP);
 }
 function setTaskCurrentValue(taskId, key, nextValue){
   const t = findTask(taskId);
@@ -1474,6 +1504,11 @@ function setTaskCurrentValue(taskId, key, nextValue){
 function changeTaskCount(taskId, key, delta){
   const t = findTask(taskId);
   if(!t) return;
+  if(t.name === '⚡오드' && key === 'rewardCurrent' && delta){
+    applyOdeDelta(t, delta);
+    saveState(); renderTable();
+    return;
+  }
   if(!setTaskCurrentValue(taskId, key, (Number(t[key]) || 0) + delta)) return;
   saveState(); renderTable();
 }
@@ -1482,6 +1517,11 @@ function changeTaskByContext(event, taskId, key, delta){ event.preventDefault();
 function smartSpend(taskId, reverse=false){
   const t = findTask(taskId);
   if(!t) return;
+  if(t.name === '⚡오드'){
+    applyOdeDelta(t, reverse ? 1 : -1);
+    saveState(); renderTable();
+    return;
+  }
   if(!reverse){
     if(t.rewardCurrent > 0) t.rewardCurrent -= 1;
     else if(t.chargeCurrent > 0) t.chargeCurrent -= 1;
