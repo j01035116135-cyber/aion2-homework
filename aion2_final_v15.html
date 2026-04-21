@@ -354,6 +354,18 @@
   .header-link-btn:hover,.btn-primary:hover,.btn-dark:hover,.btn-red:hover{transform:translateY(-1px);border-color:#3a3a3a;}
   .week-item.zero:hover,.cube.zero:hover,.main-count.zero:hover,.sub-count.zero:hover{border-color:#232323 !important;}
 
+
+  .weekly-group-box{background:#0d1427;border:1px solid #314064;border-radius:18px;padding:12px 12px 14px;margin-bottom:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+  .weekly-group-box.daily-mission{border-color:#4a6d9c;box-shadow:inset 0 0 0 1px rgba(125,180,255,.08)}
+  .weekly-group-box.weekly-mission{border-color:#3f5388;box-shadow:inset 0 0 0 1px rgba(170,190,255,.05)}
+  .weekly-group-title{font-size:15px;font-weight:900;margin-bottom:10px;color:#eef2ff;display:flex;align-items:center;gap:8px}
+  .weekly-group-title .badge{font-size:11px;font-weight:800;color:#d7def8;background:#121b30;border:1px solid #314064;border-radius:999px;padding:4px 8px}
+  .weekly-group-row{display:flex;gap:10px;overflow-x:auto}
+  .profile-manual-stack{display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;width:92px;margin:0 auto}
+  .manual-info-input{width:92px;text-align:center;background:#070c18;border:1px solid #3b4d7e;border-radius:10px;padding:7px 6px;font-size:12px;font-weight:900}
+  .manual-info-input.item-level-input{color:#7dd3fc}
+  .manual-info-input.power-input{color:#facc15}
+
 @media (max-width:1200px){
   .layout{grid-template-columns:1fr}
   .weekly-grid{grid-template-columns:repeat(3,1fr)}
@@ -414,9 +426,8 @@
           <input id="characterNameInput" type="text" placeholder="캐릭터 이름" style="flex:1" />
           <button class="btn-primary" type="button" onclick="addCharacter()">추가</button>
         </div>
-        <input id="characterProfileUrlInput" type="text" placeholder="AION2TOOL 링크 붙여넣기 (선택)" />
         <div id="characterList" class="character-list"></div>
-        <div class="small muted">캐릭터 이름 또는 링크로 추가할 수 있습니다. 아온이 링크는 자동 복호화 테스트가 포함됩니다.</div>
+        <div class="small muted">캐릭터 이름만 추가하고, 아이템레벨과 전투력은 오른쪽 표에서 직접 입력합니다.</div>
       </div>
 
       <div class="divider"></div>
@@ -1890,11 +1901,14 @@ function renderWeekly(){
   const purchaseOrder = ['오드(제작)','심연의 재련','원정/초월 충전','미지의 틈새','즉완권','특수결정','부활석'];
 
   const weeklyMap = new Map(state.weeklyTasks.map(w => [w.name, w]));
-  const missions = missionOrder.map(name => weeklyMap.get(name)).filter(Boolean);
+  const dailyMissionNames = ['사명','슈고'];
+  const weeklyMissionNames = missionOrder.filter(name => !dailyMissionNames.includes(name));
+  const dailyMissions = dailyMissionNames.map(name => weeklyMap.get(name)).filter(Boolean);
+  const weeklyMissions = weeklyMissionNames.map(name => weeklyMap.get(name)).filter(Boolean);
   const instantDaily = weeklyMap.get('즉시완료(일던)');
   const instantNightmare = weeklyMap.get('즉시완료(악몽)');
 
-  missions.forEach(ensureWeeklySegmentState);
+  [...dailyMissions, ...weeklyMissions].forEach(ensureWeeklySegmentState);
 
   function weeklyCard(w, variant){
     const cls = getMainClass(w.current, w.max);
@@ -2014,10 +2028,16 @@ function renderWeekly(){
   }).join('');
 
   el.innerHTML = `
-    <div style="margin-bottom:12px;">
-      <div class="section-title" style="margin-bottom:8px;font-size:15px;">주간미션</div>
-      <div style="display:flex; gap:10px; overflow-x:auto;">
-        ${missions.map(w => weeklyCard(w, 'mission')).join('')}
+    <div class="weekly-group-box daily-mission">
+      <div class="weekly-group-title">일일미션 <span class="badge">사명 · 슈고</span></div>
+      <div class="weekly-group-row">
+        ${dailyMissions.map(w => weeklyCard(w, 'mission')).join('')}
+      </div>
+    </div>
+    <div class="weekly-group-box weekly-mission">
+      <div class="weekly-group-title">주간미션 <span class="badge">일일던전 ~ 시공 방어</span></div>
+      <div class="weekly-group-row">
+        ${weeklyMissions.map(w => weeklyCard(w, 'mission')).join('')}
       </div>
     </div>
     <div>
@@ -2265,7 +2285,7 @@ function renderTable(){
             <tr>
               <th class="char-col">
                 <div class="th-title">캐릭터</div>
-                <div class="th-sub">이름 / 링크</div>
+                <div class="th-sub">이름</div>
               </th>
               <th class="profile-col">
                 <div class="th-title">정보</div>
@@ -2280,12 +2300,12 @@ function renderTable(){
                 <td>
 <div class="char-box">
   <input class="char-input" value="${escapeHtml(c.name || '')}" oninput="updateCharacterField('${c.id}','name', this.value)" />
-  <input class="note profile-link-input" value="${escapeHtml(c.profileUrl || '')}" placeholder="아온이/공식/AION2TOOL 링크" onchange="handleProfileUrlChange('${c.id}', this.value)" onkeydown="handleProfileUrlKeydown(event, '${c.id}', this.value)" />
 </div>
                 </td>
                 <td class="profile-col">
-                  <div class="profile-compact-row">
-                    ${getProfileSummaryHtml(c)}
+                  <div class="profile-manual-stack">
+                    <input class="manual-info-input item-level-input" type="text" inputmode="decimal" value="${escapeHtml(c.itemLevel || '')}" placeholder="아이템 레벨" oninput="updateCharacterField('${c.id}','itemLevel', this.value)" />
+                    <input class="manual-info-input power-input" type="text" inputmode="decimal" value="${escapeHtml(c.power || '')}" placeholder="전투력" oninput="updateCharacterField('${c.id}','power', this.value)" />
                   </div>
                 </td>
                 ${names.map(name=>renderCell(c,name)).join('')}
