@@ -355,17 +355,18 @@
   .week-item.zero:hover,.cube.zero:hover,.main-count.zero:hover,.sub-count.zero:hover{border-color:#232323 !important;}
 
 
-  .weekly-group-box{background:#0d1427;border:1px solid #314064;border-radius:18px;padding:12px 12px 14px;margin-bottom:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+  .weekly-group-box{display:inline-flex;flex-direction:column;align-items:flex-start;width:fit-content;max-width:100%;background:#0d1427;border:1px solid #314064;border-radius:18px;padding:12px 12px 14px;margin-bottom:12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
   .weekly-group-box.daily-mission{border-color:#4a6d9c;box-shadow:inset 0 0 0 1px rgba(125,180,255,.08)}
   .weekly-group-box.weekly-mission{border-color:#3f5388;box-shadow:inset 0 0 0 1px rgba(170,190,255,.05)}
   .weekly-group-title{font-size:15px;font-weight:900;margin-bottom:10px;color:#eef2ff;display:flex;align-items:center;gap:8px}
   .weekly-group-title .badge{font-size:11px;font-weight:800;color:#d7def8;background:#121b30;border:1px solid #314064;border-radius:999px;padding:4px 8px}
-  .weekly-group-row{display:flex;gap:10px;overflow-x:auto}
+  .weekly-group-row{display:flex;gap:10px;overflow-x:auto;width:fit-content;max-width:100%}
 
-  .weekly-top-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,520px);gap:12px;align-items:start;margin-bottom:12px}
+  .weekly-top-layout{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;width:fit-content;max-width:100%;margin-bottom:12px}
   .weekly-top-layout .weekly-group-box{margin-bottom:0}
   .weekly-group-box.purchase-mission{border-color:#6e5a2f;box-shadow:inset 0 0 0 1px rgba(234,196,98,.08)}
   .weekly-group-box.purchase-mission .weekly-group-title .badge{background:#1a2234;border-color:#6e5a2f;color:#f0dfb1}
+  #weeklyGrid{display:flex;flex-direction:column;align-items:flex-start}
   .profile-manual-stack{display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;width:92px;margin:0 auto}
   .manual-info-input{width:92px;text-align:center;background:#070c18;border:1px solid #3b4d7e;border-radius:10px;padding:7px 6px;font-size:12px;font-weight:900}
   .manual-info-input.item-level-input{color:#7dd3fc}
@@ -376,7 +377,7 @@
   .weekly-grid{grid-template-columns:repeat(3,1fr)}
   .weekly-summary-layout{grid-template-columns:1fr}
   .progress-list{grid-template-columns:1fr}
-  .weekly-top-layout{grid-template-columns:1fr}
+  .weekly-top-layout{width:100%;display:flex;flex-wrap:wrap}
 }
 
 @media (max-width:900px){
@@ -766,7 +767,7 @@ function normalizeLoadedState(parsed){
         t.challengeMax = 35;
         if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
         if(typeof t.challengeCurrent !== 'number') t.challengeCurrent = t.challengeMax;
-        t.resetRule = 'daily_05_plus2';
+        t.resetRule = 'daily_05_plus1';
         t.chargeMax = 0;
         t.chargeCurrent = 0;
         t.challengeChargeMax = 10;
