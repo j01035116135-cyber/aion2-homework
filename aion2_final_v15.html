@@ -461,8 +461,8 @@
       <div class="panel weekly-box">
         <div class="weekly-head">
           <div>
-            <div class="section-title" style="margin-bottom:4px">주간 숙제</div>
-            <div class="small muted">숫자 클릭 시 직접 입력 · 체크박스 클릭 시 전부 완료</div>
+            <div class="section-title" style="margin-bottom:4px">숙제 현황</div>
+            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
         </div>
@@ -540,8 +540,8 @@ function makeWeekly(name,max){
 function makeDefaultWeeklyTasks(){
   return [
     {id:uid(), name:'슈고', current:14, max:14, chargeCurrent:0, chargeMax:10, resetRule:'daily_05_plus2', lastResetAppliedKey:null},
+    {id:uid(), name:'사명', current:1, max:1, resetRule:'daily_05_reset', lastResetAppliedKey:null},
     makeWeekly('일일던전',14),
-    makeWeekly('사명',5),
     makeWeekly('아티쟁',2),
     makeWeekly('나흐마',2),
     makeWeekly('아그로',3),
@@ -735,15 +735,18 @@ function normalizeLoadedState(parsed){
     if(legacyMissionTasks.length){
       if(!parsed.weeklyTasks) parsed.weeklyTasks = [];
       let weeklyMission = parsed.weeklyTasks.find(w => w.name === '사명');
-      const missionCurrent = Math.min(...legacyMissionTasks.map(t => typeof t.rewardCurrent === 'number' ? t.rewardCurrent : (typeof t.current === 'number' ? t.current : 5)));
+      const missionCurrent = Math.min(...legacyMissionTasks.map(t => {
+        const raw = typeof t.rewardCurrent === 'number' ? t.rewardCurrent : (typeof t.current === 'number' ? t.current : 1);
+        return raw > 0 ? 1 : 0;
+      }));
       if(!weeklyMission){
-        weeklyMission = {id:uid(), name:'사명', current:clamp(missionCurrent, 0, 5), max:5, resetRule:'daily_05_reset', lastResetAppliedKey:null};
+        weeklyMission = {id:uid(), name:'사명', current:clamp(missionCurrent, 0, 1), max:1, resetRule:'daily_05_reset', lastResetAppliedKey:null};
         parsed.weeklyTasks.push(weeklyMission);
       } else {
         if(typeof weeklyMission.current !== 'number'){
-          weeklyMission.current = clamp(missionCurrent, 0, 5);
+          weeklyMission.current = clamp(missionCurrent, 0, 1);
         }
-        weeklyMission.max = 5;
+        weeklyMission.max = 1;
         if(!weeklyMission.resetRule) weeklyMission.resetRule = 'daily_05_reset';
       }
     }
@@ -824,10 +827,16 @@ function normalizeLoadedState(parsed){
       if(typeof w.chargeMax !== 'number') w.chargeMax = 10;
     }
     if (w.name === '사명') {
-      w.max = 5;
+      w.max = 1;
+      if(typeof w.current !== 'number') w.current = w.max;
+      w.current = clamp(w.current > 0 ? 1 : 0, 0, w.max);
+      w.resetRule = 'daily_05_reset';
+    }
+    if (w.name === '슈고') {
+      w.max = 14;
       if(typeof w.current !== 'number') w.current = w.max;
       w.current = clamp(w.current, 0, w.max);
-      if(!w.resetRule) w.resetRule = 'daily_05_reset';
+      w.resetRule = 'daily_05_plus2';
     }
     if (w.name === '아티쟁') {
       w.max = 2;
@@ -1420,7 +1429,13 @@ function changeWeeklyChargeByContext(event, id, delta){
 function weeklyComplete(id, checked){
   const w = state.weeklyTasks.find(x=>x.id===id);
   if(!w) return;
-  w.current = checked ? 0 : w.max;
+  if(w.name === '슈고'){
+    w.current = checked ? 0 : w.max;
+  } else if(w.name === '사명'){
+    w.current = checked ? 0 : 1;
+  } else {
+    w.current = checked ? 0 : w.max;
+  }
   if(w.segmentStates){
     w.segmentStates = w.segmentStates.map(() => checked ? 0 : 1);
   }
@@ -1928,7 +1943,7 @@ function renderWeekly(){
             <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
           </div>
           <div class="row" style="justify-content:center; flex-direction:column; gap:6px;">
-            <div class="w-value" style="margin:0; min-width:96px;" onclick="changeWeekly('${w.id}',-1)" oncontextmenu="changeWeeklyByContext(event,'${w.id}',1)">${w.current}/${w.max}</div>
+            <div class="w-value" style="margin:0; min-width:96px;" onclick="setWeeklyValue('${w.id}')">${w.current}/${w.max}</div>
             <div class="sub-count${chargeCls === 'zero' ? ' zero' : chargeCls === 'warn' ? ' warn' : ''}" onclick="changeWeeklyCharge('${w.id}',-1)" oncontextmenu="changeWeeklyChargeByContext(event,'${w.id}',1)">(${w.chargeCurrent || 0})</div>
           </div>
         </div>
