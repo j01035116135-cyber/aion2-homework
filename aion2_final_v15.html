@@ -508,6 +508,7 @@ const CORRIDOR_NAME = '🌀회랑';
 const ODE_REWARD_MAX = 840;
 const ODE_CHARGE_MAX = 2000;
 const ODE_CHARGE_INCREMENT = 15;
+const ODE_CHARGE_HOURS = [2,5,8,11,14,17,20,23];
 const ODE_MANUAL_STEP = 40;
 const ODE_LINKED_REWARD_STEP = 80;
 const ODE_LINKED_TASK_NAMES = ['원정','초월','⚔️루드라','⚔️침식'];
@@ -957,6 +958,12 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     color:color || state.taskColors[name] || getDefaultColor(name),
     note:''
   };
+
+  if(name === '⚡오드'){
+    const latest = getLatestOdCharge();
+    task.odChargeLastAppliedAt = latest ? latest.key : null;
+    task.lastResetAppliedKey = task.odChargeLastAppliedAt;
+  }
 
   if(name === CORRIDOR_NAME){
     task.lowerMax = 3;
@@ -1601,13 +1608,42 @@ function getLatestOdCharge(now = new Date()){
   }
   return null;
 }
+function getNextOdChargeAfter(date){
+  if(!(date instanceof Date) || Number.isNaN(date.getTime())) return null;
+  for(let i=0;i<4;i++){
+    const day = new Date(date.getFullYear(), date.getMonth(), date.getDate()+i, 0, 0, 0, 0);
+    for(const h of ODE_CHARGE_HOURS){
+      const dt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, 0, 0, 0);
+      if(dt > date){
+        return {key:dt.toISOString(), date:dt};
+      }
+    }
+  }
+  return null;
+}
 function applyRuleToTask(task){
   if(task.resetRule === 'od_charge'){
-    const hit = getLatestOdCharge();
-    if(!hit || task.lastResetAppliedKey === hit.key) return false;
-    task.chargeCurrent = clamp((task.chargeCurrent || 0) + ODE_CHARGE_INCREMENT, 0, task.chargeMax || ODE_CHARGE_MAX);
-    task.lastResetAppliedKey = hit.key;
-    return true;
+    normalizeOdeTask(task);
+    const now = new Date();
+    let cursor = task.odChargeLastAppliedAt ? new Date(task.odChargeLastAppliedAt) : null;
+    if(!(cursor instanceof Date) || Number.isNaN(cursor.getTime())){
+      const latest = getLatestOdCharge(now);
+      task.odChargeLastAppliedAt = latest ? latest.key : null;
+      task.lastResetAppliedKey = task.odChargeLastAppliedAt;
+      return false;
+    }
+
+    let changed = false;
+    let nextHit = getNextOdChargeAfter(cursor);
+    while(nextHit && nextHit.date <= now){
+      task.rewardCurrent = clamp((task.rewardCurrent || 0) + ODE_CHARGE_INCREMENT, 0, task.rewardMax || ODE_REWARD_MAX);
+      task.odChargeLastAppliedAt = nextHit.key;
+      task.lastResetAppliedKey = nextHit.key;
+      cursor = nextHit.date;
+      changed = true;
+      nextHit = getNextOdChargeAfter(cursor);
+    }
+    return changed;
   }
   const hit = getLatestReset(task.resetRule);
   if(!hit || task.lastResetAppliedKey === hit.key) return false;
