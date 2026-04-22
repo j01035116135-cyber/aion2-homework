@@ -453,7 +453,6 @@
           <option value="daily_05_plus2">매일 05시 +2 충전</option>
           <option value="daily_05_plus1">매일 05시 +1 충전</option>
           <option value="weekly_wed_05_reset">매주 수요일 05시 초기화</option>
-          <option value="tue_thu_sat_21_reset">화/목/토 21시 초기화</option>
           <option value="wed_sat_22_reset">수/토 22시 초기화</option>
           <option value="od_charge">오드 3시간당 +15</option>
         </select>
@@ -470,7 +469,7 @@
         <div class="weekly-head">
           <div>
             <div class="section-title" style="margin-bottom:4px">숙제 현황</div>
-            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정은 매일 05시 +2 충전</div>
+            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정은 매일 05시 +2 · 초월은 매일 05시 +1</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
         </div>
@@ -643,7 +642,7 @@ function makeCorridorTaskFromLegacy(lowerTask=null, middleTask=null, mergedTask=
     challengeChargeCurrent: 0,
     rewardChargeMax: 0,
     rewardChargeCurrent: 0,
-    resetRule: lowerTask?.resetRule || middleTask?.resetRule || mergedTask?.resetRule || 'tue_thu_sat_21_reset',
+    resetRule: ((lowerTask?.resetRule || middleTask?.resetRule || mergedTask?.resetRule) === 'tue_thu_sat_21_reset' ? 'wed_sat_22_reset' : (lowerTask?.resetRule || middleTask?.resetRule || mergedTask?.resetRule || 'wed_sat_22_reset')),
     lastResetAppliedKey: middleTask?.lastResetAppliedKey || lowerTask?.lastResetAppliedKey || mergedTask?.lastResetAppliedKey || null,
     color: mergedTask?.color || getDefaultColor(CORRIDOR_NAME),
     note: mergedTask?.note || ''
@@ -767,7 +766,9 @@ function normalizeLoadedState(parsed){
         t.challengeMax = 35;
         if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
         if(typeof t.challengeCurrent !== 'number') t.challengeCurrent = t.challengeMax;
-        t.resetRule = 'daily_05_plus1';
+        t.resetRule = 'daily_05_plus2';
+        t.challengeResetRule = 'weekly_wed_05_reset';
+        if(typeof t.challengeLastResetAppliedKey !== 'string') t.challengeLastResetAppliedKey = null;
         t.chargeMax = 0;
         t.chargeCurrent = 0;
         t.challengeChargeMax = 10;
@@ -779,7 +780,9 @@ function normalizeLoadedState(parsed){
         t.challengeMax = 28;
         if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
         if(typeof t.challengeCurrent !== 'number') t.challengeCurrent = t.challengeMax;
-        t.resetRule = 'daily_05_plus2';
+        t.resetRule = 'daily_05_plus1';
+        t.challengeResetRule = 'weekly_wed_05_reset';
+        if(typeof t.challengeLastResetAppliedKey !== 'string') t.challengeLastResetAppliedKey = null;
         t.chargeMax = 0;
         t.chargeCurrent = 0;
         t.challengeChargeMax = 10;
@@ -795,6 +798,7 @@ function normalizeLoadedState(parsed){
         normalizeOdeTask(t);
       } else if(isCorridorTaskName(t.name)){
         t.name = CORRIDOR_NAME;
+        if(t.resetRule === 'tue_thu_sat_21_reset') t.resetRule = 'wed_sat_22_reset';
         syncCorridorTask(t);
       } else if(EXTRA_CHARGE_DEFAULTS[t.name]){
         t.chargeMax = 10;
@@ -986,18 +990,22 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
 
   let challengeChargeMax = 0, challengeChargeCurrent = 0, rewardChargeMax = 0, rewardChargeCurrent = 0;
 
+  let challengeResetRule = null, challengeLastResetAppliedKey = null;
+
   if(name === '원정'){
     if(!rewardMax) rewardMax = 14;
     if(!challengeMax) challengeMax = 35;
     chargeMax = 0;
     challengeChargeMax = 10;
     rewardChargeMax = 10;
+    challengeResetRule = 'weekly_wed_05_reset';
   } else if(name === '초월'){
     if(!rewardMax) rewardMax = 7;
     if(!challengeMax) challengeMax = 28;
     chargeMax = 0;
     challengeChargeMax = 10;
     rewardChargeMax = 10;
+    challengeResetRule = 'weekly_wed_05_reset';
   } else if(name === '⚔️루드라' || name === '⚔️침식'){
     challengeChargeMax = 10;
     rewardChargeMax = 10;
@@ -1022,6 +1030,7 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     challengeChargeMax, challengeChargeCurrent,
     rewardChargeMax, rewardChargeCurrent,
     resetRule, lastResetAppliedKey:null,
+    challengeResetRule, challengeLastResetAppliedKey,
     color:color || state.taskColors[name] || getDefaultColor(name),
     note:''
   };
@@ -1736,7 +1745,7 @@ function getRuleLabel(rule){
     daily_05_plus2:'매일 05시 +2 충전',
     daily_05_plus1:'매일 05시 +1 충전',
     weekly_wed_05_reset:'매주 수요일 05시 초기화',
-    tue_thu_sat_21_reset:'화/목/토 21시 초기화',
+    tue_thu_sat_21_reset:'화/목/토 21시 초기화(구규칙)',
     wed_sat_22_reset:'수/토 22시 초기화',
     od_charge:'3시간당 +15 충전'
   };
@@ -1852,26 +1861,40 @@ function applyRuleToTask(task){
     }
     return changed;
   }
+
+  let changed = false;
   const hit = getLatestReset(task.resetRule);
-  if(!hit || task.lastResetAppliedKey === hit.key) return false;
-  if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset' || task.resetRule === 'wed_sat_22_reset'){
-    if(task.name === CORRIDOR_NAME){
-      task.lowerCurrent = task.lowerMax || 3;
-      task.middleCurrent = task.middleMax || 3;
-      syncCorridorTask(task);
+  if(hit && task.lastResetAppliedKey !== hit.key){
+    if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset' || task.resetRule === 'wed_sat_22_reset'){
+      if(task.name === CORRIDOR_NAME){
+        task.lowerCurrent = task.lowerMax || 3;
+        task.middleCurrent = task.middleMax || 3;
+        syncCorridorTask(task);
+      }
+      if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
+      if(task.rewardMax > 0 && task.name !== CORRIDOR_NAME) task.rewardCurrent = task.rewardMax;
+      if(task.chargeMax > 0) task.chargeCurrent = 0;
+      if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
+      if(task.rewardChargeMax > 0 || task.rewardChargeCurrent > 0) task.rewardChargeCurrent = 0;
+    }else if(task.resetRule === 'daily_05_plus2'){
+      task.rewardCurrent = clamp(task.rewardCurrent + 2, 0, task.rewardMax);
+    }else if(task.resetRule === 'daily_05_plus1'){
+      task.rewardCurrent = clamp(task.rewardCurrent + 1, 0, task.rewardMax);
     }
-    if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
-    if(task.rewardMax > 0 && task.name !== CORRIDOR_NAME) task.rewardCurrent = task.rewardMax;
-    if(task.chargeMax > 0) task.chargeCurrent = 0;
-    if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
-    if(task.rewardChargeMax > 0 || task.rewardChargeCurrent > 0) task.rewardChargeCurrent = 0;
-  }else if(task.resetRule === 'daily_05_plus2'){
-    task.rewardCurrent = clamp(task.rewardCurrent + 2, 0, task.rewardMax);
-  }else if(task.resetRule === 'daily_05_plus1'){
-    task.rewardCurrent = clamp(task.rewardCurrent + 1, 0, task.rewardMax);
+    task.lastResetAppliedKey = hit.key;
+    changed = true;
   }
-  task.lastResetAppliedKey = hit.key;
-  return true;
+
+  if(task.challengeResetRule){
+    const challengeHit = getLatestReset(task.challengeResetRule);
+    if(challengeHit && task.challengeLastResetAppliedKey !== challengeHit.key){
+      if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
+      task.challengeLastResetAppliedKey = challengeHit.key;
+      changed = true;
+    }
+  }
+
+  return changed;
 }
 function applyRuleToWeekly(task){
   const hit = getLatestReset(task.resetRule);
@@ -1998,7 +2021,7 @@ function renderWeekly(){
             <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
           </div>
           <div class="row" style="justify-content:center; flex-direction:column; gap:6px;">
-            <div class="w-value" style="margin:0; min-width:96px;" onclick="setWeeklyValue('${w.id}')">${w.current}/${w.max}</div>
+            <div class="w-value" style="margin:0; min-width:96px;" onclick="changeWeekly('${w.id}',-1)" oncontextmenu="changeWeeklyByContext(event,'${w.id}',1)">${w.current}/${w.max}</div>
             <div class="sub-count${chargeCls === 'zero' ? ' zero' : chargeCls === 'warn' ? ' warn' : ''}" onclick="changeWeeklyCharge('${w.id}',-1)" oncontextmenu="changeWeeklyChargeByContext(event,'${w.id}',1)">(${w.chargeCurrent || 0})</div>
           </div>
         </div>
