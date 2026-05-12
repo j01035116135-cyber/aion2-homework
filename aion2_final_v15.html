@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 브루마 (문의)</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의)</title>
 <style>
   :root{
     --bg:#000000;
@@ -409,7 +409,7 @@
 <div class="app">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="title">아이온2 [무쌍] 마르쿠탄  by 브루마 (문의)</div>
+      <div class="title">아이온2 [무쌍] 마르쿠탄  by 오천크스 (문의)</div>
       <div class="sub">가로형 전용 · 숫자 직접 수정 · 체크박스 완료 · ⚡오드 충전 관리</div>
     </div>
     <div class="topbar-center">
@@ -452,6 +452,8 @@
           <option value="daily_05_reset">매일 05시 초기화</option>
           <option value="daily_05_plus2">매일 05시 +2 충전</option>
           <option value="daily_05_plus1">매일 05시 +1 충전</option>
+          <option value="expedition_charge">원정 05/13/21시 +1 충전</option>
+          <option value="transcend_charge">초월 05/17시 +1 충전</option>
           <option value="weekly_wed_05_reset">매주 수요일 05시 초기화</option>
           <option value="wed_sat_22_reset">수/토 22시 초기화</option>
           <option value="od_charge">오드 3시간당 +15</option>
@@ -469,7 +471,7 @@
         <div class="weekly-head">
           <div>
             <div class="section-title" style="margin-bottom:4px">숙제 현황</div>
-            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정은 매일 05시 +2 · 초월은 매일 05시 +1</div>
+            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정은 05/13/21시 +1 · 초월은 05/17시 +1</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
         </div>
@@ -530,6 +532,13 @@ const ODE_CHARGE_HOURS = [2,5,8,11,14,17,20,23];
 const ODE_MANUAL_STEP = 40;
 const ODE_LINKED_REWARD_STEP = 80;
 const ODE_LINKED_TASK_NAMES = ['원정','초월','⚔️루드라','⚔️침식'];
+const EXPEDITION_REWARD_MAX = 21;
+const EXPEDITION_BOSS_MAX = 84;
+const EXPEDITION_CHARGE_HOURS = [5,13,21];
+const TRANSCEND_REWARD_MAX = 14;
+const TRANSCEND_BOSS_MAX = 56;
+const TRANSCEND_CHARGE_HOURS = [5,17];
+const KINA_100_BOSS_LIMITS = { '원정': EXPEDITION_BOSS_MAX, '초월': TRANSCEND_BOSS_MAX };
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
@@ -762,11 +771,13 @@ function normalizeLoadedState(parsed){
       t.name = normalizeTaskName(t.name);
 
       if(t.name === '원정'){
-        t.rewardMax = 14;
-        t.challengeMax = 35;
+        t.rewardMax = EXPEDITION_REWARD_MAX;
+        t.challengeMax = EXPEDITION_BOSS_MAX;
         if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
         if(typeof t.challengeCurrent !== 'number') t.challengeCurrent = t.challengeMax;
-        t.resetRule = 'daily_05_plus2';
+        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
+        t.challengeCurrent = clamp(t.challengeCurrent, 0, t.challengeMax);
+        t.resetRule = 'expedition_charge';
         t.challengeResetRule = 'weekly_wed_05_reset';
         if(typeof t.challengeLastResetAppliedKey !== 'string') t.challengeLastResetAppliedKey = null;
         t.chargeMax = 0;
@@ -776,11 +787,13 @@ function normalizeLoadedState(parsed){
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
       } else if(t.name === '초월'){
-        t.rewardMax = 7;
-        t.challengeMax = 28;
+        t.rewardMax = TRANSCEND_REWARD_MAX;
+        t.challengeMax = TRANSCEND_BOSS_MAX;
         if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
         if(typeof t.challengeCurrent !== 'number') t.challengeCurrent = t.challengeMax;
-        t.resetRule = 'daily_05_plus1';
+        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
+        t.challengeCurrent = clamp(t.challengeCurrent, 0, t.challengeMax);
+        t.resetRule = 'transcend_charge';
         t.challengeResetRule = 'weekly_wed_05_reset';
         if(typeof t.challengeLastResetAppliedKey !== 'string') t.challengeLastResetAppliedKey = null;
         t.chargeMax = 0;
@@ -993,16 +1006,18 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
   let challengeResetRule = null, challengeLastResetAppliedKey = null;
 
   if(name === '원정'){
-    if(!rewardMax) rewardMax = 14;
-    if(!challengeMax) challengeMax = 35;
+    rewardMax = EXPEDITION_REWARD_MAX;
+    challengeMax = EXPEDITION_BOSS_MAX;
     chargeMax = 0;
+    resetRule = 'expedition_charge';
     challengeChargeMax = 10;
     rewardChargeMax = 10;
     challengeResetRule = 'weekly_wed_05_reset';
   } else if(name === '초월'){
-    if(!rewardMax) rewardMax = 7;
-    if(!challengeMax) challengeMax = 28;
+    rewardMax = TRANSCEND_REWARD_MAX;
+    challengeMax = TRANSCEND_BOSS_MAX;
     chargeMax = 0;
+    resetRule = 'transcend_charge';
     challengeChargeMax = 10;
     rewardChargeMax = 10;
     challengeResetRule = 'weekly_wed_05_reset';
@@ -1396,8 +1411,8 @@ function getDefaultPresetTasks(){
   return [
     { name:'⚡오드', rewardMax:ODE_REWARD_MAX, chargeMax:ODE_CHARGE_MAX, resetRule:'od_charge' },
     { name:'🌀회랑', rewardMax:6, resetRule:'wed_sat_22_reset' },
-    { name:'원정', rewardMax:14, challengeMax:35, resetRule:'daily_05_plus2' },
-    { name:'초월', challengeMax:28, rewardMax:7, resetRule:'daily_05_plus1' },
+    { name:'원정', rewardMax:EXPEDITION_REWARD_MAX, challengeMax:EXPEDITION_BOSS_MAX, resetRule:'expedition_charge' },
+    { name:'초월', challengeMax:TRANSCEND_BOSS_MAX, rewardMax:TRANSCEND_REWARD_MAX, resetRule:'transcend_charge' },
     { name:'악몽', rewardMax:14, resetRule:'daily_05_plus2' },
     { name:'각성전', rewardMax:3, resetRule:'weekly_wed_05_reset' },
     { name:'⚔️루드라', challengeMax:4, rewardMax:2, resetRule:'weekly_wed_05_reset' },
@@ -1744,6 +1759,8 @@ function getRuleLabel(rule){
     daily_05_reset:'매일 05시 초기화',
     daily_05_plus2:'매일 05시 +2 충전',
     daily_05_plus1:'매일 05시 +1 충전',
+    expedition_charge:'05/13/21시 +1 충전',
+    transcend_charge:'05/17시 +1 충전',
     weekly_wed_05_reset:'매주 수요일 05시 초기화',
     tue_thu_sat_21_reset:'화/목/토 21시 초기화(구규칙)',
     wed_sat_22_reset:'수/토 22시 초기화',
@@ -1756,6 +1773,16 @@ function getNextResetDate(rule, now = new Date()){
   if(rule === 'daily_05_reset' || rule === 'daily_05_plus2' || rule === 'daily_05_plus1'){
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 5, 0, 0, 0);
     return today > now ? today : new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 5, 0, 0, 0);
+  }
+  if(rule === 'expedition_charge' || rule === 'transcend_charge'){
+    const hours = rule === 'expedition_charge' ? EXPEDITION_CHARGE_HOURS : TRANSCEND_CHARGE_HOURS;
+    for(let i=0;i<3;i++){
+      const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()+i, 0,0,0,0);
+      for(const h of hours){
+        const dt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, 0, 0, 0);
+        if(dt > now) return dt;
+      }
+    }
   }
   if(rule === 'weekly_wed_05_reset'){
     const currentDay = now.getDay();
@@ -1793,6 +1820,16 @@ function getLatestReset(rule, now = new Date()){
     const today05 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 5, 0, 0, 0);
     const dt = now >= today05 ? today05 : new Date(now.getFullYear(), now.getMonth(), now.getDate()-1, 5, 0, 0, 0);
     return {key:dt.toISOString(), date:dt};
+  }
+  if(rule === 'expedition_charge' || rule === 'transcend_charge'){
+    const hours = rule === 'expedition_charge' ? EXPEDITION_CHARGE_HOURS : TRANSCEND_CHARGE_HOURS;
+    for(let i=0;i<3;i++){
+      const day = new Date(now.getFullYear(), now.getMonth(), now.getDate()-i, 0,0,0,0);
+      for(const h of [...hours].reverse()){
+        const dt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, 0, 0, 0);
+        if(dt <= now) return {key:dt.toISOString(), date:dt};
+      }
+    }
   }
   if(rule === 'weekly_wed_05_reset'){
     for(let i=0;i<8;i++){
@@ -1837,7 +1874,47 @@ function getNextOdChargeAfter(date){
   }
   return null;
 }
+
+function getTimedChargeHours(rule){
+  if(rule === 'expedition_charge') return EXPEDITION_CHARGE_HOURS;
+  if(rule === 'transcend_charge') return TRANSCEND_CHARGE_HOURS;
+  return null;
+}
+function getNextTimedChargeAfter(date, rule){
+  const hours = getTimedChargeHours(rule);
+  if(!hours || !(date instanceof Date) || Number.isNaN(date.getTime())) return null;
+  for(let i=0;i<4;i++){
+    const day = new Date(date.getFullYear(), date.getMonth(), date.getDate()+i, 0, 0, 0, 0);
+    for(const h of hours){
+      const dt = new Date(day.getFullYear(), day.getMonth(), day.getDate(), h, 0, 0, 0);
+      if(dt > date) return {key:dt.toISOString(), date:dt};
+    }
+  }
+  return null;
+}
+
 function applyRuleToTask(task){
+  if(task.resetRule === 'expedition_charge' || task.resetRule === 'transcend_charge'){
+    const now = new Date();
+    let cursor = task.lastResetAppliedKey ? new Date(task.lastResetAppliedKey) : null;
+    if(!(cursor instanceof Date) || Number.isNaN(cursor.getTime())){
+      const latest = getLatestReset(task.resetRule, now);
+      task.lastResetAppliedKey = latest ? latest.key : null;
+      return false;
+    }
+
+    let changed = false;
+    let nextHit = getNextTimedChargeAfter(cursor, task.resetRule);
+    while(nextHit && nextHit.date <= now){
+      task.rewardCurrent = clamp((task.rewardCurrent || 0) + 1, 0, task.rewardMax);
+      task.lastResetAppliedKey = nextHit.key;
+      cursor = nextHit.date;
+      changed = true;
+      nextHit = getNextTimedChargeAfter(cursor, task.resetRule);
+    }
+    return changed;
+  }
+
   if(task.resetRule === 'od_charge'){
     normalizeOdeTask(task);
     const now = new Date();
@@ -1878,7 +1955,7 @@ function applyRuleToTask(task){
       if(task.rewardChargeMax > 0 || task.rewardChargeCurrent > 0) task.rewardChargeCurrent = 0;
     }else if(task.resetRule === 'daily_05_plus2'){
       task.rewardCurrent = clamp(task.rewardCurrent + 2, 0, task.rewardMax);
-    }else if(task.resetRule === 'daily_05_plus1'){
+    }else if(task.resetRule === 'daily_05_plus1' || task.resetRule === 'expedition_charge' || task.resetRule === 'transcend_charge'){
       task.rewardCurrent = clamp(task.rewardCurrent + 1, 0, task.rewardMax);
     }
     task.lastResetAppliedKey = hit.key;
@@ -2181,6 +2258,20 @@ function renderPalette(name, current){
     </div>
   `;
 }
+
+function getServerBossUsage(taskName){
+  const limit = KINA_100_BOSS_LIMITS[taskName];
+  if(!limit) return null;
+  let used = 0;
+  state.characters.forEach(c => {
+    const t = (c.tasks || []).find(x => x.name === taskName);
+    if(t && typeof t.challengeMax === 'number'){
+      used += Math.max(0, (Number(t.challengeMax) || 0) - (Number(t.challengeCurrent) || 0));
+    }
+  });
+  return { used, limit, over: used > limit };
+}
+
 function renderHeader(names){
   return names.map((name, index)=>{
     const t = sampleTaskByName(name);
@@ -2192,20 +2283,23 @@ function renderHeader(names){
     const isOdeGroup = odeGroup.includes(name);
     const isStart = name === '⚡오드';
     const isEnd = name === '초월';
+    const bossUsage = getServerBossUsage(name);
+    const bossUsageHtml = bossUsage
+      ? `<span style="display:block;font-size:13px;margin-top:3px;color:${bossUsage.over ? '#ffb4b4' : '#e9fff0'};font-weight:900;">(${bossUsage.used}/${bossUsage.limit}회)</span>`
+      : '';
 
     if(isOdeGroup) color = '#4d7d62';
 
     return `
       <th class="${isOdeGroup ? `task-group-ode-header ${isStart ? 'task-group-start' : ''} ${isEnd ? 'task-group-end' : ''}` : ''} task-header-click" data-task-header="1" style="background:${color}" onclick="if(!event.target.closest('.palette-pop')) togglePalette('${escapeHtml(name)}')">
-        <div class="th-title">${escapeHtml(name)}</div>
-        <div class="th-sub">${rule}</div>
+        <div class="th-title">${escapeHtml(name)}${bossUsageHtml}</div>
+        <div class="th-sub">${escapeHtml(rule)}</div>
         <div class="th-sub">${next ? diffText(next) : '리셋 없음'}</div>
         ${renderPalette(name, color)}
       </th>
     `;
   }).join('');
 }
-
 function renderCell(character, taskName){
   const t = character.tasks.find(x=>x.name===taskName);
   if(!t) return `<td><div class="cell-wrap"><span class="muted small">-</span></div></td>`;
