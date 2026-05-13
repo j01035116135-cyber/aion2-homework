@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의)</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 브루마 (문의)</title>
 <style>
   :root{
     --bg:#000000;
@@ -409,7 +409,7 @@
 <div class="app">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="title">아이온2 [무쌍] 마르쿠탄  by 오천크스 (문의)</div>
+      <div class="title">아이온2 [무쌍] 마르쿠탄  by 브루마 (문의)</div>
       <div class="sub">가로형 전용 · 숫자 직접 수정 · 체크박스 완료 · ⚡오드 충전 관리</div>
     </div>
     <div class="topbar-center">
@@ -471,7 +471,7 @@
         <div class="weekly-head">
           <div>
             <div class="section-title" style="margin-bottom:4px">숙제 현황</div>
-            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정은 05/13/21시 +1 · 초월은 05/17시 +1</div>
+            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정은 05/13/21시 +1 · 초월은 05/17시 +1 · 보스처치는 수요일 05시 초기화</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
         </div>
@@ -533,12 +533,14 @@ const ODE_MANUAL_STEP = 40;
 const ODE_LINKED_REWARD_STEP = 80;
 const ODE_LINKED_TASK_NAMES = ['원정','초월','⚔️루드라','⚔️침식'];
 const EXPEDITION_REWARD_MAX = 21;
-const EXPEDITION_BOSS_MAX = 84;
+const EXPEDITION_BOSS_MAX = 35;
+const EXPEDITION_KINA_100_LIMIT = 84;
 const EXPEDITION_CHARGE_HOURS = [5,13,21];
 const TRANSCEND_REWARD_MAX = 14;
-const TRANSCEND_BOSS_MAX = 56;
+const TRANSCEND_BOSS_MAX = 28;
+const TRANSCEND_KINA_100_LIMIT = 56;
 const TRANSCEND_CHARGE_HOURS = [5,17];
-const KINA_100_BOSS_LIMITS = { '원정': EXPEDITION_BOSS_MAX, '초월': TRANSCEND_BOSS_MAX };
+const KINA_100_BOSS_LIMITS = { '원정': EXPEDITION_KINA_100_LIMIT, '초월': TRANSCEND_KINA_100_LIMIT };
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
