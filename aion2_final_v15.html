@@ -1893,17 +1893,31 @@ function getNextTimedChargeAfter(date, rule){
   return null;
 }
 
+function applyChallengeResetRule(task){
+  if(!task || !task.challengeResetRule) return false;
+  const challengeHit = getLatestReset(task.challengeResetRule);
+  if(challengeHit && task.challengeLastResetAppliedKey !== challengeHit.key){
+    if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
+    task.challengeLastResetAppliedKey = challengeHit.key;
+    return true;
+  }
+  return false;
+}
+
 function applyRuleToTask(task){
+  let changed = false;
+
   if(task.resetRule === 'expedition_charge' || task.resetRule === 'transcend_charge'){
     const now = new Date();
+    changed = applyChallengeResetRule(task) || changed;
+
     let cursor = task.lastResetAppliedKey ? new Date(task.lastResetAppliedKey) : null;
     if(!(cursor instanceof Date) || Number.isNaN(cursor.getTime())){
       const latest = getLatestReset(task.resetRule, now);
       task.lastResetAppliedKey = latest ? latest.key : null;
-      return false;
+      return changed;
     }
 
-    let changed = false;
     let nextHit = getNextTimedChargeAfter(cursor, task.resetRule);
     while(nextHit && nextHit.date <= now){
       task.rewardCurrent = clamp((task.rewardCurrent || 0) + 1, 0, task.rewardMax);
@@ -1939,7 +1953,6 @@ function applyRuleToTask(task){
     return changed;
   }
 
-  let changed = false;
   const hit = getLatestReset(task.resetRule);
   if(hit && task.lastResetAppliedKey !== hit.key){
     if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset' || task.resetRule === 'wed_sat_22_reset'){
@@ -1962,14 +1975,7 @@ function applyRuleToTask(task){
     changed = true;
   }
 
-  if(task.challengeResetRule){
-    const challengeHit = getLatestReset(task.challengeResetRule);
-    if(challengeHit && task.challengeLastResetAppliedKey !== challengeHit.key){
-      if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
-      task.challengeLastResetAppliedKey = challengeHit.key;
-      changed = true;
-    }
-  }
+  changed = applyChallengeResetRule(task) || changed;
 
   return changed;
 }
