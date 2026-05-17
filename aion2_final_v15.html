@@ -1766,12 +1766,16 @@ function changeBossExtraCharge(taskId, mode){
   if(mode === 'use'){
     if(chargeCurrent <= 0) return;
     t.challengeChargeCurrent = clamp(chargeCurrent - 1, 0, chargeMax);
+    // 추가 처치횟수를 사용하면 캐릭터별 최대 보스처치횟수만 늘립니다.
+    // 현재 남은 처치횟수는 건드리지 않아야 서버 통합 사용량(예: 원정 23/84회)이 즉시 +1 반영됩니다.
     t.challengeMax = Math.max(baseMax, (Number(t.challengeMax) || baseMax) + 1);
-    t.challengeCurrent = clamp((Number(t.challengeCurrent) || 0) + 1, 0, t.challengeMax);
+    t.challengeCurrent = clamp((Number(t.challengeCurrent) || 0), 0, t.challengeMax);
   } else if(mode === 'restore'){
     if((Number(t.challengeMax) || baseMax) <= baseMax) return;
+    // 추가 처치횟수 복구 시 최대 보스처치횟수만 다시 줄입니다.
+    // 서버 통합 사용량은 max-current 기준이라 즉시 -1 반영됩니다.
     t.challengeMax = Math.max(baseMax, (Number(t.challengeMax) || baseMax) - 1);
-    t.challengeCurrent = clamp((Number(t.challengeCurrent) || 0) - 1, 0, t.challengeMax);
+    t.challengeCurrent = clamp((Number(t.challengeCurrent) || 0), 0, t.challengeMax);
     t.challengeChargeCurrent = clamp(chargeCurrent + 1, 0, chargeMax);
   }
 
