@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의)</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 브루마 (문의)</title>
 <style>
   :root{
     --bg:#000000;
@@ -382,6 +382,24 @@
   .manual-info-input.item-level-input{color:#7dd3fc}
   .manual-info-input.power-input{color:#facc15}
 
+  .ox-cube{
+    min-width:64px;
+    text-align:center;
+    font-size:28px;
+    line-height:1;
+    padding:12px 10px;
+  }
+  .ox-cube.on{
+    color:#84ff9a;
+    border-color:#4fae66;
+    background:rgba(48,120,70,.18);
+  }
+  .ox-cube.off{
+    color:#ff8c8c;
+    border-color:#9b4242;
+    background:rgba(120,45,45,.18);
+  }
+
 @media (max-width:1200px){
   .layout{grid-template-columns:1fr}
   .weekly-grid{grid-template-columns:repeat(3,1fr)}
@@ -419,7 +437,7 @@
 <div class="app">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="title">아이온2 [무쌍] 마르쿠탄  by 오천크스 (문의)</div>
+      <div class="title">아이온2 [무쌍] 마르쿠탄  by 브루마 (문의)</div>
       <div class="sub">가로형 전용 · 숫자 직접 수정 · 체크박스 완료 · ⚡오드 충전 관리</div>
     </div>
     <div class="topbar-center">
@@ -2134,8 +2152,8 @@ function renderWeekly(){
           <div class="cube-row" style="margin-top:12px; justify-content:center;">
             ${labels.map((label, idx) => `
               <div style="text-align:center;">
-                <div class="cube" onclick="weeklyLeftClickSegment('${w.id}',${idx})" oncontextmenu="weeklyRightClickSegment(event,'${w.id}',${idx})" style="min-width:64px; text-align:center;">
-                  ${w.segmentStates[idx]}
+                <div class="cube ox-cube ${w.segmentStates[idx] ? 'on' : 'off'}" onclick="weeklyLeftClickSegment('${w.id}',${idx})" oncontextmenu="weeklyRightClickSegment(event,'${w.id}',${idx})">
+                  ${w.segmentStates[idx] ? 'O' : 'X'}
                 </div>
                 <div class="small muted" style="text-align:center; margin-top:4px;">${label}</div>
               </div>
@@ -2156,8 +2174,8 @@ function renderWeekly(){
           <div class="cube-row" style="margin-top:12px; justify-content:center;">
             ${labels.map((label, idx) => `
               <div style="text-align:center;">
-                <div class="cube" onclick="weeklyLeftClickSegment('${w.id}',${idx})" oncontextmenu="weeklyRightClickSegment(event,'${w.id}',${idx})" style="min-width:64px; text-align:center;">
-                  ${w.segmentStates[idx]}
+                <div class="cube ox-cube ${w.segmentStates[idx] ? 'on' : 'off'}" onclick="weeklyLeftClickSegment('${w.id}',${idx})" oncontextmenu="weeklyRightClickSegment(event,'${w.id}',${idx})">
+                  ${w.segmentStates[idx] ? 'O' : 'X'}
                 </div>
                 <div class="small muted" style="text-align:center; margin-top:4px;">${label}</div>
               </div>
@@ -2174,7 +2192,7 @@ function renderWeekly(){
           <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
         </div>
         <div class="row" style="justify-content:center;">
-          <div class="w-value" style="margin:0; min-width:86px;" onclick="setWeeklyValue('${w.id}')">${variant === 'purchase' ? w.current : `${w.current}/${w.max}`}</div>
+          <div class="w-value" style="margin:0; min-width:86px;" onclick="${(w.name === '아그로' || w.name === '⚔️전장 (승리)') ? `changeWeekly('${w.id}',-1)` : `setWeeklyValue('${w.id}')`}" oncontextmenu="${(w.name === '아그로' || w.name === '⚔️전장 (승리)') ? `changeWeeklyByContext(event,'${w.id}',1)` : `event.preventDefault(); setWeeklyValue('${w.id}')`}">${variant === 'purchase' ? w.current : `${w.current}/${w.max}`}</div>
         </div>
       </div>
     `;
