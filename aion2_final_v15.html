@@ -410,11 +410,6 @@
     color:#b8c4eb;
     white-space:nowrap;
   }
-  .extra-boss-charge .extra-label{
-    font-size:10px;
-    color:#9aa7d6;
-    font-weight:800;
-  }
   .extra-boss-btn{
     width:22px;
     height:22px;
@@ -1782,6 +1777,28 @@ function changeBossExtraCharge(taskId, mode){
   renderTable();
 }
 
+function changeRewardExtraCharge(taskId, mode){
+  const t = findTask(taskId);
+  if(!t || !['원정','초월'].includes(t.name)) return;
+
+  const chargeMax = Number(t.rewardChargeMax) || 10;
+  const chargeCurrent = Number(t.rewardChargeCurrent) || 0;
+  const odeTask = getLinkedOdeTaskForTask(taskId);
+
+  if(mode === 'use'){
+    if(chargeCurrent <= 0) return;
+    t.rewardChargeCurrent = clamp(chargeCurrent - 1, 0, chargeMax);
+    if(odeTask) applyOdeDelta(odeTask, -ODE_LINKED_REWARD_STEP);
+  } else if(mode === 'restore'){
+    if(chargeCurrent >= chargeMax) return;
+    t.rewardChargeCurrent = clamp(chargeCurrent + 1, 0, chargeMax);
+    if(odeTask) applyOdeDelta(odeTask, ODE_LINKED_REWARD_STEP);
+  }
+
+  saveState();
+  renderTable();
+}
+
 function smartSpend(taskId, reverse=false){
   const t = findTask(taskId);
   if(!t) return;
@@ -2493,7 +2510,11 @@ function renderCell(character, taskName){
                 ${t.rewardCurrent}/${t.rewardMax}
                 <small>보상횟수</small>
               </div>
-              <div class="sub-count${getMiniClass(t.rewardChargeCurrent, t.rewardChargeMax)}" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
+              <div class="extra-boss-charge">
+                <button class="extra-boss-btn" type="button" onclick="changeRewardExtraCharge('${t.id}','use')">-</button>
+                <div class="sub-count${getMiniClass(t.rewardChargeCurrent, t.rewardChargeMax)}" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
+                <button class="extra-boss-btn" type="button" onclick="changeRewardExtraCharge('${t.id}','restore')">+</button>
+              </div>
             </div>
             <div>
               <div class="cube${challengeCls}" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
@@ -2501,7 +2522,6 @@ function renderCell(character, taskName){
                 <small>보스처치횟수</small>
               </div>
               <div class="extra-boss-charge">
-                <span class="extra-label">추가 처치횟수</span>
                 <button class="extra-boss-btn" type="button" onclick="changeBossExtraCharge('${t.id}','use')">-</button>
                 <div class="sub-count${getMiniClass(t.challengeChargeCurrent, t.challengeChargeMax)}" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
                 <button class="extra-boss-btn" type="button" onclick="changeBossExtraCharge('${t.id}','restore')">+</button>
