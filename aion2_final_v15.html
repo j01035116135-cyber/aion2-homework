@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 브루마 (문의)</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의)</title>
 <style>
   :root{
     --bg:#000000;
@@ -437,7 +437,7 @@
 <div class="app">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="title">아이온2 [무쌍] 마르쿠탄  by 브루마 (문의)</div>
+      <div class="title">아이온2 [무쌍] 마르쿠탄  by 오천크스 (문의)</div>
       <div class="sub">가로형 전용 · 숫자 직접 수정 · 체크박스 완료 · ⚡오드 충전 관리</div>
     </div>
     <div class="topbar-center">
@@ -1570,7 +1570,7 @@ function weeklyLeftClickSegment(id, index){
   const w = state.weeklyTasks.find(x => x.id === id);
   if(!w) return;
   ensureWeeklySegmentState(w);
-  if(w.segmentStates[index]) weeklySetSegment(id, index, 0);
+  if(!w.segmentStates[index]) weeklySetSegment(id, index, 1);
 }
 
 function weeklyRightClickSegment(event, id, index){
@@ -1578,7 +1578,7 @@ function weeklyRightClickSegment(event, id, index){
   const w = state.weeklyTasks.find(x => x.id === id);
   if(!w) return;
   ensureWeeklySegmentState(w);
-  if(!w.segmentStates[index]) weeklySetSegment(id, index, 1);
+  if(w.segmentStates[index]) weeklySetSegment(id, index, 0);
 }
 
 function setNumeric(taskId, key){
