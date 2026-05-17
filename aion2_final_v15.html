@@ -400,6 +400,39 @@
     background:rgba(120,45,45,.18);
   }
 
+  .extra-boss-charge{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    margin-top:5px;
+    font-size:10px;
+    color:#b8c4eb;
+    white-space:nowrap;
+  }
+  .extra-boss-charge .extra-label{
+    font-size:10px;
+    color:#9aa7d6;
+    font-weight:800;
+  }
+  .extra-boss-btn{
+    width:22px;
+    height:22px;
+    padding:0;
+    border-radius:7px;
+    background:#16213b;
+    color:#fff;
+    border:1px solid #34456f;
+    font-size:14px;
+    line-height:1;
+    font-weight:900;
+  }
+  .extra-boss-charge .sub-count{
+    min-width:38px;
+    padding:4px 6px;
+    margin:0;
+  }
+
 @media (max-width:1200px){
   .layout{grid-template-columns:1fr}
   .weekly-grid{grid-template-columns:repeat(3,1fr)}
@@ -1722,6 +1755,30 @@ function changeTaskCount(taskId, key, delta){
 }
 function changeTaskByContext(event, taskId, key, delta){ event.preventDefault(); changeTaskCount(taskId, key, delta); }
 
+function changeBossExtraCharge(taskId, mode){
+  const t = findTask(taskId);
+  if(!t || !['원정','초월'].includes(t.name)) return;
+  normalizeBossExtraChargeState(t);
+  const baseMax = getBaseBossMaxForTask(t);
+  const chargeMax = Number(t.challengeChargeMax) || 10;
+  const chargeCurrent = Number(t.challengeChargeCurrent) || 0;
+
+  if(mode === 'use'){
+    if(chargeCurrent <= 0) return;
+    t.challengeChargeCurrent = clamp(chargeCurrent - 1, 0, chargeMax);
+    t.challengeMax = Math.max(baseMax, (Number(t.challengeMax) || baseMax) + 1);
+    t.challengeCurrent = clamp((Number(t.challengeCurrent) || 0) + 1, 0, t.challengeMax);
+  } else if(mode === 'restore'){
+    if((Number(t.challengeMax) || baseMax) <= baseMax) return;
+    t.challengeMax = Math.max(baseMax, (Number(t.challengeMax) || baseMax) - 1);
+    t.challengeCurrent = clamp((Number(t.challengeCurrent) || 0) - 1, 0, t.challengeMax);
+    t.challengeChargeCurrent = clamp(chargeCurrent + 1, 0, chargeMax);
+  }
+
+  saveState();
+  renderTable();
+}
+
 function smartSpend(taskId, reverse=false){
   const t = findTask(taskId);
   if(!t) return;
@@ -1923,11 +1980,38 @@ function getNextTimedChargeAfter(date, rule){
   return null;
 }
 
+function getBaseBossMaxForTask(task){
+  if(!task) return 0;
+  if(task.name === '원정') return EXPEDITION_BOSS_MAX;
+  if(task.name === '초월') return TRANSCEND_BOSS_MAX;
+  return Number(task.challengeMax) || 0;
+}
+
+function normalizeBossExtraChargeState(task){
+  if(!task || !['원정','초월'].includes(task.name)) return;
+  const baseMax = getBaseBossMaxForTask(task);
+  if(!baseMax) return;
+  if(typeof task.challengeChargeCurrent !== 'number') task.challengeChargeCurrent = 0;
+  if(typeof task.challengeChargeMax !== 'number') task.challengeChargeMax = 10;
+  task.challengeMax = Math.max(baseMax, Number(task.challengeMax) || baseMax);
+  task.challengeCurrent = clamp(Number(task.challengeCurrent) || 0, 0, task.challengeMax);
+  task.challengeChargeCurrent = clamp(task.challengeChargeCurrent, 0, task.challengeChargeMax);
+}
+
 function applyChallengeResetRule(task){
   if(!task || !task.challengeResetRule) return false;
   const challengeHit = getLatestReset(task.challengeResetRule);
   if(challengeHit && task.challengeLastResetAppliedKey !== challengeHit.key){
-    if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
+    if(task.name === '원정' || task.name === '초월'){
+      const baseMax = getBaseBossMaxForTask(task);
+      if(baseMax > 0){
+        task.challengeMax = baseMax;
+        task.challengeCurrent = baseMax;
+      }
+      if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
+    } else if(task.challengeMax > 0){
+      task.challengeCurrent = task.challengeMax;
+    }
     task.challengeLastResetAppliedKey = challengeHit.key;
     return true;
   }
@@ -2387,6 +2471,7 @@ function renderCell(character, taskName){
   }
 
   if(t.name === '원정' || t.name === '초월'){
+    normalizeBossExtraChargeState(t);
     const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
     const challengeCls = getMiniClass(t.challengeCurrent, t.challengeMax);
     return `
@@ -2405,7 +2490,12 @@ function renderCell(character, taskName){
                 ${t.challengeCurrent}/${t.challengeMax}
                 <small>보스처치횟수</small>
               </div>
-              <div class="sub-count${getMiniClass(t.challengeChargeCurrent, t.challengeChargeMax)}" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
+              <div class="extra-boss-charge">
+                <span class="extra-label">추가 처치횟수</span>
+                <button class="extra-boss-btn" type="button" onclick="changeBossExtraCharge('${t.id}','use')">-</button>
+                <div class="sub-count${getMiniClass(t.challengeChargeCurrent, t.challengeChargeMax)}" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
+                <button class="extra-boss-btn" type="button" onclick="changeBossExtraCharge('${t.id}','restore')">+</button>
+              </div>
             </div>
           </div>
         </div>
