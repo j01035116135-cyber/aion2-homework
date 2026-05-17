@@ -1759,26 +1759,25 @@ function changeBossExtraCharge(taskId, mode){
   const t = findTask(taskId);
   if(!t || !['원정','초월'].includes(t.name)) return;
   normalizeBossExtraChargeState(t);
-  const baseMax = getBaseBossMaxForTask(t);
+
   const chargeMax = Number(t.challengeChargeMax) || 10;
   const chargeCurrent = Number(t.challengeChargeCurrent) || 0;
+  const extraUsed = Number(t.extraBossUsed) || 0;
 
   if(mode === 'use'){
     if(chargeCurrent <= 0) return;
+    // 캐릭터별 최대 보스처치횟수는 원정 35 / 초월 28로 고정.
+    // 추가 처치횟수는 서버 통합 사용량(예: 23/84회)에만 +1 반영합니다.
+    t.extraBossUsed = extraUsed + 1;
     t.challengeChargeCurrent = clamp(chargeCurrent - 1, 0, chargeMax);
-    // 추가 처치횟수를 사용하면 캐릭터별 최대 보스처치횟수만 늘립니다.
-    // 현재 남은 처치횟수는 건드리지 않아야 서버 통합 사용량(예: 원정 23/84회)이 즉시 +1 반영됩니다.
-    t.challengeMax = Math.max(baseMax, (Number(t.challengeMax) || baseMax) + 1);
-    t.challengeCurrent = clamp((Number(t.challengeCurrent) || 0), 0, t.challengeMax);
   } else if(mode === 'restore'){
-    if((Number(t.challengeMax) || baseMax) <= baseMax) return;
-    // 추가 처치횟수 복구 시 최대 보스처치횟수만 다시 줄입니다.
-    // 서버 통합 사용량은 max-current 기준이라 즉시 -1 반영됩니다.
-    t.challengeMax = Math.max(baseMax, (Number(t.challengeMax) || baseMax) - 1);
-    t.challengeCurrent = clamp((Number(t.challengeCurrent) || 0), 0, t.challengeMax);
+    if(extraUsed <= 0) return;
+    // 복구 시 서버 통합 사용량만 -1, 충전횟수는 +1 복구합니다.
+    t.extraBossUsed = Math.max(0, extraUsed - 1);
     t.challengeChargeCurrent = clamp(chargeCurrent + 1, 0, chargeMax);
   }
 
+  normalizeBossExtraChargeState(t);
   saveState();
   renderTable();
 }
@@ -1997,9 +1996,13 @@ function normalizeBossExtraChargeState(task){
   if(!baseMax) return;
   if(typeof task.challengeChargeCurrent !== 'number') task.challengeChargeCurrent = 0;
   if(typeof task.challengeChargeMax !== 'number') task.challengeChargeMax = 10;
-  task.challengeMax = Math.max(baseMax, Number(task.challengeMax) || baseMax);
-  task.challengeCurrent = clamp(Number(task.challengeCurrent) || 0, 0, task.challengeMax);
+  if(typeof task.extraBossUsed !== 'number') task.extraBossUsed = 0;
+
+  // 중요: 캐릭터별 보스처치 최대치는 원정 35 / 초월 28로 항상 고정합니다.
+  task.challengeMax = baseMax;
+  task.challengeCurrent = clamp(Number(task.challengeCurrent) || 0, 0, baseMax);
   task.challengeChargeCurrent = clamp(task.challengeChargeCurrent, 0, task.challengeChargeMax);
+  task.extraBossUsed = Math.max(0, Number(task.extraBossUsed) || 0);
 }
 
 function applyChallengeResetRule(task){
@@ -2012,6 +2015,7 @@ function applyChallengeResetRule(task){
         task.challengeMax = baseMax;
         task.challengeCurrent = baseMax;
       }
+      task.extraBossUsed = 0;
       if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
     } else if(task.challengeMax > 0){
       task.challengeCurrent = task.challengeMax;
@@ -2389,8 +2393,10 @@ function getServerBossUsage(taskName){
   let used = 0;
   state.characters.forEach(c => {
     const t = (c.tasks || []).find(x => x.name === taskName);
-    if(t && typeof t.challengeMax === 'number'){
+    if(t){
+      normalizeBossExtraChargeState(t);
       used += Math.max(0, (Number(t.challengeMax) || 0) - (Number(t.challengeCurrent) || 0));
+      used += Math.max(0, Number(t.extraBossUsed) || 0);
     }
   });
   return { used, limit, over: used > limit };
