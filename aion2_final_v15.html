@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 브루마 (문의)</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의)</title>
 <style>
   :root{
     --bg:#000000;
@@ -120,6 +120,16 @@
   thead th:first-child{min-width:170px;position:sticky;left:0;z-index:3;background:#222441}
   tbody td:first-child{position:sticky;left:0;background:#10182c;z-index:2;min-width:170px}
   .th-title{font-size:19px;font-weight:900;margin-bottom:5px;line-height:1.15}
+  .boss-usage-header{
+    display:block;
+    margin-top:6px;
+    font-size:19px;
+    line-height:1.15;
+    font-weight:900;
+    color:#ffffff;
+    text-shadow:0 1px 2px rgba(0,0,0,.55);
+  }
+  .boss-usage-header.over{color:#ffb4b4;}
  .th-sub{
   font-size:10px;
   color:#d7def8;
@@ -409,7 +419,7 @@
 <div class="app">
   <div class="topbar">
     <div class="topbar-left">
-      <div class="title">아이온2 [무쌍] 마르쿠탄  by 브루마 (문의)</div>
+      <div class="title">아이온2 [무쌍] 마르쿠탄  by 오천크스 (문의)</div>
       <div class="sub">가로형 전용 · 숫자 직접 수정 · 체크박스 완료 · ⚡오드 충전 관리</div>
     </div>
     <div class="topbar-center">
@@ -2293,16 +2303,17 @@ function renderHeader(names){
     const isEnd = name === '초월';
     const bossUsage = getServerBossUsage(name);
     const bossUsageHtml = bossUsage
-      ? `<span style="display:block;font-size:13px;margin-top:3px;color:${bossUsage.over ? '#ffb4b4' : '#e9fff0'};font-weight:900;">(${bossUsage.used}/${bossUsage.limit}회)</span>`
+      ? `<span class="boss-usage-header${bossUsage.over ? ' over' : ''}">${bossUsage.used}/${bossUsage.limit}회</span>`
       : '';
+    const hideResetText = !!bossUsage;
 
     if(isOdeGroup) color = '#4d7d62';
 
     return `
       <th class="${isOdeGroup ? `task-group-ode-header ${isStart ? 'task-group-start' : ''} ${isEnd ? 'task-group-end' : ''}` : ''} task-header-click" data-task-header="1" style="background:${color}" onclick="if(!event.target.closest('.palette-pop')) togglePalette('${escapeHtml(name)}')">
         <div class="th-title">${escapeHtml(name)}${bossUsageHtml}</div>
-        <div class="th-sub">${escapeHtml(rule)}</div>
-        <div class="th-sub">${next ? diffText(next) : '리셋 없음'}</div>
+        ${hideResetText ? '' : `<div class="th-sub">${escapeHtml(rule)}</div>`}
+        ${hideResetText ? '' : `<div class="th-sub">${next ? diffText(next) : '리셋 없음'}</div>`}
         ${renderPalette(name, color)}
       </th>
     `;
