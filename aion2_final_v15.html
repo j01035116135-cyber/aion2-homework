@@ -570,6 +570,7 @@ const defaultTaskColors = {
   '⚔️루드라':'#6f3f56',
   '⚔️침식':'#6f3f56',
   '⚔️무스펠':'#6f3f56',
+  '🛠️오드제작':'#4d7d62',
 };
 
 const EXTRA_CHARGE_DEFAULTS = {
@@ -589,6 +590,8 @@ const ODE_CHARGE_HOURS = [2,5,8,11,14,17,20,23];
 const ODE_MANUAL_STEP = 40;
 const ODE_LINKED_REWARD_STEP = 80;
 const ODE_LINKED_TASK_NAMES = ['원정','초월','⚔️루드라','⚔️침식','⚔️무스펠'];
+const ODE_CRAFT_NAME = '🛠️오드제작';
+const ODE_CRAFT_MAX = 4;
 const EXPEDITION_REWARD_MAX = 21;
 const EXPEDITION_BOSS_MAX = 35;
 const EXPEDITION_KINA_100_LIMIT = 84;
@@ -861,7 +864,31 @@ function normalizeLoadedState(parsed){
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
         if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
-      } else if(t.name === '⚔️루드라' || t.name === '⚔️침식' || t.name === '⚔️무스펠') {
+      } else if(t.name === ODE_CRAFT_NAME) {
+        t.rewardMax = ODE_CRAFT_MAX;
+        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
+        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
+        t.challengeMax = 0;
+        t.challengeCurrent = 0;
+        t.chargeMax = 0;
+        t.chargeCurrent = 0;
+        t.challengeChargeMax = 0;
+        t.rewardChargeMax = 0;
+        t.challengeChargeCurrent = 0;
+        t.rewardChargeCurrent = 0;
+        t.resetRule = 'weekly_wed_05_reset';
+      } else if(t.name === '⚔️무스펠') {
+        t.challengeMax = 0;
+        t.challengeCurrent = 0;
+        t.challengeChargeMax = 0;
+        t.challengeChargeCurrent = 0;
+        t.rewardChargeMax = 10;
+        if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
+        t.rewardMax = 2;
+        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
+        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
+        t.resetRule = 'weekly_wed_05_reset';
+      } else if(t.name === '⚔️루드라' || t.name === '⚔️침식') {
         t.challengeChargeMax = 10;
         t.rewardChargeMax = 10;
         if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
@@ -1080,7 +1107,18 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     challengeChargeMax = 10;
     rewardChargeMax = 10;
     challengeResetRule = 'weekly_wed_05_reset';
-  } else if(name === '⚔️루드라' || name === '⚔️침식' || name === '⚔️무스펠') {
+  } else if(name === ODE_CRAFT_NAME){
+    rewardMax = ODE_CRAFT_MAX;
+    challengeMax = 0;
+    chargeMax = 0;
+    resetRule = 'weekly_wed_05_reset';
+  } else if(name === '⚔️무스펠') {
+    challengeMax = 0;
+    challengeChargeMax = 0;
+    rewardMax = 2;
+    rewardChargeMax = 10;
+    resetRule = 'weekly_wed_05_reset';
+  } else if(name === '⚔️루드라' || name === '⚔️침식') {
     challengeChargeMax = 10;
     rewardChargeMax = 10;
   } else if(name === '⚡오드'){
@@ -1469,6 +1507,7 @@ function addTaskToCharacter(character, data){ character.tasks.push(createTask(da
 function getDefaultPresetTasks(){
   return [
     { name:'⚡오드', rewardMax:ODE_REWARD_MAX, chargeMax:ODE_CHARGE_MAX, resetRule:'od_charge' },
+    { name:ODE_CRAFT_NAME, rewardMax:ODE_CRAFT_MAX, resetRule:'weekly_wed_05_reset' },
     { name:'🌀회랑', rewardMax:6, resetRule:'wed_sat_22_reset' },
     { name:'원정', rewardMax:EXPEDITION_REWARD_MAX, challengeMax:EXPEDITION_BOSS_MAX, resetRule:'expedition_charge' },
     { name:'초월', challengeMax:TRANSCEND_BOSS_MAX, rewardMax:TRANSCEND_REWARD_MAX, resetRule:'transcend_charge' },
@@ -2371,8 +2410,8 @@ function orderedTaskNames(){
   const hiddenTasks = ['저주'];
 
   const preferred = [
-    '🌀회랑','⚡오드','원정',
-    '초월','악몽','각성전','⚔️루드라','⚔️침식','⚔️무스펠'
+    '⚡오드', ODE_CRAFT_NAME, '🌀회랑',
+    '원정','초월','악몽','각성전','⚔️루드라','⚔️침식','⚔️무스펠'
   ];
 
   const all = [];
@@ -2428,10 +2467,10 @@ function renderHeader(names){
     const rule = t ? getRuleLabel(t.resetRule) : '';
     const next = t ? getNextResetDate(t.resetRule) : null;
 
-    const odeGroup = ['⚡오드','원정','초월'];
+    const odeGroup = ['⚡오드', ODE_CRAFT_NAME];
     const isOdeGroup = odeGroup.includes(name);
     const isStart = name === '⚡오드';
-    const isEnd = name === '초월';
+    const isEnd = name === ODE_CRAFT_NAME;
     const bossUsage = getServerBossUsage(name);
     const bossUsageHtml = bossUsage
       ? `<span class="boss-usage-header${bossUsage.over ? ' over' : ''}">${bossUsage.used}/${bossUsage.limit}회</span>`
@@ -2466,13 +2505,32 @@ function renderCell(character, taskName){
     cellAccent = 'border:2px solid #d7b14a; box-shadow: inset 0 0 0 1px rgba(255,230,140,.18); border-radius:14px; padding:8px;';
   }
 
-  const odeGroup = ['⚡오드','원정','초월'];
+  const odeGroup = ['⚡오드', ODE_CRAFT_NAME];
   const isOdeGroup = odeGroup.includes(t.name);
   const tdGroupClass = isOdeGroup
-    ? `task-group-ode-cell ${t.name === '⚡오드' ? 'task-group-start' : ''} ${t.name === '초월' ? 'task-group-end' : ''}`
+    ? `task-group-ode-cell ${t.name === '⚡오드' ? 'task-group-start' : ''} ${t.name === ODE_CRAFT_NAME ? 'task-group-end' : ''}`
     : '';
 
-  if(t.name === '⚔️루드라' || t.name === '⚔️침식' || t.name === '⚔️무스펠') {
+  if(t.name === '⚔️무스펠') {
+    const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
+    return `
+      <td class="${tdGroupClass}" style="background:${bg}">
+        <div class="cell-wrap" style="${cellAccent}">
+          <div class="cube-row">
+            <div>
+              <div class="cube${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
+                ${t.rewardCurrent}/${t.rewardMax}
+                <small>보상횟수</small>
+              </div>
+              <div class="sub-count${getMiniClass(t.rewardChargeCurrent, t.rewardChargeMax)}" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
+            </div>
+          </div>
+        </div>
+      </td>
+    `;
+  }
+
+  if(t.name === '⚔️루드라' || t.name === '⚔️침식') {
     const challengeCls = getMiniClass(t.challengeCurrent, t.challengeMax);
     const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
     return `
@@ -2494,6 +2552,19 @@ function renderCell(character, taskName){
               <div class="sub-count${getMiniClass(t.rewardChargeCurrent, t.rewardChargeMax)}" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
             </div>
           </div>
+        </div>
+      </td>
+    `;
+  }
+
+  if(t.name === ODE_CRAFT_NAME) {
+    const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
+    return `
+      <td class="${tdGroupClass}" style="background:${bg}">
+        <div class="cell-wrap" style="${cellAccent}">
+          <input class="check" type="checkbox" ${t.rewardCurrent === 0 ? 'checked' : ''} onchange="completeTask('${t.id}', this.checked)" />
+          <div class="main-count${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
+          <div class="small muted" style="margin-top:2px;font-weight:800;">제작횟수</div>
         </div>
       </td>
     `;
