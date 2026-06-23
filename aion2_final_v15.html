@@ -1794,23 +1794,34 @@ function changeTaskByContext(event, taskId, key, delta){ event.preventDefault();
 function changeBossExtraCharge(taskId, mode){
   const t = findTask(taskId);
   if(!t || !['원정','초월'].includes(t.name)) return;
+
   normalizeBossExtraChargeState(t);
 
-  const chargeMax = Number(t.challengeChargeMax) || 10;
+  // 원정/초월 추가충전은 무조건 0 ~ 10 사이에서만 움직이게 고정
+  const chargeMax = 10;
   const chargeCurrent = Number(t.challengeChargeCurrent) || 0;
   const extraUsed = Number(t.extraBossUsed) || 0;
 
+  t.challengeChargeMax = chargeMax;
+
   if(mode === 'use'){
+    // - 버튼: 현재 충전횟수에서 1 차감
     if(chargeCurrent <= 0) return;
-    // 캐릭터별 최대 보스처치횟수는 원정 35 / 초월 28로 고정.
-    // 추가 처치횟수는 서버 통합 사용량(예: 23/84회)에만 +1 반영합니다.
-    t.extraBossUsed = extraUsed + 1;
+
     t.challengeChargeCurrent = clamp(chargeCurrent - 1, 0, chargeMax);
+
+    // 서버 통합 사용량 표시용
+    t.extraBossUsed = extraUsed + 1;
+
   } else if(mode === 'restore'){
-    if(extraUsed <= 0) return;
-    // 복구 시 서버 통합 사용량만 -1, 충전횟수는 +1 복구합니다.
-    t.extraBossUsed = Math.max(0, extraUsed - 1);
+    // + 버튼: 현재 충전횟수에서 1 복구
+    // 중요: extraBossUsed가 0이어도 + 가능해야 함
+    if(chargeCurrent >= chargeMax) return;
+
     t.challengeChargeCurrent = clamp(chargeCurrent + 1, 0, chargeMax);
+
+    // 서버 통합 사용량은 0 밑으로 내려가지 않게만 처리
+    t.extraBossUsed = Math.max(0, extraUsed - 1);
   }
 
   normalizeBossExtraChargeState(t);
