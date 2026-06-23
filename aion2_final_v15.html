@@ -620,8 +620,8 @@ function makeDefaultWeeklyTasks(){
     {id:uid(), name:'슈고', current:14, max:14, chargeCurrent:0, chargeMax:10, resetRule:'daily_05_plus2', lastResetAppliedKey:null},
     {id:uid(), name:'사명', current:1, max:1, resetRule:'daily_05_reset', lastResetAppliedKey:null},
     makeWeekly('일일던전',14),
-    makeWeekly('아티쟁',2),
-    makeWeekly('나흐마',2),
+    {id:uid(), name:'아티쟁', current:0, max:2, segmentStates:[0,0], resetRule:'weekly_wed_05_reset', lastResetAppliedKey:null},
+    {id:uid(), name:'나흐마', current:0, max:2, segmentStates:[0,0], resetRule:'weekly_wed_05_reset', lastResetAppliedKey:null},
     makeWeekly('아그로',3),
     makeWeekly('⚔️전장 (승리)',3),
     makeWeekly('어비스사냥',2000),
@@ -951,18 +951,20 @@ function normalizeLoadedState(parsed){
     }
     if (w.name === '아티쟁') {
       w.max = 2;
-      if(typeof w.current !== 'number') w.current = w.max;
+      if(typeof w.current !== 'number') w.current = 0;
       w.current = clamp(w.current, 0, w.max);
-      if(Array.isArray(w.segmentStates) && w.segmentStates.length !== 2){
-        w.segmentStates = [w.current >= 1 ? 1 : 0, w.current >= 2 ? 1 : 0];
+      if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 2){
+        w.segmentStates = [0, 0];
+        w.current = 0;
       }
     }
     if (w.name === '나흐마') {
       w.max = 2;
-      if(typeof w.current !== 'number') w.current = w.max;
+      if(typeof w.current !== 'number') w.current = 0;
       w.current = clamp(w.current, 0, w.max);
-      if(Array.isArray(w.segmentStates) && w.segmentStates.length !== 2){
-        w.segmentStates = [w.current >= 1 ? 1 : 0, w.current >= 2 ? 1 : 0];
+      if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 2){
+        w.segmentStates = [0, 0];
+        w.current = 0;
       }
     }
   });
@@ -1609,18 +1611,17 @@ function weeklyComplete(id, checked){
 
 function ensureWeeklySegmentState(w){
   if(!w) return;
-  if(w.name === '나흐마'){
-    if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 2){
-      w.segmentStates = [w.current >= 1 ? 1 : 0, w.current >= 2 ? 1 : 0];
-    }
-    w.current = w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
+  if(w.name === '나흐마' || w.name === '아티쟁'){
     w.max = 2;
-  } else if(w.name === '아티쟁'){
+
+    // 아티쟁/나흐마는 리셋 또는 신규 생성 시 X,X 상태로 시작
+    // X = 0, O = 1
     if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 2){
-      w.segmentStates = [w.current >= 1 ? 1 : 0, w.current >= 2 ? 1 : 0];
+      w.segmentStates = [0, 0];
     }
+
+    w.segmentStates = w.segmentStates.map(v => v ? 1 : 0);
     w.current = w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
-    w.max = 2;
   }
 }
 
@@ -2179,9 +2180,16 @@ function applyRuleToWeekly(task){
   } else if(task.resetRule === 'daily_05_plus1'){
     task.current = clamp(task.current + 1, 0, task.max);
   } else {
-    task.current = task.max;
-    if(Array.isArray(task.segmentStates)){
-      task.segmentStates = task.segmentStates.map(() => 1);
+    if(task.name === '아티쟁' || task.name === '나흐마'){
+      // 매주 수요일 리셋 시 X,X 로 시작
+      task.max = 2;
+      task.segmentStates = [0, 0];
+      task.current = 0;
+    } else {
+      task.current = task.max;
+      if(Array.isArray(task.segmentStates)){
+        task.segmentStates = task.segmentStates.map(() => 1);
+      }
     }
   }
 
