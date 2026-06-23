@@ -620,8 +620,8 @@ function makeDefaultWeeklyTasks(){
     {id:uid(), name:'슈고', current:14, max:14, chargeCurrent:0, chargeMax:10, resetRule:'daily_05_plus2', lastResetAppliedKey:null},
     {id:uid(), name:'사명', current:1, max:1, resetRule:'daily_05_reset', lastResetAppliedKey:null},
     makeWeekly('일일던전',14),
-    {id:uid(), name:'아티쟁', current:0, max:2, segmentStates:[0,0], resetRule:'weekly_wed_05_reset', lastResetAppliedKey:null},
-    {id:uid(), name:'나흐마', current:0, max:2, segmentStates:[0,0], resetRule:'weekly_wed_05_reset', lastResetAppliedKey:null},
+    makeWeekly('아티쟁',2),
+    makeWeekly('나흐마',2),
     makeWeekly('아그로',3),
     makeWeekly('⚔️전장 (승리)',3),
     makeWeekly('어비스사냥',2000),
@@ -951,21 +951,29 @@ function normalizeLoadedState(parsed){
     }
     if (w.name === '아티쟁') {
       w.max = 2;
-      if(typeof w.current !== 'number') w.current = 0;
+      if(typeof w.current !== 'number') w.current = w.max;
       w.current = clamp(w.current, 0, w.max);
+
+      // 아티쟁은 X가 미완료, O가 완료입니다.
+      // current는 '남은 개수'로 계산합니다. O O면 current=0 완료입니다.
       if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 2){
-        w.segmentStates = [0, 0];
-        w.current = 0;
+        const doneCount = clamp(w.max - w.current, 0, w.max);
+        w.segmentStates = [doneCount >= 1 ? 1 : 0, doneCount >= 2 ? 1 : 0];
       }
+      w.current = w.max - w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
     }
     if (w.name === '나흐마') {
       w.max = 2;
-      if(typeof w.current !== 'number') w.current = 0;
+      if(typeof w.current !== 'number') w.current = w.max;
       w.current = clamp(w.current, 0, w.max);
+
+      // 나흐마도 X가 미완료, O가 완료입니다.
+      // current는 '남은 개수'로 계산합니다. O O면 current=0 완료입니다.
       if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 2){
-        w.segmentStates = [0, 0];
-        w.current = 0;
+        const doneCount = clamp(w.max - w.current, 0, w.max);
+        w.segmentStates = [doneCount >= 1 ? 1 : 0, doneCount >= 2 ? 1 : 0];
       }
+      w.current = w.max - w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
     }
   });
 
@@ -1596,32 +1604,39 @@ function changeWeeklyChargeByContext(event, id, delta){
 function weeklyComplete(id, checked){
   const w = state.weeklyTasks.find(x=>x.id===id);
   if(!w) return;
+
   if(w.name === '슈고'){
     w.current = checked ? 0 : w.max;
   } else if(w.name === '사명'){
     w.current = checked ? 0 : 1;
+  } else if(w.name === '아티쟁' || w.name === '나흐마'){
+    // 체크박스 체크 = 전체 완료 = O O
+    // 체크박스 해제 = 전체 미완료 = X X
+    w.max = 2;
+    w.segmentStates = [checked ? 1 : 0, checked ? 1 : 0];
+    w.current = checked ? 0 : w.max;
   } else {
     w.current = checked ? 0 : w.max;
   }
-  if(w.segmentStates){
-    w.segmentStates = w.segmentStates.map(() => checked ? 0 : 1);
-  }
+
   saveState(); renderWeekly();
 }
 
 function ensureWeeklySegmentState(w){
   if(!w) return;
+
   if(w.name === '나흐마' || w.name === '아티쟁'){
     w.max = 2;
 
-    // 아티쟁/나흐마는 리셋 또는 신규 생성 시 X,X 상태로 시작
-    // X = 0, O = 1
+    // segmentStates: 1 = O(완료), 0 = X(미완료)
+    // current: 남은 개수. O O면 0, X X면 2.
     if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 2){
-      w.segmentStates = [0, 0];
+      const current = clamp(Number(w.current) || 0, 0, w.max);
+      const doneCount = clamp(w.max - current, 0, w.max);
+      w.segmentStates = [doneCount >= 1 ? 1 : 0, doneCount >= 2 ? 1 : 0];
     }
 
-    w.segmentStates = w.segmentStates.map(v => v ? 1 : 0);
-    w.current = w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
+    w.current = w.max - w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
   }
 }
 
@@ -1630,8 +1645,13 @@ function weeklySetSegment(id, index, nextValue){
   if(!w) return;
   ensureWeeklySegmentState(w);
   if(!Array.isArray(w.segmentStates) || index < 0 || index >= w.segmentStates.length) return;
+
+  // nextValue 1 = O(완료), 0 = X(미완료)
   w.segmentStates[index] = nextValue ? 1 : 0;
-  w.current = w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
+
+  // 완료된 O 개수를 빼서 남은 개수로 저장해야 전체 진행률/완료 판정이 맞습니다.
+  w.current = w.max - w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
+
   saveState();
   renderWeekly();
 }
@@ -2180,16 +2200,16 @@ function applyRuleToWeekly(task){
   } else if(task.resetRule === 'daily_05_plus1'){
     task.current = clamp(task.current + 1, 0, task.max);
   } else {
+    task.current = task.max;
+
+    // 아티쟁/나흐마는 리셋 시 X X로 시작해야 합니다.
+    // X = 미완료이므로 segmentStates는 0, current는 max입니다.
     if(task.name === '아티쟁' || task.name === '나흐마'){
-      // 매주 수요일 리셋 시 X,X 로 시작
       task.max = 2;
-      task.segmentStates = [0, 0];
-      task.current = 0;
-    } else {
       task.current = task.max;
-      if(Array.isArray(task.segmentStates)){
-        task.segmentStates = task.segmentStates.map(() => 1);
-      }
+      task.segmentStates = [0, 0];
+    } else if(Array.isArray(task.segmentStates)){
+      task.segmentStates = task.segmentStates.map(() => 0);
     }
   }
 
