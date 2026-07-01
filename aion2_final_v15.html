@@ -527,7 +527,7 @@
         <div class="weekly-head">
           <div>
             <div class="section-title" style="margin-bottom:4px">숙제 현황</div>
-            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정은 05/13/21시 +1 · 초월은 05/17시 +1 · 보스처치는 수요일 05시 초기화</div>
+            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정/초월 보상은 주간 횟수 기록 · 도움은 원정/초월 통합 10회 · 수요일 05시 초기화</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
         </div>
@@ -589,21 +589,20 @@ const ODE_CHARGE_MAX = 2000;
 const ODE_CHARGE_INCREMENT = 15;
 const ODE_CHARGE_HOURS = [2,5,8,11,14,17,20,23];
 const ODE_MANUAL_STEP = 40;
-const ODE_LINKED_REWARD_STEP = 80;
+const ODE_LINKED_REWARD_STEP = 120;
 const SANCTUARY_NAME = '⚔️성역⚔️';
 const SANCTUARY_BOSS_NAMES = ['⚔️루드라','⚔️침식','⚔️무스펠'];
 const ODE_LINKED_TASK_NAMES = ['원정','초월',SANCTUARY_NAME];
 const ODE_CRAFT_NAME = '🛠️오드제작';
 const ODE_CRAFT_MAX = 4;
-const EXPEDITION_REWARD_MAX = 21;
-const EXPEDITION_BOSS_MAX = 35;
-const EXPEDITION_KINA_100_LIMIT = 84;
-const EXPEDITION_CHARGE_HOURS = [5,13,21];
-const TRANSCEND_REWARD_MAX = 14;
-const TRANSCEND_BOSS_MAX = 28;
-const TRANSCEND_KINA_100_LIMIT = 56;
-const TRANSCEND_CHARGE_HOURS = [5,17];
-const KINA_100_BOSS_LIMITS = { '원정': EXPEDITION_KINA_100_LIMIT, '초월': TRANSCEND_KINA_100_LIMIT };
+const EXPEDITION_TRANSCEND_HELP_MAX = 10;
+const EXPEDITION_REWARD_MAX = 0;
+const EXPEDITION_BOSS_MAX = 0;
+const EXPEDITION_CHARGE_HOURS = [];
+const TRANSCEND_REWARD_MAX = 0;
+const TRANSCEND_BOSS_MAX = 0;
+const TRANSCEND_CHARGE_HOURS = [];
+const KINA_100_BOSS_LIMITS = {};
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
@@ -615,6 +614,44 @@ function normalizeTaskName(name){
 function isCorridorTaskName(name){ return normalizeTaskName(name) === CORRIDOR_NAME; }
 function getDefaultColor(name){ return defaultTaskColors[normalizeTaskName(name)] || '#4a4578'; }
 
+
+function isExpeditionTranscendName(name){ return name === '원정' || name === '초월'; }
+function normalizeSharedExpeditionTranscendHelp(character){
+  if(!character) return;
+  if(typeof character.expeditionTranscendHelpMax !== 'number') character.expeditionTranscendHelpMax = EXPEDITION_TRANSCEND_HELP_MAX;
+  character.expeditionTranscendHelpMax = EXPEDITION_TRANSCEND_HELP_MAX;
+  if(typeof character.expeditionTranscendHelpCurrent !== 'number') character.expeditionTranscendHelpCurrent = character.expeditionTranscendHelpMax;
+  character.expeditionTranscendHelpCurrent = clamp(character.expeditionTranscendHelpCurrent, 0, character.expeditionTranscendHelpMax);
+  if(typeof character.expeditionTranscendLastResetAppliedKey !== 'string') character.expeditionTranscendLastResetAppliedKey = null;
+}
+function applySharedExpeditionTranscendHelpReset(character){
+  if(!character) return false;
+  normalizeSharedExpeditionTranscendHelp(character);
+  const hit = getLatestReset('weekly_wed_05_reset');
+  if(hit && character.expeditionTranscendLastResetAppliedKey !== hit.key){
+    character.expeditionTranscendHelpCurrent = character.expeditionTranscendHelpMax;
+    character.expeditionTranscendLastResetAppliedKey = hit.key;
+    return true;
+  }
+  return false;
+}
+function normalizeExpeditionTranscendTask(task){
+  if(!task || !isExpeditionTranscendName(task.name)) return;
+  task.rewardMax = 0;
+  if(typeof task.rewardCurrent !== 'number') task.rewardCurrent = 0;
+  task.rewardCurrent = Math.max(0, Number(task.rewardCurrent) || 0);
+  task.challengeMax = 0;
+  task.challengeCurrent = 0;
+  task.chargeMax = 0;
+  task.chargeCurrent = 0;
+  task.challengeChargeMax = 0;
+  task.challengeChargeCurrent = 0;
+  task.rewardChargeMax = 0;
+  task.rewardChargeCurrent = 0;
+  task.challengeResetRule = null;
+  task.challengeLastResetAppliedKey = null;
+  task.resetRule = 'weekly_wed_05_reset';
+}
 function makeWeekly(name,max){
   return {id:uid(), name, current:max, max, resetRule:'weekly_wed_05_reset', lastResetAppliedKey:null};
 }
@@ -873,6 +910,8 @@ function normalizeLoadedState(parsed){
 
   parsed.characters.forEach(c => {
     if(typeof c.isNameManuallyEdited !== 'boolean') c.isNameManuallyEdited = false;
+    normalizeSharedExpeditionTranscendHelp(c);
+    applySharedExpeditionTranscendHelpReset(c);
     if (!c.tasks) return;
     const legacyShugo = (c.tasks || []).find(t => t.name === '슈고');
     if(legacyShugo){
@@ -913,38 +952,8 @@ function normalizeLoadedState(parsed){
     c.tasks.forEach(t => {
       t.name = normalizeTaskName(t.name);
 
-      if(t.name === '원정'){
-        t.rewardMax = EXPEDITION_REWARD_MAX;
-        t.challengeMax = EXPEDITION_BOSS_MAX;
-        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
-        if(typeof t.challengeCurrent !== 'number') t.challengeCurrent = t.challengeMax;
-        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
-        t.challengeCurrent = clamp(t.challengeCurrent, 0, t.challengeMax);
-        t.resetRule = 'expedition_charge';
-        t.challengeResetRule = 'weekly_wed_05_reset';
-        if(typeof t.challengeLastResetAppliedKey !== 'string') t.challengeLastResetAppliedKey = null;
-        t.chargeMax = 0;
-        t.chargeCurrent = 0;
-        t.challengeChargeMax = 10;
-        t.rewardChargeMax = 10;
-        if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
-        if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
-      } else if(t.name === '초월'){
-        t.rewardMax = TRANSCEND_REWARD_MAX;
-        t.challengeMax = TRANSCEND_BOSS_MAX;
-        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
-        if(typeof t.challengeCurrent !== 'number') t.challengeCurrent = t.challengeMax;
-        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
-        t.challengeCurrent = clamp(t.challengeCurrent, 0, t.challengeMax);
-        t.resetRule = 'transcend_charge';
-        t.challengeResetRule = 'weekly_wed_05_reset';
-        if(typeof t.challengeLastResetAppliedKey !== 'string') t.challengeLastResetAppliedKey = null;
-        t.chargeMax = 0;
-        t.chargeCurrent = 0;
-        t.challengeChargeMax = 10;
-        t.rewardChargeMax = 10;
-        if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
-        if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
+      if(t.name === '원정' || t.name === '초월'){
+        normalizeExpeditionTranscendTask(t);
       } else if(t.name === ODE_CRAFT_NAME) {
         t.rewardMax = ODE_CRAFT_MAX;
         if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
@@ -1168,22 +1177,11 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
 
   let challengeResetRule = null, challengeLastResetAppliedKey = null;
 
-  if(name === '원정'){
-    rewardMax = EXPEDITION_REWARD_MAX;
-    challengeMax = EXPEDITION_BOSS_MAX;
+  if(name === '원정' || name === '초월'){
+    rewardMax = 0;
+    challengeMax = 0;
     chargeMax = 0;
-    resetRule = 'expedition_charge';
-    challengeChargeMax = 10;
-    rewardChargeMax = 10;
-    challengeResetRule = 'weekly_wed_05_reset';
-  } else if(name === '초월'){
-    rewardMax = TRANSCEND_REWARD_MAX;
-    challengeMax = TRANSCEND_BOSS_MAX;
-    chargeMax = 0;
-    resetRule = 'transcend_charge';
-    challengeChargeMax = 10;
-    rewardChargeMax = 10;
-    challengeResetRule = 'weekly_wed_05_reset';
+    resetRule = 'weekly_wed_05_reset';
   } else if(name === ODE_CRAFT_NAME){
     rewardMax = ODE_CRAFT_MAX;
     challengeMax = 0;
@@ -1225,6 +1223,8 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     task.bosses = SANCTUARY_BOSS_NAMES.map(name => makeSanctuaryBossState(name));
     syncSanctuaryTask(task);
   }
+
+  if(name === '원정' || name === '초월') normalizeExpeditionTranscendTask(task);
 
   if(name === '⚡오드'){
     const latest = getLatestOdCharge();
@@ -1588,8 +1588,8 @@ function getDefaultPresetTasks(){
     { name:'⚡오드', rewardMax:ODE_REWARD_MAX, chargeMax:ODE_CHARGE_MAX, resetRule:'od_charge' },
     { name:ODE_CRAFT_NAME, rewardMax:ODE_CRAFT_MAX, resetRule:'weekly_wed_05_reset' },
     { name:'🌀회랑', rewardMax:6, resetRule:'wed_sat_22_reset' },
-    { name:'원정', rewardMax:EXPEDITION_REWARD_MAX, challengeMax:EXPEDITION_BOSS_MAX, resetRule:'expedition_charge' },
-    { name:'초월', challengeMax:TRANSCEND_BOSS_MAX, rewardMax:TRANSCEND_REWARD_MAX, resetRule:'transcend_charge' },
+    { name:'원정', rewardMax:0, challengeMax:0, resetRule:'weekly_wed_05_reset' },
+    { name:'초월', rewardMax:0, challengeMax:0, resetRule:'weekly_wed_05_reset' },
     { name:'악몽', rewardMax:14, resetRule:'daily_05_plus2' },
     { name:'각성전', rewardMax:3, resetRule:'weekly_wed_05_reset' },
     { name:SANCTUARY_NAME, challengeMax:0, rewardMax:3, resetRule:'weekly_wed_05_reset' }
@@ -1923,6 +1923,86 @@ function completeSanctuaryTask(taskId, checked){
 }
 
 
+
+function getOdeAvailableAmount(odeTask){
+  if(!odeTask) return 0;
+  normalizeOdeTask(odeTask);
+  return (Number(odeTask.rewardCurrent) || 0) + (Number(odeTask.chargeCurrent) || 0);
+}
+function changeExpeditionTranscendReward(taskId, delta){
+  const t = findTask(taskId);
+  if(!t || !isExpeditionTranscendName(t.name) || !delta) return;
+  normalizeExpeditionTranscendTask(t);
+  const prev = Math.max(0, Number(t.rewardCurrent) || 0);
+  const next = Math.max(0, prev + delta);
+  const actualDelta = next - prev;
+  if(!actualDelta) return;
+  const odeTask = getLinkedOdeTaskForTask(taskId);
+  if(!Array.isArray(t.odeLinkedAdjustments)) t.odeLinkedAdjustments = [];
+  if(actualDelta > 0){
+    if(odeTask && getOdeAvailableAmount(odeTask) < actualDelta * ODE_LINKED_REWARD_STEP){
+      alert(`오드가 부족합니다. 보상 1회당 오드 ${ODE_LINKED_REWARD_STEP}이 필요합니다.`);
+      return;
+    }
+    for(let i=0; i<actualDelta; i++){
+      if(odeTask){
+        const breakdown = consumeOdeAmountWithBreakdown(odeTask, ODE_LINKED_REWARD_STEP);
+        t.odeLinkedAdjustments.push(breakdown);
+      }
+    }
+  } else {
+    for(let i=0; i<Math.abs(actualDelta); i++){
+      const breakdown = t.odeLinkedAdjustments.pop();
+      if(odeTask){
+        if(breakdown) restoreOdeFromBreakdown(odeTask, breakdown);
+        else applyOdeDelta(odeTask, ODE_LINKED_REWARD_STEP);
+      }
+    }
+  }
+  t.rewardCurrent = next;
+  saveState();
+  renderTable();
+}
+function changeExpeditionTranscendRewardByContext(event, taskId, delta){
+  event.preventDefault();
+  changeExpeditionTranscendReward(taskId, delta);
+}
+function setExpeditionTranscendReward(taskId){
+  const t = findTask(taskId);
+  if(!t || !isExpeditionTranscendName(t.name)) return;
+  normalizeExpeditionTranscendTask(t);
+  const prev = Math.max(0, Number(t.rewardCurrent) || 0);
+  const v = prompt(`${t.name} 이번 주 보상 횟수를 입력하세요`, String(prev));
+  if(v === null) return;
+  const num = Number(v);
+  if(Number.isNaN(num) || num < 0){ alert('0 이상의 숫자만 입력해주세요.'); return; }
+  changeExpeditionTranscendReward(taskId, Math.floor(num) - prev);
+}
+function changeExpeditionTranscendHelp(taskId, delta){
+  const c = findCharacterByTaskId(taskId);
+  if(!c) return;
+  normalizeSharedExpeditionTranscendHelp(c);
+  c.expeditionTranscendHelpCurrent = clamp((Number(c.expeditionTranscendHelpCurrent) || 0) + delta, 0, c.expeditionTranscendHelpMax);
+  saveState();
+  renderTable();
+}
+function changeExpeditionTranscendHelpByContext(event, taskId, delta){
+  event.preventDefault();
+  changeExpeditionTranscendHelp(taskId, delta);
+}
+function setExpeditionTranscendHelp(taskId){
+  const c = findCharacterByTaskId(taskId);
+  if(!c) return;
+  normalizeSharedExpeditionTranscendHelp(c);
+  const v = prompt('원정/초월 통합 도움 남은 횟수를 입력하세요', String(c.expeditionTranscendHelpCurrent));
+  if(v === null) return;
+  const num = Number(v);
+  if(Number.isNaN(num)){ alert('숫자만 입력해주세요.'); return; }
+  c.expeditionTranscendHelpCurrent = clamp(Math.floor(num), 0, c.expeditionTranscendHelpMax);
+  saveState();
+  renderTable();
+}
+
 function changeBossExtraCharge(taskId, mode){
   const t = findTask(taskId);
   if(!t || !['원정','초월'].includes(t.name)) return;
@@ -2203,7 +2283,6 @@ function normalizeBossExtraChargeState(task){
   if(typeof task.challengeChargeMax !== 'number') task.challengeChargeMax = 10;
   if(typeof task.extraBossUsed !== 'number') task.extraBossUsed = 0;
 
-  // 중요: 캐릭터별 보스처치 최대치는 원정 35 / 초월 28로 항상 고정합니다.
   task.challengeMax = baseMax;
   task.challengeCurrent = clamp(Number(task.challengeCurrent) || 0, 0, baseMax);
   task.challengeChargeCurrent = clamp(task.challengeChargeCurrent, 0, task.challengeChargeMax);
@@ -2283,6 +2362,10 @@ function applyRuleToTask(task){
   const hit = getLatestReset(task.resetRule);
   if(hit && task.lastResetAppliedKey !== hit.key){
     if(task.resetRule === 'daily_05_reset' || task.resetRule === 'weekly_wed_05_reset' || task.resetRule === 'tue_thu_sat_21_reset' || task.resetRule === 'wed_sat_22_reset'){
+      if(task.name === '원정' || task.name === '초월'){
+        task.rewardCurrent = 0;
+        task.challengeCurrent = 0;
+      }
       if(task.name === CORRIDOR_NAME){
         task.lowerCurrent = task.lowerMax || 3;
         task.middleCurrent = task.middleMax || 3;
@@ -2706,34 +2789,32 @@ function renderCell(character, taskName){
   }
 
   if(t.name === '원정' || t.name === '초월'){
-    normalizeBossExtraChargeState(t);
-    const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
-    const challengeCls = getMiniClass(t.challengeCurrent, t.challengeMax);
+    normalizeExpeditionTranscendTask(t);
+    normalizeSharedExpeditionTranscendHelp(c);
+    const rewardCount = Math.max(0, Number(t.rewardCurrent) || 0);
+    const helpCurrent = c.expeditionTranscendHelpCurrent;
+    const helpMax = c.expeditionTranscendHelpMax;
+    const helpCls = getMiniClass(helpCurrent, helpMax);
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
-          <div class="cube-row">
-            <div>
-              <div class="cube${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
-                ${t.rewardCurrent}/${t.rewardMax}
-                <small>보상횟수</small>
+          <div class="cube-row" style="gap:10px; flex-wrap:nowrap;">
+            <div style="text-align:center;">
+              <div class="cube" onclick="setExpeditionTranscendReward('${t.id}')" style="min-width:78px;">
+                ${rewardCount}회
+                <small>보상</small>
               </div>
-              <div class="extra-boss-charge">
-                <button class="extra-boss-btn" type="button" onclick="changeRewardExtraCharge('${t.id}','use')">-</button>
-                <div class="sub-count${getMiniClass(t.rewardChargeCurrent, t.rewardChargeMax)}" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
-                <button class="extra-boss-btn" type="button" onclick="changeRewardExtraCharge('${t.id}','restore')">+</button>
+              <div class="mini-row" style="margin-top:5px;">
+                <button class="mini-btn" type="button" onclick="changeExpeditionTranscendReward('${t.id}',-1)" oncontextmenu="changeExpeditionTranscendRewardByContext(event,'${t.id}',1)">-</button>
+                <button class="mini-btn" type="button" onclick="changeExpeditionTranscendReward('${t.id}',1)" oncontextmenu="changeExpeditionTranscendRewardByContext(event,'${t.id}',-1)">+</button>
               </div>
             </div>
-            <div>
-              <div class="cube${challengeCls}" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
-                ${t.challengeCurrent}/${t.challengeMax}
-                <small>보스처치횟수</small>
+            <div style="text-align:center;">
+              <div class="cube${helpCls}" onclick="changeExpeditionTranscendHelp('${t.id}',-1)" oncontextmenu="changeExpeditionTranscendHelpByContext(event,'${t.id}',1)" ondblclick="setExpeditionTranscendHelp('${t.id}')" style="min-width:78px;">
+                ${helpCurrent}/${helpMax}
+                <small>통합 도움</small>
               </div>
-              <div class="extra-boss-charge">
-                <button class="extra-boss-btn" type="button" onclick="changeBossExtraCharge('${t.id}','use')">-</button>
-                <div class="sub-count${getMiniClass(t.challengeChargeCurrent, t.challengeChargeMax)}" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
-                <button class="extra-boss-btn" type="button" onclick="changeBossExtraCharge('${t.id}','restore')">+</button>
-              </div>
+              <div class="small muted" style="margin-top:4px;font-weight:800;">원정/초월 공유</div>
             </div>
           </div>
         </div>
@@ -2830,6 +2911,7 @@ function renderTable(){
     area.innerHTML = '<div class="empty">캐릭터를 먼저 추가해주세요.</div>';
     return;
   }
+  state.characters.forEach(c => { normalizeSharedExpeditionTranscendHelp(c); applySharedExpeditionTranscendHelpReset(c); });
   const names = orderedTaskNames();
   area.innerHTML = `
     <div class="table-center">
@@ -2908,8 +2990,6 @@ function getCharacterCompletion(character){
     }
 
     if(t.name === '원정' || t.name === '초월') {
-      total += Math.max(0, t.rewardMax || 0) + Math.max(0, t.challengeMax || 0);
-      remaining += Math.max(0, t.rewardCurrent || 0) + Math.max(0, t.challengeCurrent || 0);
       return;
     }
 
