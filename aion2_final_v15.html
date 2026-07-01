@@ -1083,10 +1083,30 @@ async function resolveCloudUserId(){
   return cloudUserId;
 }
 
+function loadStateFromLocalCache(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    return normalizeLoadedState(JSON.parse(raw));
+  }catch(err){
+    console.warn('loadStateFromLocalCache error:', err);
+    return null;
+  }
+}
+
+function saveStateToLocalCache(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(err){
+    console.warn('saveStateToLocalCache error:', err);
+  }
+}
+
 async function loadStateFromCloud(){
+  const localCachedState = loadStateFromLocalCache();
   const userId = await resolveCloudUserId();
   if(!window.supabaseClient || !userId){
-    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    return localCachedState || JSON.parse(JSON.stringify(DEFAULT_STATE));
   }
 
   const { data, error } = await window.supabaseClient
@@ -1097,16 +1117,19 @@ async function loadStateFromCloud(){
 
   if(error){
     if(error.code === 'PGRST116'){
-      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+      return localCachedState || JSON.parse(JSON.stringify(DEFAULT_STATE));
     }
     console.error('loadStateFromCloud error:', error);
-    return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    return localCachedState || JSON.parse(JSON.stringify(DEFAULT_STATE));
   }
 
-  return normalizeLoadedState(data?.data || JSON.parse(JSON.stringify(DEFAULT_STATE)));
+  // 같은 브라우저에서 새로고침 직후 클라우드 저장이 늦게 반영될 수 있어
+  // 즉시 저장된 로컬 캐시를 우선 사용합니다.
+  return localCachedState || normalizeLoadedState(data?.data || JSON.parse(JSON.stringify(DEFAULT_STATE)));
 }
 
 function persistStateToCloud(){
+  saveStateToLocalCache();
   if(saveTimer) clearTimeout(saveTimer);
 
   if(!savePromise){
@@ -2963,8 +2986,9 @@ function renderTop(){
 function resetAllData(){
   if(!confirm('모든 데이터를 초기화할까요?')) return;
   localStorage.removeItem(STORAGE_KEY);
-  state = loadState();
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
   ensureSample();
+  saveState();
   render();
 }
 function ensureSample(){
