@@ -555,7 +555,10 @@
 
 <script>
 const userId = localStorage.getItem("musang_user_id");
-const STORAGE_KEY = `aion2_homework_tracker_${userId}`;
+function getStorageKey(){
+  const id = cloudUserId || localStorage.getItem("musang_user_id") || userId || "guest";
+  return `aion2_homework_tracker_${id}`;
+}
 const PALETTE = ['#6c63b5','#8d5f5f','#9c6d4a','#9a8b4a','#4d7d62','#4a6d9c','#7a5c9b','#9b5c7f','#555a6b'];
 
 const defaultTaskColors = {
@@ -1085,7 +1088,7 @@ async function resolveCloudUserId(){
 
 function loadStateFromLocalCache(){
   try{
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(getStorageKey());
     if(!raw) return null;
     return normalizeLoadedState(JSON.parse(raw));
   }catch(err){
@@ -1096,15 +1099,16 @@ function loadStateFromLocalCache(){
 
 function saveStateToLocalCache(){
   try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(getStorageKey(), JSON.stringify(state));
   }catch(err){
     console.warn('saveStateToLocalCache error:', err);
   }
 }
 
 async function loadStateFromCloud(){
-  const localCachedState = loadStateFromLocalCache();
   const userId = await resolveCloudUserId();
+  const localCachedState = loadStateFromLocalCache();
+
   if(!window.supabaseClient || !userId){
     return localCachedState || JSON.parse(JSON.stringify(DEFAULT_STATE));
   }
@@ -1123,9 +1127,15 @@ async function loadStateFromCloud(){
     return localCachedState || JSON.parse(JSON.stringify(DEFAULT_STATE));
   }
 
-  // 같은 브라우저에서 새로고침 직후 클라우드 저장이 늦게 반영될 수 있어
-  // 즉시 저장된 로컬 캐시를 우선 사용합니다.
-  return localCachedState || normalizeLoadedState(data?.data || JSON.parse(JSON.stringify(DEFAULT_STATE)));
+  const cloudState = normalizeLoadedState(data?.data || JSON.parse(JSON.stringify(DEFAULT_STATE)));
+
+  // 클라우드에 캐릭터 데이터가 있으면 항상 클라우드를 우선합니다.
+  // 로컬 캐시는 저장 지연 보완용이라, 빈/오래된 캐시가 실제 데이터를 덮지 않게 합니다.
+  if(cloudState.characters && cloudState.characters.length){
+    return cloudState;
+  }
+
+  return localCachedState || cloudState;
 }
 
 function persistStateToCloud(){
@@ -2985,7 +2995,7 @@ function renderTop(){
 }
 function resetAllData(){
   if(!confirm('모든 데이터를 초기화할까요?')) return;
-  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(getStorageKey());
   state = JSON.parse(JSON.stringify(DEFAULT_STATE));
   ensureSample();
   saveState();
