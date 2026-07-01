@@ -567,6 +567,7 @@ const defaultTaskColors = {
   '각성전':'#4f628f',
   '🌀회랑':'#4f628f',
   '슈고':'#4f628f',
+  '⚔️성역⚔️':'#6f3f56',
   '⚔️루드라':'#6f3f56',
   '⚔️침식':'#6f3f56',
   '⚔️무스펠':'#6f3f56',
@@ -589,7 +590,9 @@ const ODE_CHARGE_INCREMENT = 15;
 const ODE_CHARGE_HOURS = [2,5,8,11,14,17,20,23];
 const ODE_MANUAL_STEP = 40;
 const ODE_LINKED_REWARD_STEP = 80;
-const ODE_LINKED_TASK_NAMES = ['원정','초월','⚔️루드라','⚔️침식','⚔️무스펠'];
+const SANCTUARY_NAME = '⚔️성역⚔️';
+const SANCTUARY_BOSS_NAMES = ['⚔️루드라','⚔️침식','⚔️무스펠'];
+const ODE_LINKED_TASK_NAMES = ['원정','초월',SANCTUARY_NAME];
 const ODE_CRAFT_NAME = '🛠️오드제작';
 const ODE_CRAFT_MAX = 4;
 const EXPEDITION_REWARD_MAX = 21;
@@ -758,6 +761,79 @@ function completeCorridorTask(taskId, checked){
   saveState(); renderTable();
 }
 
+
+function makeSanctuaryBossState(name, sourceTask=null){
+  const sourceCurrent = typeof sourceTask?.rewardCurrent === 'number' ? sourceTask.rewardCurrent : 1;
+  return {
+    name,
+    max: 1,
+    current: clamp(sourceCurrent > 0 ? 1 : 0, 0, 1)
+  };
+}
+
+function syncSanctuaryTask(task){
+  if(!task || task.name !== SANCTUARY_NAME) return task;
+  const existing = Array.isArray(task.bosses) ? task.bosses : [];
+  task.bosses = SANCTUARY_BOSS_NAMES.map(name => {
+    const found = existing.find(b => b?.name === name);
+    return {
+      name,
+      max: 1,
+      current: clamp(typeof found?.current === 'number' ? found.current : 1, 0, 1)
+    };
+  });
+  task.challengeMax = 0;
+  task.challengeCurrent = 0;
+  task.chargeMax = 0;
+  task.chargeCurrent = 0;
+  task.challengeChargeMax = 0;
+  task.challengeChargeCurrent = 0;
+  task.rewardChargeMax = 0;
+  task.rewardChargeCurrent = 0;
+  task.rewardMax = task.bosses.reduce((sum, b) => sum + b.max, 0);
+  task.rewardCurrent = task.bosses.reduce((sum, b) => sum + b.current, 0);
+  task.resetRule = 'weekly_wed_05_reset';
+  task.color = task.color || getDefaultColor(SANCTUARY_NAME);
+  return task;
+}
+
+function makeSanctuaryTaskFromLegacy(tasks=[]){
+  const oldBossTasks = SANCTUARY_BOSS_NAMES.map(name => (tasks || []).find(t => t?.name === name) || null);
+  const existingSanctuary = (tasks || []).find(t => t?.name === SANCTUARY_NAME) || null;
+  const bosses = SANCTUARY_BOSS_NAMES.map((name, idx) => {
+    const existingBoss = existingSanctuary?.bosses?.find?.(b => b?.name === name) || null;
+    return makeSanctuaryBossState(name, existingBoss || oldBossTasks[idx]);
+  });
+  return syncSanctuaryTask({
+    id: existingSanctuary?.id || uid(),
+    name: SANCTUARY_NAME,
+    bosses,
+    challengeMax: 0,
+    challengeCurrent: 0,
+    rewardMax: 3,
+    rewardCurrent: 3,
+    chargeMax: 0,
+    chargeCurrent: 0,
+    challengeChargeMax: 0,
+    challengeChargeCurrent: 0,
+    rewardChargeMax: 0,
+    rewardChargeCurrent: 0,
+    resetRule: existingSanctuary?.resetRule || 'weekly_wed_05_reset',
+    lastResetAppliedKey: existingSanctuary?.lastResetAppliedKey || oldBossTasks.find(Boolean)?.lastResetAppliedKey || null,
+    color: existingSanctuary?.color || getDefaultColor(SANCTUARY_NAME),
+    note: existingSanctuary?.note || ''
+  });
+}
+
+function mergeLegacySanctuaryTasks(tasks){
+  if(!Array.isArray(tasks)) return [];
+  const hasSanctuary = tasks.some(t => t?.name === SANCTUARY_NAME);
+  const hasLegacyBoss = tasks.some(t => SANCTUARY_BOSS_NAMES.includes(t?.name));
+  if(!hasSanctuary && !hasLegacyBoss) return tasks;
+  const sanctuaryTask = makeSanctuaryTaskFromLegacy(tasks);
+  return tasks.filter(t => t?.name !== SANCTUARY_NAME && !SANCTUARY_BOSS_NAMES.includes(t?.name)).concat(sanctuaryTask);
+}
+
 function normalizeOdeTask(task){
   if(!task || task.name !== '⚡오드') return;
   task.rewardMax = ODE_REWARD_MAX;
@@ -789,6 +865,10 @@ function normalizeLoadedState(parsed){
     }
     delete parsed.taskColors['🌀회랑 -하'];
     delete parsed.taskColors['🌀회랑 -중'];
+  }
+
+  if(parsed.taskColors && !parsed.taskColors[SANCTUARY_NAME]){
+    parsed.taskColors[SANCTUARY_NAME] = parsed.taskColors['⚔️루드라'] || parsed.taskColors['⚔️침식'] || parsed.taskColors['⚔️무스펠'] || getDefaultColor(SANCTUARY_NAME);
   }
 
   parsed.characters.forEach(c => {
@@ -828,6 +908,7 @@ function normalizeLoadedState(parsed){
     }
 
     c.tasks = mergeLegacyCorridorTasks((c.tasks || []).filter(t => t.name !== '저주' && t.name !== '슈고' && t.name !== '사명'));
+    c.tasks = mergeLegacySanctuaryTasks(c.tasks);
 
     c.tasks.forEach(t => {
       t.name = normalizeTaskName(t.name);
@@ -877,22 +958,8 @@ function normalizeLoadedState(parsed){
         t.challengeChargeCurrent = 0;
         t.rewardChargeCurrent = 0;
         t.resetRule = 'weekly_wed_05_reset';
-      } else if(t.name === '⚔️무스펠') {
-        t.challengeMax = 0;
-        t.challengeCurrent = 0;
-        t.challengeChargeMax = 0;
-        t.challengeChargeCurrent = 0;
-        t.rewardChargeMax = 10;
-        if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
-        t.rewardMax = 2;
-        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
-        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
-        t.resetRule = 'weekly_wed_05_reset';
-      } else if(t.name === '⚔️루드라' || t.name === '⚔️침식') {
-        t.challengeChargeMax = 10;
-        t.rewardChargeMax = 10;
-        if(typeof t.challengeChargeCurrent !== 'number') t.challengeChargeCurrent = 0;
-        if(typeof t.rewardChargeCurrent !== 'number') t.rewardChargeCurrent = 0;
+      } else if(t.name === SANCTUARY_NAME) {
+        syncSanctuaryTask(t);
       } else if(t.name === '⚡오드'){
         normalizeOdeTask(t);
       } else if(isCorridorTaskName(t.name)){
@@ -1063,7 +1130,7 @@ function persistStateToCloud(){
       if(error){
         console.error('saveState error:', error);
       }
-      await updateGuildStats(userId, state.characters);
+      if(typeof window.updateGuildStats === 'function') await window.updateGuildStats(userId, state.characters);
     } finally {
       if(saveResolver) saveResolver();
       savePromise = null;
@@ -1122,15 +1189,12 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     challengeMax = 0;
     chargeMax = 0;
     resetRule = 'weekly_wed_05_reset';
-  } else if(name === '⚔️무스펠') {
+  } else if(name === SANCTUARY_NAME || SANCTUARY_BOSS_NAMES.includes(name)) {
+    name = SANCTUARY_NAME;
     challengeMax = 0;
-    challengeChargeMax = 0;
-    rewardMax = 2;
-    rewardChargeMax = 10;
+    rewardMax = 3;
+    chargeMax = 0;
     resetRule = 'weekly_wed_05_reset';
-  } else if(name === '⚔️루드라' || name === '⚔️침식') {
-    challengeChargeMax = 10;
-    rewardChargeMax = 10;
   } else if(name === '⚡오드'){
     rewardMax = ODE_REWARD_MAX;
     chargeMax = ODE_CHARGE_MAX;
@@ -1156,6 +1220,11 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     color:color || state.taskColors[name] || getDefaultColor(name),
     note:''
   };
+
+  if(name === SANCTUARY_NAME){
+    task.bosses = SANCTUARY_BOSS_NAMES.map(name => makeSanctuaryBossState(name));
+    syncSanctuaryTask(task);
+  }
 
   if(name === '⚡오드'){
     const latest = getLatestOdCharge();
@@ -1523,9 +1592,7 @@ function getDefaultPresetTasks(){
     { name:'초월', challengeMax:TRANSCEND_BOSS_MAX, rewardMax:TRANSCEND_REWARD_MAX, resetRule:'transcend_charge' },
     { name:'악몽', rewardMax:14, resetRule:'daily_05_plus2' },
     { name:'각성전', rewardMax:3, resetRule:'weekly_wed_05_reset' },
-    { name:'⚔️루드라', challengeMax:4, rewardMax:2, resetRule:'weekly_wed_05_reset' },
-    { name:'⚔️침식', challengeMax:4, rewardMax:2, resetRule:'weekly_wed_05_reset' },
-    { name:'⚔️무스펠', challengeMax:0, rewardMax:2, resetRule:'weekly_wed_05_reset' }
+    { name:SANCTUARY_NAME, challengeMax:0, rewardMax:3, resetRule:'weekly_wed_05_reset' }
   ];
 }
 function ensureDefaultTasksForCharacter(character){
@@ -1812,6 +1879,50 @@ function changeTaskCount(taskId, key, delta){
 }
 function changeTaskByContext(event, taskId, key, delta){ event.preventDefault(); changeTaskCount(taskId, key, delta); }
 
+function changeSanctuaryBossCount(taskId, bossIndex, delta){
+  const t = findTask(taskId);
+  if(!t || t.name !== SANCTUARY_NAME) return;
+  syncSanctuaryTask(t);
+  const boss = t.bosses[bossIndex];
+  if(!boss) return;
+  const prevTotal = t.rewardCurrent;
+  boss.current = clamp((Number(boss.current) || 0) + delta, 0, boss.max || 1);
+  syncSanctuaryTask(t);
+  applyLinkedOdeDeltaForTask(taskId, 'rewardCurrent', t.rewardCurrent - prevTotal);
+  saveState(); renderTable();
+}
+function changeSanctuaryBossByContext(event, taskId, bossIndex, delta){
+  event.preventDefault();
+  changeSanctuaryBossCount(taskId, bossIndex, delta);
+}
+function setSanctuaryBossCount(taskId, bossIndex){
+  const t = findTask(taskId);
+  if(!t || t.name !== SANCTUARY_NAME) return;
+  syncSanctuaryTask(t);
+  const boss = t.bosses[bossIndex];
+  if(!boss) return;
+  const v = prompt(`${boss.name} 보상횟수를 입력하세요`, String(boss.current));
+  if(v === null) return;
+  const num = Number(v);
+  if(Number.isNaN(num)){ alert('숫자만 입력해주세요.'); return; }
+  const prevTotal = t.rewardCurrent;
+  boss.current = clamp(num, 0, boss.max || 1);
+  syncSanctuaryTask(t);
+  applyLinkedOdeDeltaForTask(taskId, 'rewardCurrent', t.rewardCurrent - prevTotal);
+  saveState(); renderTable();
+}
+function completeSanctuaryTask(taskId, checked){
+  const t = findTask(taskId);
+  if(!t || t.name !== SANCTUARY_NAME) return;
+  syncSanctuaryTask(t);
+  const prevTotal = t.rewardCurrent;
+  t.bosses.forEach(b => { b.current = checked ? 0 : (b.max || 1); });
+  syncSanctuaryTask(t);
+  applyLinkedOdeDeltaForTask(taskId, 'rewardCurrent', t.rewardCurrent - prevTotal);
+  saveState(); renderTable();
+}
+
+
 function changeBossExtraCharge(taskId, mode){
   const t = findTask(taskId);
   if(!t || !['원정','초월'].includes(t.name)) return;
@@ -1920,6 +2031,10 @@ function completeTask(taskId, checked){
   if(!t) return;
   if(t.name === CORRIDOR_NAME){
     completeCorridorTask(taskId, checked);
+    return;
+  }
+  if(t.name === SANCTUARY_NAME){
+    completeSanctuaryTask(taskId, checked);
     return;
   }
   if(!setTaskCurrentValue(taskId, 'rewardCurrent', checked ? 0 : t.rewardMax)) return;
@@ -2450,7 +2565,7 @@ function orderedTaskNames(){
 
   const preferred = [
     '⚡오드', ODE_CRAFT_NAME, '🌀회랑',
-    '원정','초월','악몽','각성전','⚔️루드라','⚔️침식','⚔️무스펠'
+    '원정','초월','악몽','각성전',SANCTUARY_NAME
   ];
 
   const all = [];
@@ -2550,47 +2665,28 @@ function renderCell(character, taskName){
     ? `task-group-ode-cell ${t.name === '⚡오드' ? 'task-group-start' : ''} ${t.name === ODE_CRAFT_NAME ? 'task-group-end' : ''}`
     : '';
 
-  if(t.name === '⚔️무스펠') {
-    const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
+  if(t.name === SANCTUARY_NAME) {
+    syncSanctuaryTask(t);
+    const allDone = t.rewardCurrent === 0;
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
-          <div class="cube-row">
-            <div>
-              <div class="cube${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
-                ${t.rewardCurrent}/${t.rewardMax}
-                <small>보상횟수</small>
-              </div>
-              <div class="sub-count${getMiniClass(t.rewardChargeCurrent, t.rewardChargeMax)}" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
-            </div>
+          <input class="check" type="checkbox" ${allDone ? 'checked' : ''} onchange="completeSanctuaryTask('${t.id}', this.checked)" />
+          <div class="cube-row" style="gap:10px; flex-wrap:nowrap;">
+            ${t.bosses.map((boss, idx) => {
+              const rewardCls = getMiniClass(boss.current, boss.max);
+              return `
+                <div style="text-align:center;">
+                  <div class="cube${rewardCls}" onclick="changeSanctuaryBossCount('${t.id}',${idx},-1)" oncontextmenu="changeSanctuaryBossByContext(event,'${t.id}',${idx},1)" ondblclick="setSanctuaryBossCount('${t.id}',${idx})" style="min-width:74px;">
+                    ${boss.current}/${boss.max}
+                    <small>보상횟수</small>
+                  </div>
+                  <div class="small muted" style="margin-top:4px;font-weight:800;">${escapeHtml(boss.name.replace('⚔️','').replace('⚔️',''))}</div>
+                </div>
+              `;
+            }).join('')}
           </div>
-        </div>
-      </td>
-    `;
-  }
-
-  if(t.name === '⚔️루드라' || t.name === '⚔️침식') {
-    const challengeCls = getMiniClass(t.challengeCurrent, t.challengeMax);
-    const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
-    return `
-      <td class="${tdGroupClass}" style="background:${bg}">
-        <div class="cell-wrap" style="${cellAccent}">
-          <div class="cube-row">
-            <div>
-              <div class="cube${challengeCls}" onclick="changeTaskCount('${t.id}','challengeCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','challengeCurrent',1)">
-                ${t.challengeCurrent}/${t.challengeMax}
-                <small>도전횟수</small>
-              </div>
-              <div class="sub-count${getMiniClass(t.challengeChargeCurrent, t.challengeChargeMax)}" onclick="setNumeric('${t.id}','challengeChargeCurrent')">(${t.challengeChargeCurrent})</div>
-            </div>
-            <div>
-              <div class="cube${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">
-                ${t.rewardCurrent}/${t.rewardMax}
-                <small>보상횟수</small>
-              </div>
-              <div class="sub-count${getMiniClass(t.rewardChargeCurrent, t.rewardChargeMax)}" onclick="setNumeric('${t.id}','rewardChargeCurrent')">(${t.rewardChargeCurrent})</div>
-            </div>
-          </div>
+          ${allDone ? `<div class="done-label">완료</div>` : ''}
         </div>
       </td>
     `;
@@ -2702,7 +2798,7 @@ function renderCell(character, taskName){
     `;
   }
 
-  if(t.name !== '⚔️루드라' && t.name !== '⚔️침식' && t.name !== '⚔️무스펠' && t.chargeMax > 0){
+  if(t.name !== SANCTUARY_NAME && t.chargeMax > 0){
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
@@ -2811,9 +2907,16 @@ function getCharacterCompletion(character){
       return;
     }
 
-    if(t.name === '원정' || t.name === '초월' || t.name === '⚔️루드라' || t.name === '⚔️침식' || t.name === '⚔️무스펠') {
+    if(t.name === '원정' || t.name === '초월') {
       total += Math.max(0, t.rewardMax || 0) + Math.max(0, t.challengeMax || 0);
       remaining += Math.max(0, t.rewardCurrent || 0) + Math.max(0, t.challengeCurrent || 0);
+      return;
+    }
+
+    if(t.name === SANCTUARY_NAME){
+      syncSanctuaryTask(t);
+      total += Math.max(0, t.rewardMax || 0);
+      remaining += Math.max(0, t.rewardCurrent || 0);
       return;
     }
 
@@ -2941,7 +3044,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     window.location.href = "index.html";
   }
 
-async function updateGuildStats(userId, characters) {
+window.updateGuildStats = async function updateGuildStats(userId, characters) {
   for (const char of characters) {
     await window.supabaseClient
       .from("guild_public_stats")
@@ -2949,9 +3052,9 @@ async function updateGuildStats(userId, characters) {
         user_id: userId,
         nickname: userId,
         character_name: char.name,
-        combat_power: char.combat_power || 0,
-        item_level: char.item_level || 0,
-        weekly_completion: char.weekly_completion || 0,
+        combat_power: Number(String(char.power || '').replace(/[^\d.]/g,'')) || 0,
+        item_level: Number(String(char.itemLevel || '').replace(/[^\d]/g,'')) || 0,
+        weekly_completion: Number(char.weekly_completion || 0),
         updated_at: new Date().toISOString()
       });
   }
