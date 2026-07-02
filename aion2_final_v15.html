@@ -650,6 +650,189 @@ tbody td:nth-child(10) .cube-row{gap:3px !important;}
   .weekly-summary-layout{grid-template-columns:1fr !important;}
 }
 
+
+
+/* ===== v7 medium compact UI: v6보다 여유 있게 재조정 ===== */
+.table-center{
+  justify-content:flex-start !important;
+  width:100% !important;
+}
+.table-wrap{
+  width:max-content !important;
+  max-width:100% !important;
+  overflow:auto !important;
+  border-radius:16px !important;
+}
+table{
+  min-width:0 !important;
+  width:max-content !important;
+  table-layout:fixed !important;
+}
+th,td{
+  padding:5px 4px !important;
+  line-height:1.12 !important;
+}
+thead th{
+  min-width:104px !important;
+  width:104px !important;
+  padding:7px 4px !important;
+}
+thead th:first-child,
+tbody td:first-child{
+  min-width:128px !important;
+  width:128px !important;
+}
+.char-col{
+  min-width:128px !important;
+  width:128px !important;
+}
+.profile-col{
+  min-width:92px !important;
+  width:92px !important;
+}
+.th-title{
+  font-size:18px !important;
+  margin-bottom:4px !important;
+  line-height:1.1 !important;
+  white-space:nowrap !important;
+}
+.th-sub{
+  font-size:10px !important;
+  line-height:1.15 !important;
+  margin-bottom:3px !important;
+}
+.boss-usage-header{
+  font-size:17px !important;
+  margin-top:4px !important;
+}
+.cell-wrap{
+  min-height:78px !important;
+  gap:4px !important;
+  padding:4px 3px !important;
+}
+.char-box{
+  gap:5px !important;
+}
+.char-input{
+  width:106px !important;
+  font-size:16px !important;
+  padding:8px 7px !important;
+  border-radius:9px !important;
+}
+.profile-summary{
+  width:82px !important;
+  min-width:82px !important;
+  padding:6px 5px !important;
+  border-radius:9px !important;
+}
+.profile-summary .level-line{
+  font-size:15px !important;
+}
+.profile-summary .power-line{
+  font-size:15px !important;
+  margin-top:4px !important;
+}
+.profile-manual-stack{
+  width:82px !important;
+  gap:4px !important;
+}
+.manual-info-input,
+.profile-link-input{
+  width:82px !important;
+  font-size:13px !important;
+  padding:6px 4px !important;
+}
+.main-count{
+  font-size:20px !important;
+  padding:5px 8px !important;
+  border-radius:9px !important;
+}
+.sub-count{
+  font-size:16px !important;
+  padding:4px 7px !important;
+  border-radius:9px !important;
+}
+.sub-count small{
+  font-size:10px !important;
+  margin-top:2px !important;
+}
+.mini-row{
+  gap:5px !important;
+}
+.mini-btn{
+  width:25px !important;
+  height:25px !important;
+  border-radius:7px !important;
+  font-size:14px !important;
+}
+.cube-row{
+  gap:5px !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+}
+.cube{
+  min-width:58px !important;
+  padding:7px 6px !important;
+  border-radius:10px !important;
+  font-size:16px !important;
+}
+.cube small{
+  font-size:10px !important;
+  margin-top:2px !important;
+}
+.check{
+  width:17px !important;
+  height:17px !important;
+}
+.done-label{
+  margin-top:2px !important;
+  font-size:12px !important;
+}
+.note{
+  width:90px !important;
+  font-size:12px !important;
+  padding:6px 5px !important;
+}
+
+/* 컬럼별 폭: 기존보다 줄이되 v6보다 넉넉하게 */
+thead th:nth-child(1), tbody td:nth-child(1){min-width:128px !important;width:128px !important;} /* 캐릭터 */
+thead th:nth-child(2), tbody td:nth-child(2){min-width:92px !important;width:92px !important;}  /* 정보 */
+thead th:nth-child(3), tbody td:nth-child(3){min-width:108px !important;width:108px !important;}  /* ⚡오드 */
+thead th:nth-child(4), tbody td:nth-child(4){min-width:122px !important;width:122px !important;}  /* 🛠️오드 */
+thead th:nth-child(5), tbody td:nth-child(5){min-width:116px !important;width:116px !important;}  /* 회랑 */
+thead th:nth-child(6), tbody td:nth-child(6),
+thead th:nth-child(7), tbody td:nth-child(7){min-width:110px !important;width:110px !important;} /* 원정/초월 */
+thead th:nth-child(8), tbody td:nth-child(8),
+thead th:nth-child(9), tbody td:nth-child(9){min-width:102px !important;width:102px !important;} /* 악몽/각성전 */
+thead th:nth-child(10), tbody td:nth-child(10){min-width:178px !important;width:178px !important;} /* 성역 */
+
+/* 오드/오드제작은 붙어 보이되 너무 답답하지 않게 */
+thead th:nth-child(3), tbody td:nth-child(3),
+thead th:nth-child(4), tbody td:nth-child(4){
+  padding-left:3px !important;
+  padding-right:3px !important;
+}
+.task-group-ode-cell .cell-wrap{
+  padding-left:2px !important;
+  padding-right:2px !important;
+}
+.task-group-ode-cell .cube-row{
+  gap:4px !important;
+}
+.task-group-ode-cell .cube{
+  min-width:54px !important;
+  padding-left:5px !important;
+  padding-right:5px !important;
+}
+.task-group-ode-cell .main-count{
+  font-size:21px !important;
+}
+
+/* 회랑/성역 여러 버튼 칸 */
+tbody td:nth-child(5) .cube{min-width:52px !important;}
+tbody td:nth-child(10) .cube{min-width:52px !important;}
+tbody td:nth-child(10) .cube-row{gap:5px !important;}
+
 </style>
 </head>
 <body>
