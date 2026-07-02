@@ -763,7 +763,13 @@ function completeCorridorTask(taskId, checked){
 
 
 function makeSanctuaryBossState(name, sourceTask=null){
-  const sourceCurrent = typeof sourceTask?.rewardCurrent === 'number' ? sourceTask.rewardCurrent : 1;
+  // 기존 보스 task는 rewardCurrent를 사용하고,
+  // 통합 성역 내부 boss 객체는 current를 사용합니다.
+  // 기존 코드가 current를 읽지 못해서 새로고침 시 항상 1로 복구되는 문제가 있었습니다.
+  const sourceCurrent =
+    typeof sourceTask?.current === 'number'
+      ? sourceTask.current
+      : (typeof sourceTask?.rewardCurrent === 'number' ? sourceTask.rewardCurrent : 1);
   return {
     name,
     max: 1,
@@ -2288,8 +2294,13 @@ function applyRuleToTask(task){
         task.middleCurrent = task.middleMax || 3;
         syncCorridorTask(task);
       }
+      if(task.name === SANCTUARY_NAME){
+        syncSanctuaryTask(task);
+        task.bosses.forEach(b => { b.current = b.max || 1; });
+        syncSanctuaryTask(task);
+      }
       if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
-      if(task.rewardMax > 0 && task.name !== CORRIDOR_NAME) task.rewardCurrent = task.rewardMax;
+      if(task.rewardMax > 0 && task.name !== CORRIDOR_NAME && task.name !== SANCTUARY_NAME) task.rewardCurrent = task.rewardMax;
       if(task.chargeMax > 0) task.chargeCurrent = 0;
       if(task.challengeChargeMax > 0 || task.challengeChargeCurrent > 0) task.challengeChargeCurrent = 0;
       if(task.rewardChargeMax > 0 || task.rewardChargeCurrent > 0) task.rewardChargeCurrent = 0;
