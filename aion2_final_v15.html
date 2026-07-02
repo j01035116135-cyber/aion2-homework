@@ -461,6 +461,56 @@
     padding:12px;
   }
 }
+
+
+/* ===== v5 compact character-task UI: 좌우 여백 축소 / 정보 숫자 확대 ===== */
+.table-center{justify-content:flex-start !important;}
+.table-wrap{width:max-content !important;max-width:100% !important;}
+table{min-width:0 !important;width:max-content !important;table-layout:auto !important;}
+th,td{padding:4px 2px !important;}
+thead th{min-width:96px !important;}
+thead th:first-child,tbody td:first-child{min-width:116px !important;width:116px !important;}
+.char-col{min-width:116px !important;width:116px !important;}
+.profile-col{min-width:82px !important;width:82px !important;}
+.char-input{width:94px !important;font-size:15px !important;padding:8px 6px !important;}
+.profile-manual-stack{width:76px !important;gap:5px !important;}
+.manual-info-input{width:76px !important;font-size:15px !important;padding:6px 4px !important;line-height:1.15 !important;}
+.manual-info-input.item-level-input{font-size:14px !important;}
+.manual-info-input.power-input{font-size:15px !important;}
+.th-title{font-size:17px !important;margin-bottom:3px !important;}
+.th-sub{font-size:9px !important;line-height:1.1 !important;margin-bottom:2px !important;}
+.cell-wrap{min-height:76px !important;gap:3px !important;padding-left:2px !important;padding-right:2px !important;}
+.main-count{font-size:20px !important;padding:3px 7px !important;}
+.sub-count{font-size:15px !important;padding:3px 7px !important;}
+.mini-row{gap:4px !important;}
+.mini-btn{width:24px !important;height:24px !important;font-size:14px !important;border-radius:7px !important;}
+.cube-row{gap:4px !important;flex-wrap:nowrap !important;}
+.cube{min-width:54px !important;padding:7px 6px !important;border-radius:10px !important;font-size:16px !important;}
+.cube small{font-size:9px !important;margin-top:1px !important;}
+.check{width:14px !important;height:14px !important;}
+.done-label{font-size:11px !important;margin-top:2px !important;}
+.note{width:84px !important;padding:6px 7px !important;font-size:12px !important;}
+.task-group-ode-cell .cell-wrap{padding-left:1px !important;padding-right:1px !important;}
+.task-group-ode-cell .cube-row{gap:4px !important;}
+.task-group-ode-cell .cube{min-width:54px !important;}
+.task-group-ode-cell .main-count{font-size:22px !important;}
+.task-group-ode-cell .sub-count{font-size:16px !important;}
+.small{font-size:10px !important;}
+
+/* 개별 메뉴별 더 조밀한 폭 */
+thead th:nth-child(3), tbody td:nth-child(3){min-width:104px !important;width:104px !important;} /* ⚡오드 */
+thead th:nth-child(4), tbody td:nth-child(4){min-width:116px !important;width:116px !important;} /* 🛠️오드 */
+thead th:nth-child(5), tbody td:nth-child(5){min-width:110px !important;width:110px !important;} /* 회랑 */
+thead th:nth-child(6), tbody td:nth-child(6),
+thead th:nth-child(7), tbody td:nth-child(7){min-width:108px !important;width:108px !important;} /* 원정/초월 */
+thead th:nth-child(8), tbody td:nth-child(8),
+thead th:nth-child(9), tbody td:nth-child(9){min-width:94px !important;width:94px !important;} /* 악몽/각성전 */
+thead th:nth-child(10), tbody td:nth-child(10){min-width:182px !important;width:182px !important;} /* 성역 */
+
+/* 렌더 함수에 남아있는 inline min-width 값을 최대한 압축 */
+td [style*="min-width:70px"], td [style*="min-width:74px"], td [style*="min-width:92px"]{min-width:54px !important;}
+td [style*="gap:10px"]{gap:4px !important;}
+
 </style>
 </head>
 <body>
