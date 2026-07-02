@@ -833,6 +833,139 @@ tbody td:nth-child(5) .cube{min-width:52px !important;}
 tbody td:nth-child(10) .cube{min-width:52px !important;}
 tbody td:nth-child(10) .cube-row{gap:5px !important;}
 
+
+/* ===== v8 final UI: v7보다 약 30% 넓게 + 메뉴 설명 제거 ===== */
+.table-center{
+  justify-content:flex-start !important;
+  width:100% !important;
+}
+.table-wrap{
+  width:max-content !important;
+  max-width:100% !important;
+  overflow:auto !important;
+}
+table{
+  min-width:0 !important;
+  width:max-content !important;
+  table-layout:fixed !important;
+}
+th,td{
+  padding:6px 5px !important;
+  line-height:1.16 !important;
+}
+thead th{
+  min-width:135px !important;
+  width:135px !important;
+  padding:8px 5px !important;
+}
+.th-title{
+  font-size:19px !important;
+  margin-bottom:0 !important;
+  line-height:1.12 !important;
+  white-space:nowrap !important;
+}
+.th-sub{
+  display:none !important;
+}
+.cell-wrap{
+  min-height:84px !important;
+  gap:5px !important;
+  padding:5px 4px !important;
+}
+.char-input{
+  width:150px !important;
+  font-size:17px !important;
+  padding:8px 8px !important;
+}
+.profile-summary{
+  width:112px !important;
+  min-width:112px !important;
+  padding:7px 6px !important;
+}
+.profile-summary .level-line,
+.profile-summary .power-line{
+  font-size:17px !important;
+}
+.profile-manual-stack{
+  width:112px !important;
+}
+.manual-info-input,
+.profile-link-input{
+  width:112px !important;
+  font-size:15px !important;
+  padding:7px 5px !important;
+}
+.main-count{
+  font-size:22px !important;
+  padding:6px 10px !important;
+}
+.sub-count{
+  font-size:18px !important;
+  padding:5px 9px !important;
+}
+.sub-count small{
+  font-size:11px !important;
+}
+.mini-row{
+  gap:6px !important;
+}
+.mini-btn{
+  width:29px !important;
+  height:29px !important;
+  font-size:16px !important;
+}
+.cube-row{
+  gap:6px !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
+.cube{
+  min-width:76px !important;
+  padding:8px 8px !important;
+  font-size:17px !important;
+  border-radius:10px !important;
+}
+.cube small{
+  font-size:11px !important;
+}
+.note{
+  width:118px !important;
+  font-size:13px !important;
+  padding:7px 6px !important;
+}
+/* 컬럼별 폭: v7 대비 약 30% 확대 */
+thead th:nth-child(1), tbody td:nth-child(1){min-width:166px !important;width:166px !important;} /* 캐릭터 */
+thead th:nth-child(2), tbody td:nth-child(2){min-width:120px !important;width:120px !important;}  /* 정보 */
+thead th:nth-child(3), tbody td:nth-child(3){min-width:140px !important;width:140px !important;}  /* ⚡오드 */
+thead th:nth-child(4), tbody td:nth-child(4){min-width:159px !important;width:159px !important;}  /* 🛠️오드 */
+thead th:nth-child(5), tbody td:nth-child(5){min-width:151px !important;width:151px !important;}  /* 회랑 */
+thead th:nth-child(6), tbody td:nth-child(6),
+thead th:nth-child(7), tbody td:nth-child(7){min-width:143px !important;width:143px !important;} /* 원정/초월 */
+thead th:nth-child(8), tbody td:nth-child(8),
+thead th:nth-child(9), tbody td:nth-child(9){min-width:133px !important;width:133px !important;} /* 악몽/각성전 */
+thead th:nth-child(10), tbody td:nth-child(10){min-width:231px !important;width:231px !important;} /* 성역 */
+/* 관련 숙제끼리 살짝 그룹 느낌: 그룹 내부는 붙이고 그룹 끝에만 여백 */
+thead th:nth-child(3), tbody td:nth-child(3),
+thead th:nth-child(4), tbody td:nth-child(4),
+thead th:nth-child(6), tbody td:nth-child(6),
+thead th:nth-child(7), tbody td:nth-child(7){
+  padding-left:4px !important;
+  padding-right:4px !important;
+}
+thead th:nth-child(4), tbody td:nth-child(4),
+thead th:nth-child(5), tbody td:nth-child(5),
+thead th:nth-child(7), tbody td:nth-child(7),
+thead th:nth-child(9), tbody td:nth-child(9){
+  border-right:3px solid rgba(134,199,156,.28) !important;
+}
+.task-group-ode-cell .cube{
+  min-width:70px !important;
+}
+tbody td:nth-child(5) .cube{min-width:68px !important;}
+tbody td:nth-child(10) .cube{min-width:68px !important;}
+tbody td:nth-child(10) .cube-row{gap:6px !important;}
+
 </style>
 </head>
 <body>
@@ -3162,7 +3295,7 @@ function renderHeader(names){
     const bossUsageHtml = bossUsage
       ? `<span class="boss-usage-header${bossUsage.over ? ' over' : ''}">${bossUsage.used}/${bossUsage.limit}회</span>`
       : '';
-    const hideResetText = !!bossUsage;
+    const hideResetText = true;
 
     if(isOdeGroup) color = '#4d7d62';
 
