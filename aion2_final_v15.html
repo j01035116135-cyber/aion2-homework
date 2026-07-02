@@ -376,6 +376,8 @@
   .weekly-top-layout .weekly-group-box{margin-bottom:0}
   .weekly-group-box.purchase-mission{border-color:#6e5a2f;box-shadow:inset 0 0 0 1px rgba(234,196,98,.08)}
   .weekly-group-box.purchase-mission .weekly-group-title .badge{background:#1a2234;border-color:#6e5a2f;color:#f0dfb1}
+  .weekly-group-box.expedition-help-mission{border-color:#4f7d8f;box-shadow:inset 0 0 0 1px rgba(100,210,255,.08)}
+  .weekly-group-box.expedition-help-mission .weekly-group-title .badge{background:#112233;border-color:#4f7d8f;color:#c7efff}
   #weeklyGrid{display:flex;flex-direction:column;align-items:flex-start}
   .profile-manual-stack{display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;width:92px;margin:0 auto}
   .manual-info-input{width:92px;text-align:center;background:#070c18;border:1px solid #3b4d7e;border-radius:10px;padding:7px 6px;font-size:12px;font-weight:900}
@@ -527,7 +529,7 @@
         <div class="weekly-head">
           <div>
             <div class="section-title" style="margin-bottom:4px">숙제 현황</div>
-            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정/초월 도움은 매주 수요일 05시 초기화 · 큐브는 오드 120 차감</div>
+            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정/초월 큐브와 도움은 매주 수요일 05시 초기화 · 큐브는 오드 120 차감</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
         </div>
@@ -1159,7 +1161,7 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     rewardMax = 0;
     challengeMax = 0;
     chargeMax = 0;
-    resetRule = 'none';
+    resetRule = 'weekly_wed_05_reset';
   } else if(name === ODE_CRAFT_NAME){
     rewardMax = ODE_CRAFT_MAX;
     challengeMax = 0;
@@ -1569,8 +1571,8 @@ function getDefaultPresetTasks(){
     { name:'⚡오드', rewardMax:ODE_REWARD_MAX, chargeMax:ODE_CHARGE_MAX, resetRule:'od_charge' },
     { name:ODE_CRAFT_NAME, rewardMax:ODE_CRAFT_MAX, resetRule:'weekly_wed_05_reset' },
     { name:'🌀회랑', rewardMax:6, resetRule:'wed_sat_22_reset' },
-    { name:'원정', rewardMax:0, challengeMax:0, resetRule:'none' },
-    { name:'초월', challengeMax:0, rewardMax:0, resetRule:'none' },
+    { name:'원정', rewardMax:0, challengeMax:0, resetRule:'weekly_wed_05_reset' },
+    { name:'초월', challengeMax:0, rewardMax:0, resetRule:'weekly_wed_05_reset' },
     { name:'악몽', rewardMax:14, resetRule:'daily_05_plus2' },
     { name:'각성전', rewardMax:3, resetRule:'weekly_wed_05_reset' },
     { name:SANCTUARY_NAME, challengeMax:0, rewardMax:3, resetRule:'weekly_wed_05_reset' }
@@ -1923,7 +1925,7 @@ function normalizeCubeTask(task){
   task.rewardChargeMax = 0;
   task.rewardChargeCurrent = 0;
   task.extraBossUsed = 0;
-  task.resetRule = 'none';
+  task.resetRule = 'weekly_wed_05_reset';
   task.challengeResetRule = null;
   return task;
 }
@@ -2340,6 +2342,10 @@ function applyRuleToTask(task){
         task.bosses.forEach(b => { b.current = b.max || 1; });
         syncSanctuaryTask(task);
       }
+      if(task.name === '원정' || task.name === '초월'){
+        normalizeCubeTask(task);
+        task.cubeCount = 0;
+      }
       if(task.challengeMax > 0) task.challengeCurrent = task.challengeMax;
       if(task.rewardMax > 0 && task.name !== CORRIDOR_NAME && task.name !== SANCTUARY_NAME) task.rewardCurrent = task.rewardMax;
       if(task.chargeMax > 0) task.chargeCurrent = 0;
@@ -2460,7 +2466,7 @@ function renderCharacterList(){
 function renderWeekly(){
   const el = document.getElementById('weeklyGrid');
   const missionOrder = ['사명','슈고','일일던전','아티쟁','나흐마','아그로','⚔️전장 (승리)','어비스사냥','시공(🗡️공격)','시공(🛡️방어)'];
-  const purchaseOrder = ['오드(제작)','심연의 재련','원정/초월 도움','미지의 틈새','즉완권'];
+  const purchaseOrder = ['오드(제작)','심연의 재련','미지의 틈새','즉완권'];
 
   const weeklyMap = new Map(state.weeklyTasks.map(w => [w.name, w]));
   const dailyMissionNames = ['사명','슈고'];
@@ -2469,6 +2475,7 @@ function renderWeekly(){
   const weeklyMissions = weeklyMissionNames.map(name => weeklyMap.get(name)).filter(Boolean);
   const instantDaily = weeklyMap.get('즉시완료(일던)');
   const instantNightmare = weeklyMap.get('즉시완료(악몽)');
+  const expeditionTranscendHelp = weeklyMap.get('원정/초월 도움');
 
   [...dailyMissions, ...weeklyMissions].forEach(ensureWeeklySegmentState);
 
@@ -2603,6 +2610,7 @@ function renderWeekly(){
     const w = weeklyMap.get(name);
     return w ? weeklyCard(w, 'purchase') : '';
   }).join('');
+  const expeditionTranscendHelpHtml = expeditionTranscendHelp ? weeklyCard(expeditionTranscendHelp, 'help') : '';
 
   el.innerHTML = `
     <div class="weekly-top-layout">
@@ -2616,6 +2624,12 @@ function renderWeekly(){
         <div class="weekly-group-title">주간 구매 / 제작 <span class="badge">특수결정 · 부활석 제외</span></div>
         <div class="weekly-group-row">
           ${purchaseHtml}
+        </div>
+      </div>
+      <div class="weekly-group-box expedition-help-mission">
+        <div class="weekly-group-title">원정/초월 도움 <span class="badge">노보상 10회 · 수요일 05시 초기화</span></div>
+        <div class="weekly-group-row">
+          ${expeditionTranscendHelpHtml}
         </div>
       </div>
     </div>
