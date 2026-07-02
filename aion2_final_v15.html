@@ -463,53 +463,192 @@
 }
 
 
-/* ===== v5 compact character-task UI: 좌우 여백 축소 / 정보 숫자 확대 ===== */
-.table-center{justify-content:flex-start !important;}
-.table-wrap{width:max-content !important;max-width:100% !important;}
-table{min-width:0 !important;width:max-content !important;table-layout:auto !important;}
-th,td{padding:4px 2px !important;}
-thead th{min-width:96px !important;}
-thead th:first-child,tbody td:first-child{min-width:116px !important;width:116px !important;}
-.char-col{min-width:116px !important;width:116px !important;}
-.profile-col{min-width:82px !important;width:82px !important;}
-.char-input{width:94px !important;font-size:15px !important;padding:8px 6px !important;}
-.profile-manual-stack{width:76px !important;gap:5px !important;}
-.manual-info-input{width:76px !important;font-size:15px !important;padding:6px 4px !important;line-height:1.15 !important;}
-.manual-info-input.item-level-input{font-size:14px !important;}
-.manual-info-input.power-input{font-size:15px !important;}
-.th-title{font-size:17px !important;margin-bottom:3px !important;}
-.th-sub{font-size:9px !important;line-height:1.1 !important;margin-bottom:2px !important;}
-.cell-wrap{min-height:76px !important;gap:3px !important;padding-left:2px !important;padding-right:2px !important;}
-.main-count{font-size:20px !important;padding:3px 7px !important;}
-.sub-count{font-size:15px !important;padding:3px 7px !important;}
-.mini-row{gap:4px !important;}
-.mini-btn{width:24px !important;height:24px !important;font-size:14px !important;border-radius:7px !important;}
-.cube-row{gap:4px !important;flex-wrap:nowrap !important;}
-.cube{min-width:54px !important;padding:7px 6px !important;border-radius:10px !important;font-size:16px !important;}
-.cube small{font-size:9px !important;margin-top:1px !important;}
-.check{width:14px !important;height:14px !important;}
-.done-label{font-size:11px !important;margin-top:2px !important;}
-.note{width:84px !important;padding:6px 7px !important;font-size:12px !important;}
-.task-group-ode-cell .cell-wrap{padding-left:1px !important;padding-right:1px !important;}
-.task-group-ode-cell .cube-row{gap:4px !important;}
-.task-group-ode-cell .cube{min-width:54px !important;}
-.task-group-ode-cell .main-count{font-size:22px !important;}
-.task-group-ode-cell .sub-count{font-size:16px !important;}
-.small{font-size:10px !important;}
+/* ===== v6 compact table UI: 캐릭터별 숙제 여백 압축 ===== */
+.table-center{
+  justify-content:flex-start !important;
+  width:100% !important;
+}
+.table-wrap{
+  width:max-content !important;
+  max-width:100% !important;
+  overflow:auto !important;
+  border-radius:14px !important;
+}
+table{
+  min-width:0 !important;
+  width:max-content !important;
+  table-layout:fixed !important;
+}
+th,td{
+  padding:3px 2px !important;
+  line-height:1.08 !important;
+}
+thead th{
+  min-width:82px !important;
+  width:82px !important;
+  padding:5px 2px !important;
+}
+thead th:first-child,
+tbody td:first-child{
+  min-width:104px !important;
+  width:104px !important;
+}
+.char-col{
+  min-width:104px !important;
+  width:104px !important;
+}
+.profile-col{
+  min-width:76px !important;
+  width:76px !important;
+}
+.th-title{
+  font-size:16px !important;
+  margin-bottom:3px !important;
+  line-height:1.05 !important;
+  white-space:nowrap !important;
+}
+.th-sub{
+  font-size:9px !important;
+  line-height:1.12 !important;
+  margin-bottom:2px !important;
+  white-space:normal !important;
+}
+.boss-usage-header{
+  font-size:15px !important;
+  margin-top:3px !important;
+}
+.cell-wrap{
+  min-height:64px !important;
+  gap:2px !important;
+  padding:2px 1px !important;
+}
+.char-box{
+  gap:4px !important;
+}
+.char-input{
+  width:82px !important;
+  font-size:14px !important;
+  padding:7px 5px !important;
+  border-radius:8px !important;
+}
+.profile-summary{
+  width:66px !important;
+  min-width:66px !important;
+  padding:5px 4px !important;
+  border-radius:8px !important;
+}
+.profile-summary .level-line{
+  font-size:13px !important;
+}
+.profile-summary .power-line{
+  font-size:13px !important;
+  margin-top:4px !important;
+}
+.profile-manual-stack{
+  width:66px !important;
+  gap:3px !important;
+}
+.manual-info-input,
+.profile-link-input{
+  width:66px !important;
+  font-size:11px !important;
+  padding:5px 3px !important;
+}
+.main-count{
+  font-size:18px !important;
+  padding:3px 6px !important;
+  border-radius:8px !important;
+}
+.sub-count{
+  font-size:14px !important;
+  padding:3px 5px !important;
+  border-radius:8px !important;
+}
+.sub-count small{
+  font-size:9px !important;
+  margin-top:1px !important;
+}
+.mini-row{
+  gap:4px !important;
+}
+.mini-btn{
+  width:22px !important;
+  height:22px !important;
+  border-radius:6px !important;
+  font-size:13px !important;
+}
+.cube-row{
+  gap:3px !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+}
+.cube{
+  min-width:48px !important;
+  padding:6px 4px !important;
+  border-radius:8px !important;
+  font-size:15px !important;
+}
+.cube small{
+  font-size:9px !important;
+  margin-top:1px !important;
+}
+.check{
+  width:15px !important;
+  height:15px !important;
+}
+.done-label{
+  margin-top:1px !important;
+  font-size:10px !important;
+}
+.note{
+  width:70px !important;
+  font-size:11px !important;
+  padding:5px 4px !important;
+}
 
-/* 개별 메뉴별 더 조밀한 폭 */
-thead th:nth-child(3), tbody td:nth-child(3){min-width:104px !important;width:104px !important;} /* ⚡오드 */
-thead th:nth-child(4), tbody td:nth-child(4){min-width:116px !important;width:116px !important;} /* 🛠️오드 */
-thead th:nth-child(5), tbody td:nth-child(5){min-width:110px !important;width:110px !important;} /* 회랑 */
+/* 컬럼별 폭 직접 지정: 왼쪽부터 최대한 붙이기 */
+thead th:nth-child(1), tbody td:nth-child(1){min-width:104px !important;width:104px !important;} /* 캐릭터 */
+thead th:nth-child(2), tbody td:nth-child(2){min-width:76px !important;width:76px !important;}  /* 정보 */
+thead th:nth-child(3), tbody td:nth-child(3){min-width:88px !important;width:88px !important;}  /* ⚡오드 */
+thead th:nth-child(4), tbody td:nth-child(4){min-width:98px !important;width:98px !important;}  /* 🛠️오드 */
+thead th:nth-child(5), tbody td:nth-child(5){min-width:94px !important;width:94px !important;}  /* 회랑 */
 thead th:nth-child(6), tbody td:nth-child(6),
-thead th:nth-child(7), tbody td:nth-child(7){min-width:108px !important;width:108px !important;} /* 원정/초월 */
+thead th:nth-child(7), tbody td:nth-child(7){min-width:90px !important;width:90px !important;} /* 원정/초월 */
 thead th:nth-child(8), tbody td:nth-child(8),
-thead th:nth-child(9), tbody td:nth-child(9){min-width:94px !important;width:94px !important;} /* 악몽/각성전 */
-thead th:nth-child(10), tbody td:nth-child(10){min-width:182px !important;width:182px !important;} /* 성역 */
+thead th:nth-child(9), tbody td:nth-child(9){min-width:82px !important;width:82px !important;} /* 악몽/각성전 */
+thead th:nth-child(10), tbody td:nth-child(10){min-width:150px !important;width:150px !important;} /* 성역 */
 
-/* 렌더 함수에 남아있는 inline min-width 값을 최대한 압축 */
-td [style*="min-width:70px"], td [style*="min-width:74px"], td [style*="min-width:92px"]{min-width:54px !important;}
-td [style*="gap:10px"]{gap:4px !important;}
+/* 오드/오드제작은 붙어 보이게 내부 간격 추가 압축 */
+thead th:nth-child(3), tbody td:nth-child(3),
+thead th:nth-child(4), tbody td:nth-child(4){
+  padding-left:1px !important;
+  padding-right:1px !important;
+}
+.task-group-ode-cell .cell-wrap{
+  padding-left:0 !important;
+  padding-right:0 !important;
+}
+.task-group-ode-cell .cube-row{
+  gap:2px !important;
+}
+.task-group-ode-cell .cube{
+  min-width:45px !important;
+  padding-left:3px !important;
+  padding-right:3px !important;
+}
+.task-group-ode-cell .main-count{
+  font-size:20px !important;
+}
+
+/* 회랑/성역 같이 여러 버튼이 들어가는 칸 압축 */
+tbody td:nth-child(5) .cube{min-width:42px !important;}
+tbody td:nth-child(10) .cube{min-width:42px !important;}
+tbody td:nth-child(10) .cube-row{gap:3px !important;}
+
+@media (max-width:1200px){
+  .table-center{justify-content:flex-start !important;}
+  .weekly-summary-layout{grid-template-columns:1fr !important;}
+}
 
 </style>
 </head>
