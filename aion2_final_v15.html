@@ -573,6 +573,7 @@ const defaultTaskColors = {
   '⚔️루드라':'#6f3f56',
   '⚔️침식':'#6f3f56',
   '⚔️무스펠':'#6f3f56',
+  '🛠️오드':'#4d7d62',
   '🛠️오드제작':'#4d7d62',
 };
 
@@ -595,8 +596,11 @@ const ODE_LINKED_REWARD_STEP = 120;
 const SANCTUARY_NAME = '⚔️성역⚔️';
 const SANCTUARY_BOSS_NAMES = ['⚔️루드라','⚔️침식','⚔️무스펠'];
 const ODE_LINKED_TASK_NAMES = [SANCTUARY_NAME];
-const ODE_CRAFT_NAME = '🛠️오드제작';
-const ODE_CRAFT_MAX = 4;
+const ODE_CRAFT_LEGACY_NAME = '🛠️오드제작';
+const ODE_CRAFT_NAME = '🛠️오드';
+const ODE_CRAFT_PURCHASE_MAX = 4;
+const ODE_CRAFT_MAKE_MAX = 4;
+const ODE_CRAFT_MAX = ODE_CRAFT_MAKE_MAX;
 const EXPEDITION_REWARD_MAX = 21;
 const EXPEDITION_BOSS_MAX = 35;
 const EXPEDITION_KINA_100_LIMIT = 84;
@@ -611,6 +615,7 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 function clamp(n,min,max){ return Math.max(min, Math.min(max, n)); }
 function normalizeTaskName(name){
   if(name === '원정-정복') return '원정';
+  if(name === ODE_CRAFT_LEGACY_NAME) return ODE_CRAFT_NAME;
   if(CORRIDOR_LEGACY_NAMES.includes(name)) return CORRIDOR_NAME;
   return name;
 }
@@ -632,8 +637,7 @@ function makeDefaultWeeklyTasks(){
     makeWeekly('어비스사냥',2000),
     makeWeekly('시공(🗡️공격)',100),
     makeWeekly('시공(🛡️방어)',100),
-    makeWeekly('심연의 재련',1),
-    makeWeekly('오드(제작)',20),
+    makeWeekly('오드',20),
     makeWeekly('원정/초월 도움',10),
     makeWeekly('미지의 틈새',21),
     makeWeekly('즉시완료(일던)',21),
@@ -854,6 +858,34 @@ function normalizeOdeTask(task){
   task.rewardChargeCurrent = 0;
 }
 
+function syncOdeCraftTask(task){
+  if(!task || task.name !== ODE_CRAFT_NAME) return task;
+
+  const legacyCurrent = typeof task.rewardCurrent === 'number' ? task.rewardCurrent : ODE_CRAFT_MAKE_MAX;
+
+  task.purchaseMax = ODE_CRAFT_PURCHASE_MAX;
+  task.craftMax = ODE_CRAFT_MAKE_MAX;
+  if(typeof task.purchaseCurrent !== 'number') task.purchaseCurrent = task.purchaseMax;
+  if(typeof task.craftCurrent !== 'number') task.craftCurrent = legacyCurrent;
+
+  task.purchaseCurrent = clamp(task.purchaseCurrent, 0, task.purchaseMax);
+  task.craftCurrent = clamp(task.craftCurrent, 0, task.craftMax);
+
+  task.rewardMax = task.purchaseMax + task.craftMax;
+  task.rewardCurrent = task.purchaseCurrent + task.craftCurrent;
+  task.challengeMax = 0;
+  task.challengeCurrent = 0;
+  task.chargeMax = 0;
+  task.chargeCurrent = 0;
+  task.challengeChargeMax = 0;
+  task.challengeChargeCurrent = 0;
+  task.rewardChargeMax = 0;
+  task.rewardChargeCurrent = 0;
+  task.resetRule = 'weekly_wed_05_reset';
+  task.color = task.color || getDefaultColor(ODE_CRAFT_NAME);
+  return task;
+}
+
 function normalizeLoadedState(parsed){
   if(!parsed || typeof parsed !== 'object'){
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
@@ -920,18 +952,7 @@ function normalizeLoadedState(parsed){
       if(t.name === '원정' || t.name === '초월'){
         normalizeCubeTask(t);
       } else if(t.name === ODE_CRAFT_NAME) {
-        t.rewardMax = ODE_CRAFT_MAX;
-        if(typeof t.rewardCurrent !== 'number') t.rewardCurrent = t.rewardMax;
-        t.rewardCurrent = clamp(t.rewardCurrent, 0, t.rewardMax);
-        t.challengeMax = 0;
-        t.challengeCurrent = 0;
-        t.chargeMax = 0;
-        t.chargeCurrent = 0;
-        t.challengeChargeMax = 0;
-        t.rewardChargeMax = 0;
-        t.challengeChargeCurrent = 0;
-        t.rewardChargeCurrent = 0;
-        t.resetRule = 'weekly_wed_05_reset';
+        syncOdeCraftTask(t);
       } else if(t.name === SANCTUARY_NAME) {
         syncSanctuaryTask(t);
       } else if(t.name === '⚡오드'){
@@ -958,7 +979,9 @@ function normalizeLoadedState(parsed){
     });
   });
 
-  parsed.weeklyTasks = (parsed.weeklyTasks || []).filter(w => !['원정','초월','카이라'].includes(w.name));
+  parsed.weeklyTasks = (parsed.weeklyTasks || [])
+    .map(w => { if(w.name === '오드(제작)') w.name = '오드'; return w; })
+    .filter(w => !['원정','초월','카이라','심연의 재련'].includes(w.name));
   parsed.weeklyTasks.forEach(w => {
     if(w.name === '원정/초월 충전') {
       w.name = '원정/초월 도움';
@@ -1163,7 +1186,7 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     chargeMax = 0;
     resetRule = 'weekly_wed_05_reset';
   } else if(name === ODE_CRAFT_NAME){
-    rewardMax = ODE_CRAFT_MAX;
+    rewardMax = ODE_CRAFT_PURCHASE_MAX + ODE_CRAFT_MAKE_MAX;
     challengeMax = 0;
     chargeMax = 0;
     resetRule = 'weekly_wed_05_reset';
@@ -1198,6 +1221,12 @@ function createTask({name, challengeMax=0, rewardMax=0, chargeMax=0, resetRule='
     color:color || state.taskColors[name] || getDefaultColor(name),
     note:''
   };
+
+  if(name === ODE_CRAFT_NAME){
+    task.purchaseCurrent = ODE_CRAFT_PURCHASE_MAX;
+    task.craftCurrent = ODE_CRAFT_MAKE_MAX;
+    syncOdeCraftTask(task);
+  }
 
   if(name === '원정' || name === '초월'){
     task.cubeCount = 0;
@@ -1969,6 +1998,47 @@ function setCubeCount(taskId){
 }
 
 
+function changeOdeCraftCount(taskId, key, delta){
+  const t = findTask(taskId);
+  if(!t || t.name !== ODE_CRAFT_NAME) return;
+  syncOdeCraftTask(t);
+  const maxKey = key === 'purchaseCurrent' ? 'purchaseMax' : 'craftMax';
+  t[key] = clamp((Number(t[key]) || 0) + delta, 0, t[maxKey] || 0);
+  syncOdeCraftTask(t);
+  saveState();
+  renderTable();
+}
+function changeOdeCraftByContext(event, taskId, key, delta){
+  event.preventDefault();
+  changeOdeCraftCount(taskId, key, delta);
+}
+function setOdeCraftCount(taskId, key){
+  const t = findTask(taskId);
+  if(!t || t.name !== ODE_CRAFT_NAME) return;
+  syncOdeCraftTask(t);
+  const maxKey = key === 'purchaseCurrent' ? 'purchaseMax' : 'craftMax';
+  const label = key === 'purchaseCurrent' ? '구매' : '제작';
+  const v = prompt(`${t.name} ${label} 값을 입력하세요`, String(t[key]));
+  if(v === null) return;
+  const num = Number(v);
+  if(Number.isNaN(num)){ alert('숫자만 입력해주세요.'); return; }
+  t[key] = clamp(num, 0, t[maxKey] || 0);
+  syncOdeCraftTask(t);
+  saveState();
+  renderTable();
+}
+function completeOdeCraftTask(taskId, checked){
+  const t = findTask(taskId);
+  if(!t || t.name !== ODE_CRAFT_NAME) return;
+  syncOdeCraftTask(t);
+  t.purchaseCurrent = checked ? 0 : t.purchaseMax;
+  t.craftCurrent = checked ? 0 : t.craftMax;
+  syncOdeCraftTask(t);
+  saveState();
+  renderTable();
+}
+
+
 function changeBossExtraCharge(taskId, mode){
   const t = findTask(taskId);
   if(!t || !['원정','초월'].includes(t.name)) return;
@@ -2081,6 +2151,10 @@ function completeTask(taskId, checked){
   }
   if(t.name === SANCTUARY_NAME){
     completeSanctuaryTask(taskId, checked);
+    return;
+  }
+  if(t.name === ODE_CRAFT_NAME){
+    completeOdeCraftTask(taskId, checked);
     return;
   }
   if(t.name === '원정' || t.name === '초월'){
@@ -2342,6 +2416,12 @@ function applyRuleToTask(task){
         task.bosses.forEach(b => { b.current = b.max || 1; });
         syncSanctuaryTask(task);
       }
+      if(task.name === ODE_CRAFT_NAME){
+        syncOdeCraftTask(task);
+        task.purchaseCurrent = task.purchaseMax;
+        task.craftCurrent = task.craftMax;
+        syncOdeCraftTask(task);
+      }
       if(task.name === '원정' || task.name === '초월'){
         normalizeCubeTask(task);
         task.cubeCount = 0;
@@ -2466,7 +2546,7 @@ function renderCharacterList(){
 function renderWeekly(){
   const el = document.getElementById('weeklyGrid');
   const missionOrder = ['사명','슈고','일일던전','아티쟁','나흐마','아그로','⚔️전장 (승리)','어비스사냥','시공(🗡️공격)','시공(🛡️방어)'];
-  const purchaseOrder = ['오드(제작)','심연의 재련','미지의 틈새','즉완권'];
+  const purchaseOrder = ['오드','미지의 틈새','즉완권'];
 
   const weeklyMap = new Map(state.weeklyTasks.map(w => [w.name, w]));
   const dailyMissionNames = ['사명','슈고'];
@@ -2621,7 +2701,7 @@ function renderWeekly(){
         </div>
       </div>
       <div class="weekly-group-box purchase-mission">
-        <div class="weekly-group-title">주간 구매 / 제작 <span class="badge">특수결정 · 부활석 제외</span></div>
+        <div class="weekly-group-title">주간 구매 <span class="badge">특수결정 · 부활석 제외</span></div>
         <div class="weekly-group-row">
           ${purchaseHtml}
         </div>
@@ -2774,13 +2854,29 @@ function renderCell(character, taskName){
   }
 
   if(t.name === ODE_CRAFT_NAME) {
-    const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
+    syncOdeCraftTask(t);
+    const allDone = t.rewardCurrent === 0;
+    const purchaseCls = getMiniClass(t.purchaseCurrent, t.purchaseMax);
+    const craftCls = getMiniClass(t.craftCurrent, t.craftMax);
     return `
       <td class="${tdGroupClass}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
-          <input class="check" type="checkbox" ${t.rewardCurrent === 0 ? 'checked' : ''} onchange="completeTask('${t.id}', this.checked)" />
-          <div class="main-count${rewardCls}" onclick="changeTaskCount('${t.id}','rewardCurrent',-1)" oncontextmenu="changeTaskByContext(event,'${t.id}','rewardCurrent',1)">${t.rewardCurrent}/${t.rewardMax}</div>
-          <div class="small muted" style="margin-top:2px;font-weight:800;">제작횟수</div>
+          <input class="check" type="checkbox" ${allDone ? 'checked' : ''} onchange="completeOdeCraftTask('${t.id}', this.checked)" />
+          <div class="cube-row" style="gap:10px; flex-wrap:nowrap;">
+            <div style="text-align:center;">
+              <div class="cube${purchaseCls}" onclick="changeOdeCraftCount('${t.id}','purchaseCurrent',-1)" oncontextmenu="changeOdeCraftByContext(event,'${t.id}','purchaseCurrent',1)" ondblclick="setOdeCraftCount('${t.id}','purchaseCurrent')" style="min-width:70px;">
+                ${t.purchaseCurrent}/${t.purchaseMax}
+              </div>
+              <div class="small muted" style="margin-top:4px;font-weight:800;">구매</div>
+            </div>
+            <div style="text-align:center;">
+              <div class="cube${craftCls}" onclick="changeOdeCraftCount('${t.id}','craftCurrent',-1)" oncontextmenu="changeOdeCraftByContext(event,'${t.id}','craftCurrent',1)" ondblclick="setOdeCraftCount('${t.id}','craftCurrent')" style="min-width:70px;">
+                ${t.craftCurrent}/${t.craftMax}
+              </div>
+              <div class="small muted" style="margin-top:4px;font-weight:800;">제작</div>
+            </div>
+          </div>
+          ${allDone ? `<div class="done-label">완료</div>` : ''}
         </div>
       </td>
     `;
