@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v16</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v18</title>
 <style>
   :root{
     --bg:#000000;
@@ -1357,7 +1357,7 @@ tbody td{background:rgba(7,18,34,.82)!important;}
   padding:12px 18px 16px 18px !important;
 }
 .title{font-size:25px !important;}
-.title::after{content:'v1.1.6' !important;font-size:12px !important;padding:3px 8px !important;}
+.title::after{content:'v1.1.8' !important;font-size:12px !important;padding:3px 8px !important;}
 .sub{font-size:11px !important;}
 .topbar{padding-bottom:8px !important;margin-bottom:10px !important;}
 .topbar-right{gap:8px !important;}
@@ -1565,6 +1565,328 @@ table{
   .weekly-progress-panel{max-width:290px !important;}
 }
 
+
+
+/* ===== AION2 V17 PANEL EDGE FIX: 실제 화면 기준 패널 끝선 정렬 ===== */
+:root{
+  --dashboard-side-width: 245px;
+  --dashboard-main-width: 1320px;
+  --dashboard-gap: 14px;
+}
+.app{
+  zoom:.84 !important;
+  padding:12px 16px 16px 16px !important;
+  min-width:calc(var(--dashboard-side-width) + var(--dashboard-main-width) + var(--dashboard-gap) + 48px) !important;
+}
+.layout{
+  display:grid !important;
+  grid-template-columns:var(--dashboard-side-width) var(--dashboard-main-width) !important;
+  gap:var(--dashboard-gap) !important;
+  align-items:start !important;
+  justify-content:start !important;
+  width:fit-content !important;
+}
+.side{
+  width:var(--dashboard-side-width) !important;
+  max-width:var(--dashboard-side-width) !important;
+  overflow:visible !important;
+  max-height:none !important;
+  position:static !important;
+}
+.main{
+  width:var(--dashboard-main-width) !important;
+  max-width:var(--dashboard-main-width) !important;
+  min-width:0 !important;
+}
+.topbar{
+  width:calc(var(--dashboard-side-width) + var(--dashboard-main-width) + var(--dashboard-gap)) !important;
+  max-width:calc(var(--dashboard-side-width) + var(--dashboard-main-width) + var(--dashboard-gap)) !important;
+}
+.weekly-box,
+.main > .panel,
+.panel.main{
+  width:100% !important;
+  max-width:100% !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+  overflow:hidden !important;
+}
+.weekly-summary-layout{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+}
+#weeklyGrid{
+  width:100% !important;
+  max-width:100% !important;
+  display:grid !important;
+  gap:12px !important;
+}
+.weekly-top-layout{
+  display:grid !important;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr) 330px !important;
+  gap:12px !important;
+  width:100% !important;
+  max-width:100% !important;
+  align-items:stretch !important;
+  margin:0 !important;
+}
+.weekly-group-box,
+.weekly-progress-panel{
+  min-width:0 !important;
+  width:100% !important;
+  max-width:100% !important;
+  margin:0 !important;
+}
+.weekly-progress-panel.top-progress-panel{
+  align-self:stretch !important;
+  padding:12px !important;
+}
+.weekly-group-row{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+.weekly-top-layout .weekly-group-row{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:8px !important;
+}
+.weekly-top-layout .expedition-help-mission .weekly-group-row{
+  grid-template-columns:1fr !important;
+}
+.weekly-top-layout .week-item{
+  min-width:0 !important;
+  width:100% !important;
+}
+.weekly-group-box.weekly-mission .weekly-group-row{
+  display:grid !important;
+  grid-template-columns:repeat(11, minmax(0, 1fr)) !important;
+  gap:8px !important;
+  overflow:visible !important;
+}
+.weekly-group-box.weekly-mission .week-item,
+.weekly-group-box.purchase-mission .week-item{
+  min-width:0 !important;
+  width:100% !important;
+}
+.weekly-group-box.weekly-mission{
+  width:100% !important;
+  max-width:100% !important;
+}
+.week-item{
+  padding:9px 8px !important;
+}
+.w-title{
+  font-size:13px !important;
+  white-space:nowrap !important;
+}
+.w-value{
+  font-size:20px !important;
+  min-width:0 !important;
+}
+.progress-card{
+  grid-template-columns:74px minmax(0,1fr) 42px !important;
+  gap:8px !important;
+  padding:8px 10px !important;
+}
+.progress-name{font-size:12px !important;}
+.progress-percent{font-size:15px !important;}
+.progress-bar-track{height:12px !important;}
+.table-center,
+.table-wrap{
+  width:100% !important;
+  max-width:100% !important;
+}
+.table-wrap{
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+}
+table{
+  width:100% !important;
+  min-width:1180px !important;
+  table-layout:fixed !important;
+}
+/* 시공(방어) 오른쪽 끝선을 기준으로 모든 패널 끝선 통일 */
+.weekly-head,
+.header-actions{
+  width:100% !important;
+  max-width:100% !important;
+}
+@media(max-width:1700px){
+  :root{--dashboard-side-width:235px;--dashboard-main-width:1240px;}
+  .app{zoom:.82 !important;}
+  .weekly-top-layout{grid-template-columns:minmax(0,1.05fr) minmax(0,.9fr) 305px !important;}
+  .weekly-group-box.weekly-mission .weekly-group-row{grid-template-columns:repeat(11,minmax(86px,1fr)) !important;overflow-x:auto !important;}
+}
+@media(max-width:1450px){
+  :root{--dashboard-side-width:225px;--dashboard-main-width:1120px;}
+  .app{zoom:.78 !important;}
+  .weekly-top-layout{grid-template-columns:1fr 1fr !important;}
+  .weekly-progress-panel.top-progress-panel{grid-column:1 / -1 !important;}
+}
+
+
+/* ===== AION2 V18 TOP ALIGN + WEEKLY NO WRAP ===== */
+:root{
+  --dashboard-side-width: 235px !important;
+  --dashboard-main-width: 1550px !important;
+  --dashboard-gap: 14px !important;
+}
+.app{
+  zoom:.84 !important;
+  padding:12px 16px 16px 16px !important;
+  min-width:calc(var(--dashboard-side-width) + var(--dashboard-main-width) + var(--dashboard-gap) + 48px) !important;
+}
+.layout{
+  grid-template-columns:var(--dashboard-side-width) var(--dashboard-main-width) !important;
+  gap:var(--dashboard-gap) !important;
+  width:fit-content !important;
+}
+.side{
+  width:var(--dashboard-side-width) !important;
+  max-width:var(--dashboard-side-width) !important;
+  overflow:visible !important;
+  max-height:none !important;
+  position:static !important;
+}
+.main{
+  width:var(--dashboard-main-width) !important;
+  max-width:var(--dashboard-main-width) !important;
+}
+.topbar{
+  width:calc(var(--dashboard-side-width) + var(--dashboard-main-width) + var(--dashboard-gap)) !important;
+  max-width:calc(var(--dashboard-side-width) + var(--dashboard-main-width) + var(--dashboard-gap)) !important;
+}
+.side-adventure,
+.side-meta{display:none !important;}
+.side-links{margin-top:10px !important;gap:7px !important;}
+.side-link-btn{
+  min-height:42px !important;
+  height:42px !important;
+  padding:9px 12px !important;
+  align-items:center !important;
+  line-height:1 !important;
+  font-size:14px !important;
+}
+.side-link-btn span{display:none !important;}
+.side-link-btn.ing-meter{align-items:center !important;}
+.weekly-box,
+.panel.main,
+.main > .panel{
+  width:100% !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+}
+.weekly-summary-layout{
+  display:block !important;
+  width:100% !important;
+}
+#weeklyGrid{
+  width:100% !important;
+  display:grid !important;
+  gap:12px !important;
+}
+.weekly-top-layout{
+  display:grid !important;
+  grid-template-columns:minmax(0, 1.15fr) minmax(0, .85fr) 330px !important;
+  gap:12px !important;
+  width:100% !important;
+  align-items:stretch !important;
+  margin:0 !important;
+}
+.weekly-top-layout > .weekly-group-box,
+.weekly-progress-panel.top-progress-panel{
+  height:176px !important;
+  min-height:176px !important;
+  max-height:176px !important;
+  margin:0 !important;
+  align-self:stretch !important;
+  overflow:hidden !important;
+}
+.weekly-progress-panel.top-progress-panel{
+  padding:10px 12px !important;
+  max-width:none !important;
+  width:100% !important;
+}
+.weekly-top-layout .weekly-group-row{
+  display:grid !important;
+  grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  gap:8px !important;
+  width:100% !important;
+  overflow:hidden !important;
+}
+.weekly-top-layout .expedition-help-mission .weekly-group-row{
+  grid-template-columns:1fr !important;
+}
+.weekly-top-layout .week-item{
+  min-width:0 !important;
+  width:100% !important;
+  min-height:112px !important;
+  height:112px !important;
+  padding:8px !important;
+}
+.weekly-top-layout .week-item::before{font-size:20px !important;height:20px !important;line-height:20px !important;}
+.weekly-top-layout .w-value{font-size:20px !important;}
+.progress-panel-title{font-size:16px !important;margin-bottom:7px !important;}
+.progress-list{gap:5px !important;}
+.progress-card{
+  min-height:29px !important;
+  height:29px !important;
+  padding:5px 8px !important;
+  grid-template-columns:70px minmax(0,1fr) 38px !important;
+  gap:7px !important;
+}
+.progress-name{font-size:11px !important;line-height:1 !important;}
+.progress-percent{font-size:13px !important;line-height:1 !important;}
+.progress-bar-track{height:8px !important;}
+/* 주간 콘텐츠: 절대 줄바꿈 금지, 전체 메인 폭을 따라 오른쪽으로만 확장 */
+.weekly-group-box.weekly-mission{
+  width:100% !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+}
+.weekly-group-box.weekly-mission .weekly-group-row{
+  display:grid !important;
+  grid-template-columns:repeat(11, minmax(0, 1fr)) !important;
+  gap:8px !important;
+  width:100% !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+}
+.weekly-group-box.weekly-mission .week-item,
+.weekly-group-box.purchase-mission .week-item{
+  min-width:0 !important;
+  width:100% !important;
+  height:112px !important;
+  min-height:112px !important;
+  padding:8px 6px !important;
+}
+.weekly-group-box.weekly-mission .week-item::before{font-size:22px !important;height:22px !important;line-height:22px !important;}
+.weekly-group-box.weekly-mission .w-title{font-size:12px !important;white-space:normal !important;line-height:1.15 !important;}
+.weekly-group-box.weekly-mission .w-value{font-size:19px !important;}
+.weekly-group-title{font-size:16px !important;margin-bottom:8px !important;}
+.weekly-group-title .badge{font-size:9px !important;padding:3px 7px !important;}
+/* 캐릭터별 숙제 패널도 같은 오른쪽 끝선 유지 */
+.table-wrap,
+.table-center{width:100% !important;max-width:100% !important;}
+.table-wrap{overflow-x:auto !important;overflow-y:hidden !important;}
+table{width:100% !important;min-width:1220px !important;table-layout:fixed !important;}
+/* 좁은 화면에서도 이번 버전의 정렬 규칙을 유지 */
+@media(max-width:1700px){
+  :root{--dashboard-side-width:235px !important;--dashboard-main-width:1550px !important;}
+  .app{zoom:.84 !important;}
+  .weekly-top-layout{grid-template-columns:minmax(0, 1.15fr) minmax(0, .85fr) 330px !important;}
+  .weekly-group-box.weekly-mission .weekly-group-row{grid-template-columns:repeat(11, minmax(0, 1fr)) !important;overflow:hidden !important;}
+}
+@media(max-width:1450px){
+  :root{--dashboard-side-width:235px !important;--dashboard-main-width:1550px !important;}
+  .app{zoom:.84 !important;}
+  .weekly-top-layout{grid-template-columns:minmax(0, 1.15fr) minmax(0, .85fr) 330px !important;}
+  .weekly-progress-panel.top-progress-panel{grid-column:auto !important;}
+}
+
 </style>
 </head>
 <body>
@@ -1632,11 +1954,7 @@ table{
         <button class="side-link-btn" type="button" onclick="openNotice()">🎧 공지사항</button>
         <button class="side-link-btn" type="button" onclick="openAion2ToolSearch()">🔍 아툴 검색</button>
         <button class="side-link-btn" type="button" onclick="openOfficialCharacterSearch()">🧙 캐릭터 검색</button>
-        <button class="side-link-btn ing-meter" type="button" onclick="openIngMeter()">📊 잉미터기<br><span>https://aion.ing/aion2/meter.php</span></button>
-      </div>
-      <div class="side-meta">
-        <div><span>버전</span><b>v1.1.4</b></div>
-        <div><span>문의</span><b>오천크스</b></div>
+        <button class="side-link-btn ing-meter" type="button" onclick="openIngMeter()">📊 잉미터기</button>
       </div>
     </div>
 
@@ -1651,7 +1969,6 @@ table{
         </div>
         <div class="weekly-summary-layout">
           <div id="weeklyGrid" class="weekly-grid"></div>
-          <div id="characterProgressArea" class="weekly-progress-panel"></div>
         </div>
       </div>
 
@@ -3848,6 +4165,7 @@ function renderWeekly(){
           ${expeditionTranscendHelpHtml}
         </div>
       </div>
+      <div id="characterProgressArea" class="weekly-progress-panel top-progress-panel"></div>
     </div>
     <div class="weekly-group-box weekly-mission">
       <div class="weekly-group-title">📦 주간 콘텐츠 <span class="badge">수요일 05시 초기화</span></div>
