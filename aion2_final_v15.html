@@ -966,6 +966,191 @@ tbody td:nth-child(5) .cube{min-width:68px !important;}
 tbody td:nth-child(10) .cube{min-width:68px !important;}
 tbody td:nth-child(10) .cube-row{gap:6px !important;}
 
+
+
+/* ===== AION2 REDESIGN V9: 정리형 대시보드 UI ===== */
+:root{
+  --aion-bg:#050a14;
+  --aion-panel:rgba(8,18,34,.86);
+  --aion-card:rgba(10,24,46,.78);
+  --aion-card2:rgba(13,29,55,.82);
+  --aion-line:#1d365c;
+  --aion-line2:#315a91;
+  --aion-glow:rgba(88,177,255,.22);
+  --aion-blue:#6fb8ff;
+  --aion-green:#91f087;
+  --aion-gold:#ffd85b;
+}
+body{
+  background:
+    radial-gradient(circle at 72% 18%, rgba(55,112,205,.20), transparent 30%),
+    radial-gradient(circle at 14% 0%, rgba(61,146,255,.16), transparent 28%),
+    linear-gradient(180deg,#030711,#071120 48%,#030711) !important;
+}
+.app{
+  zoom:.78 !important;
+  padding:14px 16px 20px 16px !important;
+  background:transparent !important;
+}
+.topbar{
+  grid-template-columns:minmax(0,1fr) auto !important;
+  padding:0 2px 10px 2px !important;
+  border-bottom:1px solid rgba(80,125,200,.20);
+  margin-bottom:12px !important;
+}
+.topbar-center{display:none !important;}
+.title{
+  font-size:26px !important;
+  letter-spacing:-.4px;
+  text-shadow:0 0 14px rgba(97,175,255,.22);
+}
+.sub{font-size:12px !important;color:#8fa8d5 !important;}
+.topbar-right .pill{font-size:11px !important;padding:6px 9px !important;background:rgba(17,33,63,.86)!important;}
+.topbar-right button{padding:7px 9px !important;font-size:12px !important;}
+.layout{
+  display:grid !important;
+  grid-template-columns:255px minmax(0,1fr) !important;
+  gap:14px !important;
+  align-items:start !important;
+}
+.panel{
+  background:linear-gradient(180deg,rgba(9,18,36,.92),rgba(7,14,28,.90)) !important;
+  border:1px solid rgba(81,129,205,.42) !important;
+  border-radius:18px !important;
+  box-shadow:0 18px 42px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.025) !important;
+}
+.side{
+  padding:12px !important;
+  position:sticky;
+  top:12px;
+  max-height:calc(100vh - 24px);
+  overflow:auto;
+}
+.side-logo{
+  height:72px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:12px;
+  border-bottom:1px solid rgba(90,135,205,.18);
+}
+.side-logo .aion-logo{
+  font-family:Georgia,serif;
+  font-size:34px;font-weight:900;letter-spacing:1px;
+  color:#eaf5ff;text-shadow:0 0 16px rgba(88,190,255,.65);
+}
+.side-logo .aion-logo span{color:#85d8ff;font-size:42px;}
+.side .section-title{font-size:15px !important;margin:10px 0 8px !important;}
+.character-list{gap:6px !important;}
+.char-item{
+  padding:8px !important;
+  border-radius:12px !important;
+  background:linear-gradient(180deg,rgba(15,34,61,.78),rgba(8,19,37,.78)) !important;
+  border-color:rgba(70,115,185,.40) !important;
+}
+.char-item.active{
+  background:linear-gradient(180deg,rgba(38,66,126,.92),rgba(19,42,84,.92)) !important;
+  border-color:#528cff !important;
+  box-shadow:0 0 0 1px rgba(104,164,255,.15),0 0 20px rgba(70,140,255,.14);
+}
+.job-chip{display:flex;align-items:center;gap:8px;min-width:0;}
+.job-icon-circle{
+  width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle at 40% 30%,rgba(111,188,255,.28),rgba(12,24,47,.95));
+  border:1px solid rgba(100,164,255,.45);font-size:20px;box-shadow:inset 0 0 12px rgba(88,160,255,.14);
+  flex:0 0 auto;
+}
+.job-select{
+  width:100%;min-width:78px;padding:5px 8px !important;font-size:11px !important;border-radius:9px !important;
+  background:#08162c !important;color:#d9eaff !important;border-color:#244875 !important;
+}
+.side-adventure{
+  margin-top:14px;border:1px solid rgba(80,130,210,.34);border-radius:16px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(18,38,72,.82),rgba(7,17,34,.88));
+}
+.side-adventure .art{
+  height:125px;background:
+  radial-gradient(circle at 55% 35%,rgba(159,211,255,.95) 0 9%,rgba(79,139,226,.36) 10% 24%,transparent 25%),
+  radial-gradient(circle at 65% 62%,rgba(57,119,221,.25),transparent 38%),
+  linear-gradient(135deg,#0a1c3e,#07101f 55%,#030812);
+  position:relative;
+}
+.side-adventure .art:after{content:'🏰';position:absolute;right:20px;bottom:18px;font-size:45px;filter:drop-shadow(0 0 12px rgba(80,170,255,.55));}
+.side-adventure .caption{padding:12px 14px;font-weight:900;font-size:17px;line-height:1.35;color:#e7f2ff;}
+.side-links{display:grid;gap:8px;margin-top:10px;}
+.side-link-btn{
+  width:100%;display:flex;align-items:center;gap:9px;justify-content:flex-start;
+  background:linear-gradient(180deg,#102447,#0b1931)!important;border:1px solid rgba(91,146,225,.35)!important;
+  color:#dceaff!important;padding:12px 14px!important;border-radius:12px!important;font-size:14px!important;
+}
+.side-link-btn:hover{transform:none!important;box-shadow:0 0 0 1px rgba(111,180,255,.18),0 0 20px rgba(75,145,255,.12);}
+.main{min-width:0 !important;}
+.weekly-box{padding:16px !important;}
+.weekly-head{margin-bottom:12px !important;}
+.weekly-head .section-title{font-size:20px !important;}
+.weekly-head .small{font-size:12px !important;color:#8ba4cf !important;}
+.weekly-summary-layout{
+  grid-template-columns:minmax(0,1fr) 360px !important;
+  gap:14px !important;
+  align-items:stretch !important;
+}
+#weeklyGrid{display:grid !important;gap:14px !important;align-items:stretch !important;width:100% !important;}
+.weekly-top-layout{display:grid !important;grid-template-columns:1fr 1fr !important;gap:14px !important;width:100% !important;margin-bottom:0 !important;}
+.weekly-group-box{
+  width:100% !important;display:flex !important;background:linear-gradient(180deg,rgba(9,23,44,.88),rgba(8,18,35,.88)) !important;
+  border-color:rgba(73,123,200,.45)!important;border-radius:16px!important;padding:14px!important;
+}
+.weekly-group-box.daily-mission{border-color:rgba(81,140,230,.55)!important;}
+.weekly-group-box.weekly-mission{border-color:rgba(65,111,180,.42)!important;}
+.weekly-group-box.purchase-mission{border-color:rgba(116,92,180,.45)!important;}
+.weekly-group-box.expedition-help-mission{border-color:rgba(91,184,220,.55)!important;}
+.weekly-group-title{font-size:17px!important;margin-bottom:10px!important;}
+.weekly-group-title .badge{font-size:10px!important;background:rgba(30,54,90,.75)!important;}
+.weekly-group-row{display:flex!important;gap:9px!important;overflow-x:auto;width:100%!important;}
+.week-item{min-width:118px !important;padding:10px !important;border-radius:12px !important;background:rgba(10,25,48,.86)!important;}
+.w-title{font-size:14px!important;}
+.w-value{font-size:22px!important;min-width:70px!important;}
+.week-item .small{font-size:10px!important;}
+.week-item.purchase-card{min-width:116px!important;}
+.week-item.ticket-card .w-title:before{content:'🎟️ ';}
+.weekly-progress-panel{padding:14px!important;border-radius:16px!important;background:linear-gradient(180deg,rgba(8,20,41,.90),rgba(7,16,31,.90))!important;}
+.progress-panel-title{font-size:17px!important;}
+.progress-card{grid-template-columns:86px minmax(0,1fr) 44px!important;padding:10px!important;border-radius:12px!important;background:rgba(12,28,54,.78)!important;}
+.progress-name{font-size:13px!important;}
+.progress-percent{font-size:17px!important;}
+.table-wrap{width:100%!important;max-width:100%!important;border-radius:16px!important;background:rgba(7,15,30,.90)!important;}
+table{min-width:1120px!important;width:100%!important;table-layout:fixed!important;}
+th,td{padding:7px 5px!important;border-color:rgba(62,103,166,.45)!important;}
+thead th{min-width:0!important;height:46px!important;}
+thead th:first-child, tbody td:first-child{min-width:110px!important;width:110px!important;}
+.char-col{width:118px!important;min-width:118px!important;}
+.profile-col{width:92px!important;min-width:92px!important;}
+.th-title{font-size:16px!important;margin-bottom:0!important;}
+.th-sub{display:none!important;}
+.char-box{gap:5px!important;}
+.char-input{width:78px!important;font-size:13px!important;padding:7px 6px!important;}
+.table-char-row{display:flex;align-items:center;justify-content:center;gap:7px;}
+.table-job-icon{font-size:21px;filter:drop-shadow(0 0 6px rgba(101,177,255,.35));}
+.manual-info-input{width:72px!important;font-size:13px!important;padding:6px 4px!important;}
+.cell-wrap{min-height:78px!important;gap:4px!important;}
+.main-count{font-size:20px!important;padding:4px 8px!important;}
+.sub-count{font-size:15px!important;padding:3px 7px!important;}
+.cube{min-width:58px!important;padding:7px 8px!important;font-size:15px!important;border-radius:9px!important;}
+.cube small{font-size:9px!important;}
+.cube-row{gap:5px!important;}
+.mini-btn{width:24px!important;height:24px!important;font-size:14px!important;}
+.check{width:15px!important;height:15px!important;}
+.header-actions{margin-bottom:10px!important;}
+.header-actions .section-title{font-size:19px!important;}
+.header-actions .pill{font-size:11px!important;padding:6px 9px!important;}
+.job-picker-panel{
+  margin-top:14px;padding:12px 14px;border-radius:16px;border:1px solid rgba(73,123,200,.40);
+  background:linear-gradient(180deg,rgba(8,20,40,.90),rgba(6,15,30,.90));
+}
+.job-picker-title{font-size:15px;font-weight:900;margin-bottom:8px;display:flex;gap:8px;align-items:center;}
+.job-picker-grid{display:flex;gap:8px;flex-wrap:wrap;}
+.job-picker-btn{padding:8px 10px!important;border-radius:999px!important;background:#0b1b35!important;border:1px solid rgba(92,145,225,.35)!important;color:#dcecff!important;font-size:12px!important;}
+.job-picker-btn.active{background:#17386d!important;border-color:#79b8ff!important;box-shadow:0 0 16px rgba(100,170,255,.20);}
+@media(max-width:1400px){.weekly-summary-layout{grid-template-columns:1fr!important}.layout{grid-template-columns:235px minmax(0,1fr)!important}.weekly-top-layout{grid-template-columns:1fr!important}}
+
 </style>
 </head>
 <body>
@@ -990,6 +1175,7 @@ tbody td:nth-child(10) .cube-row{gap:6px !important;}
 
   <div class="layout">
     <div class="panel side">
+      <div class="side-logo"><div class="aion-logo">AION<span>2</span></div></div>
       <div class="section-title">캐릭터 관리</div>
       <div class="stack">
         <div class="row">
@@ -1026,6 +1212,16 @@ tbody td:nth-child(10) .cube-row{gap:6px !important;}
           <input id="taskColorInput" type="color" value="#4a4578" />
           <button class="btn-dark" type="button" onclick="addCustomTask()">추가</button>
         </div>
+      </div>
+
+      <div class="side-adventure">
+        <div class="art"></div>
+        <div class="caption">아이온2와 함께하는<br>모험의 하루</div>
+      </div>
+      <div class="side-links">
+        <button class="side-link-btn" type="button" onclick="openNotice()">🎧 공지사항</button>
+        <button class="side-link-btn" type="button" onclick="openAion2ToolSearch()">🔍 아툴 검색</button>
+        <button class="side-link-btn" type="button" onclick="openOfficialCharacterSearch()">🧙 캐릭터 검색</button>
       </div>
     </div>
 
@@ -1064,6 +1260,14 @@ tbody td:nth-child(10) .cube-row{gap:6px !important;}
 const userId = localStorage.getItem("musang_user_id");
 const STORAGE_KEY = `aion2_homework_tracker_${userId}`;
 const PALETTE = ['#6c63b5','#8d5f5f','#9c6d4a','#9a8b4a','#4d7d62','#4a6d9c','#7a5c9b','#9b5c7f','#555a6b'];
+const JOB_ICONS = {
+  '검성':'⚔️','수호성':'🛡️','권성':'👊','살성':'🗡️','궁성':'🏹','정령성':'🔮','마도성':'✨','치유성':'🌿','호법성':'📿'
+};
+const JOB_ORDER = ['검성','수호성','권성','살성','궁성','정령성','마도성','치유성','호법성'];
+function getJobIcon(job){ return JOB_ICONS[job] || '◇'; }
+function getCharacterJobIcon(c){ return getJobIcon(c?.job || '검성'); }
+function setCharacterJob(id, job){ const c = state.characters.find(x=>x.id===id); if(!c) return; c.job = job; saveState(); render(); }
+function jobSelectHtml(id, selected='검성'){ return `<select class="job-select" onchange="setCharacterJob('${id}', this.value)">${JOB_ORDER.map(j=>`<option value="${j}" ${j===selected?'selected':''}>${JOB_ICONS[j]} ${j}</option>`).join('')}</select>`; }
 
 const defaultTaskColors = {
   '⚡오드':'#4f628f',
@@ -1414,6 +1618,7 @@ function normalizeLoadedState(parsed){
 
   parsed.characters.forEach(c => {
     if(typeof c.isNameManuallyEdited !== 'boolean') c.isNameManuallyEdited = false;
+    if(!c.job || !JOB_ICONS[c.job]) c.job = '검성';
     if (!c.tasks) return;
     const legacyShugo = (c.tasks || []).find(t => t.name === '슈고');
     if(legacyShugo){
@@ -1789,6 +1994,7 @@ async function addCharacter(){
     power: profile?.power ? formatPowerCompact(profile.power) : '',
     itemLevel: profile?.itemLevel || '',
     profileUrl: rawUrl || '',
+    job: '검성',
     tasks: []
   };
   ensureDefaultTasksForCharacter(c);
@@ -3038,9 +3244,13 @@ function renderCharacterList(){
   }
   el.innerHTML = state.characters.map(c=>`
     <div class="char-item ${c.id===state.selectedCharacterId ? 'active' : ''}">
-      <div style="flex:1;cursor:pointer" onclick="selectCharacter('${c.id}')">
-        <div class="char-name">${escapeHtml(c.name)}</div>
-        <div class="small muted">${c.power ? '전투력 ' + escapeHtml(formatPowerDisplay(c.power) || c.power) : '전투력 미입력'}</div>
+      <div class="job-chip" style="flex:1;cursor:pointer" onclick="selectCharacter('${c.id}')">
+        <span class="job-icon-circle">${getCharacterJobIcon(c)}</span>
+        <div style="min-width:0;flex:1;">
+          <div class="char-name">${escapeHtml(c.name)}</div>
+          <div class="small muted">${c.itemLevel ? escapeHtml(formatItemLevelDisplay(c.itemLevel)) + ' · ' : ''}${c.power ? '전투력 ' + escapeHtml(formatPowerDisplay(c.power) || c.power) : '전투력 미입력'}</div>
+          <div onclick="event.stopPropagation();" style="margin-top:5px;">${jobSelectHtml(c.id, c.job || '검성')}</div>
+        </div>
       </div>
       <button class="btn-red btn-sm" type="button" onclick="removeCharacter('${c.id}')">삭제</button>
     </div>
@@ -3051,7 +3261,7 @@ function renderCharacterList(){
 function renderWeekly(){
   const el = document.getElementById('weeklyGrid');
   const missionOrder = ['사명','슈고','일일던전','아티쟁','나흐마','아그로','⚔️전장 (승리)','어비스사냥','시공(🗡️공격)','시공(🛡️방어)'];
-  const purchaseOrder = ['오드','미지의 틈새','즉완권'];
+  const purchaseOrder = ['오드','미지의 틈새','완료권'];
 
   const weeklyMap = new Map(state.weeklyTasks.map(w => [w.name, w]));
   const dailyMissionNames = ['사명','슈고'];
@@ -3149,7 +3359,7 @@ function renderWeekly(){
     }
 
     return `
-      <div class="week-item ${cls}" style="min-width:140px; ${specialBg}">
+      <div class="week-item ${cls} ${variant === 'purchase' ? 'purchase-card' : ''}" style="min-width:140px; ${specialBg}">
         <div class="w-head">
           <div class="w-title">${escapeHtml(w.name)}</div>
           <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
@@ -3167,9 +3377,9 @@ function renderWeekly(){
     const totalMax = daily.max + nightmare.max;
     const cls = getMainClass(totalCur, totalMax);
     return `
-      <div class="week-item ${cls}" style="min-width:220px; background:#151a2a;border-color:#6e5a2f; box-shadow:inset 0 0 0 1px rgba(234,196,98,.12);">
+      <div class="week-item ${cls} ticket-card" style="min-width:220px; background:#151a2a;border-color:#6e5a2f; box-shadow:inset 0 0 0 1px rgba(234,196,98,.12);">
         <div class="w-head">
-          <div class="w-title">즉완권</div>
+          <div class="w-title">완료권</div>
           <input class="check" type="checkbox" ${(daily.current === 0 && nightmare.current === 0) ? 'checked' : ''} onchange="if(this.checked){ weeklyComplete('${daily.id}', true); weeklyComplete('${nightmare.id}', true); } else { weeklyComplete('${daily.id}', false); weeklyComplete('${nightmare.id}', false); }" />
         </div>
         <div class="cube-row" style="margin-top:12px; justify-content:center;">
@@ -3191,37 +3401,38 @@ function renderWeekly(){
   }
 
   const purchaseHtml = purchaseOrder.map(name => {
-    if(name === '즉완권') return instantCompleteCard(instantDaily, instantNightmare);
+    if(name === '완료권') return instantCompleteCard(instantDaily, instantNightmare);
     const w = weeklyMap.get(name);
     return w ? weeklyCard(w, 'purchase') : '';
   }).join('');
   const expeditionTranscendHelpHtml = expeditionTranscendHelp ? weeklyCard(expeditionTranscendHelp, 'help') : '';
 
+  const weeklyContentHtml = [purchaseHtml, weeklyMissions.map(w => weeklyCard(w, 'mission')).join('')].join('');
   el.innerHTML = `
     <div class="weekly-top-layout">
       <div class="weekly-group-box daily-mission">
-        <div class="weekly-group-title">일일미션 <span class="badge">사명 · 슈고</span></div>
+        <div class="weekly-group-title">🎯 일일미션 <span class="badge">사명 · 슈고</span></div>
         <div class="weekly-group-row">
           ${dailyMissions.map(w => weeklyCard(w, 'mission')).join('')}
         </div>
       </div>
-      <div class="weekly-group-box purchase-mission">
-        <div class="weekly-group-title">주간 구매 <span class="badge">특수결정 · 부활석 제외</span></div>
-        <div class="weekly-group-row">
-          ${purchaseHtml}
-        </div>
-      </div>
       <div class="weekly-group-box expedition-help-mission">
-        <div class="weekly-group-title">원정/초월 도움 <span class="badge">노보상 10회 · 수요일 05시 초기화</span></div>
+        <div class="weekly-group-title">🛡️ 원정/초월 도움 <span class="badge">노보상 10회 · 수요일 05시 초기화</span></div>
         <div class="weekly-group-row">
           ${expeditionTranscendHelpHtml}
         </div>
       </div>
     </div>
     <div class="weekly-group-box weekly-mission">
-      <div class="weekly-group-title">주간미션 <span class="badge">일일던전 ~ 시공 방어</span></div>
+      <div class="weekly-group-title">📦 주간 콘텐츠 <span class="badge">수요일 05시 초기화</span></div>
       <div class="weekly-group-row">
-        ${weeklyMissions.map(w => weeklyCard(w, 'mission')).join('')}
+        ${weeklyContentHtml}
+      </div>
+    </div>
+    <div class="job-picker-panel">
+      <div class="job-picker-title">직업 아이콘 선택 <span class="small muted">선택한 캐릭터의 직업 아이콘을 바꿉니다.</span></div>
+      <div class="job-picker-grid">
+        ${JOB_ORDER.map(j => `<button type="button" class="job-picker-btn ${getSelectedCharacter()?.job === j ? 'active' : ''}" onclick="if(state.selectedCharacterId) setCharacterJob(state.selectedCharacterId, '${j}')">${JOB_ICONS[j]} ${j}</button>`).join('')}
       </div>
     </div>
   `;
@@ -3521,7 +3732,8 @@ function renderTable(){
             ${state.characters.map(c=>`
               <tr>
                 <td>
-<div class="char-box">
+<div class="char-box table-char-row">
+  <span class="table-job-icon" title="${escapeHtml(c.job || '검성')}">${getCharacterJobIcon(c)}</span>
   <input class="char-input" value="${escapeHtml(c.name || '')}" oninput="updateCharacterField('${c.id}','name', this.value)" />
 </div>
                 </td>
@@ -3556,7 +3768,7 @@ function resetAllData(){
 }
 function ensureSample(){
   if(state.characters.length) return;
-  const c = {id:uid(), name:'메인캐릭', power:'', itemLevel:'', tasks:[]};
+  const c = {id:uid(), name:'메인캐릭', power:'', itemLevel:'', job:'검성', tasks:[]};
   ensureDefaultTasksForCharacter(c);
   state.characters.push(c);
   state.selectedCharacterId = c.id;
