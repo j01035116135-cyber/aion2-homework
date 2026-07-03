@@ -1461,6 +1461,23 @@ thead th{
   .layout{grid-template-columns:235px minmax(0,1fr) !important;}
 }
 
+
+
+/* ===== v13: 전체 크기 1.2배 확대 + 잉미터기 링크 ===== */
+.app{
+  zoom:.89 !important;
+}
+.side-links{
+  gap:7px !important;
+}
+.side-link-btn{
+  padding:10px 12px !important;
+  font-size:13px !important;
+}
+@media (max-width:1400px){
+  .app{zoom:.84 !important;}
+}
+
 </style>
 </head>
 <body>
@@ -1527,6 +1544,7 @@ thead th{
       <div class="side-links">
         <button class="side-link-btn" type="button" onclick="openNotice()">🎧 공지사항</button>
         <button class="side-link-btn" type="button" onclick="openAion2ToolSearch()">🔍 아툴 검색</button>
+        <button class="side-link-btn" type="button" onclick="openIngmeter()">📊 잉미터기</button>
         <button class="side-link-btn" type="button" onclick="openOfficialCharacterSearch()">🧙 캐릭터 검색</button>
       </div>
     </div>
@@ -2180,6 +2198,9 @@ function openNotice(){
 }
 function openAion2ToolSearch(){
   window.open('https://www.aion2tool.com/', '_blank');
+}
+function openIngmeter(){
+  window.open('https://aion.ing/aion2/meter.php', '_blank');
 }
 function openOfficialCharacterSearch(){
   window.open('https://aion2.plaync.com/ko-kr/characters/index', '_blank');
