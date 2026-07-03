@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v12</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v14</title>
 <style>
   :root{
     --bg:#000000;
@@ -1153,330 +1153,201 @@ thead th:first-child, tbody td:first-child{min-width:110px!important;width:110px
 
 
 
-/* ===== V12 HEIGHT FIT: 100% 화면 4캐릭터 기준 세로 압축 + 좌측 패널 스크롤 제거 ===== */
+/* ===== AION2 V14 ICON DASHBOARD POLISH ===== */
+:root{
+  --v14-bg:#02070f;
+  --v14-panel:rgba(8,20,38,.90);
+  --v14-card:rgba(10,26,50,.86);
+  --v14-line:rgba(78,134,218,.42);
+  --v14-line-soft:rgba(78,134,218,.22);
+  --v14-text:#f3f8ff;
+  --v14-muted:#95a9cf;
+  --v14-blue:#71baff;
+  --v14-green:#74e96e;
+  --v14-gold:#ffd257;
+}
+body{
+  background:
+    radial-gradient(circle at 72% -8%, rgba(37,98,184,.22), transparent 35%),
+    radial-gradient(circle at 4% 5%, rgba(46,139,255,.18), transparent 30%),
+    linear-gradient(180deg,#02060d 0%,#06101f 45%,#02060d 100%) !important;
+}
 .app{
-  zoom:.74 !important;
-  padding:10px 14px 12px 14px !important;
+  zoom:.90 !important;
+  padding:14px 22px 18px 22px !important;
+  color:var(--v14-text) !important;
 }
 .topbar{
-  margin-bottom:8px !important;
-  padding-bottom:6px !important;
-  min-height:0 !important;
+  border:0 !important;
+  padding-bottom:10px !important;
+  align-items:center !important;
 }
 .title{
-  font-size:23px !important;
-  line-height:1.05 !important;
-}
-.sub{
-  font-size:11px !important;
-  margin-top:2px !important;
-}
-.topbar-right{
-  gap:6px !important;
-}
-.topbar-right .pill{
-  padding:5px 8px !important;
-  font-size:10px !important;
-}
-.topbar-right button{
-  padding:6px 8px !important;
-  font-size:11px !important;
-  border-radius:8px !important;
-}
-.layout{
-  grid-template-columns:245px minmax(0,1fr) !important;
+  font-size:27px !important;
+  letter-spacing:-.6px !important;
+  display:flex !important;
+  align-items:center !important;
   gap:10px !important;
+}
+.title::after{
+  content:'v1.1.4';
+  font-size:13px;
+  font-weight:800;
+  color:#b9cdf6;
+  border:1px solid rgba(109,165,255,.34);
+  background:rgba(13,31,62,.78);
+  border-radius:999px;
+  padding:4px 9px;
+}
+.sub{font-size:12px !important;color:#9db1d7 !important;}
+.topbar-right{gap:10px !important;}
+.topbar-right .btn-primary{background:linear-gradient(180deg,#663a9e,#42265f)!important;border:1px solid rgba(188,128,255,.45)!important;}
+.topbar-right .pill{background:rgba(9,27,52,.82)!important;border-color:rgba(80,145,232,.38)!important;}
+.topbar-right .btn-red{background:linear-gradient(180deg,#135f37,#0d3d25)!important;border:1px solid rgba(104,239,148,.45)!important;}
+.layout{
+  grid-template-columns:305px minmax(0,1fr) !important;
+  gap:16px !important;
+}
+.panel{
+  background:linear-gradient(180deg,rgba(8,20,39,.94),rgba(5,13,27,.94)) !important;
+  border:1px solid var(--v14-line) !important;
+  border-radius:18px !important;
+  box-shadow:0 16px 42px rgba(0,0,0,.38), inset 0 0 0 1px rgba(255,255,255,.025) !important;
 }
 .side{
+  padding:16px !important;
   position:static !important;
-  top:auto !important;
   max-height:none !important;
   overflow:visible !important;
-  padding:9px !important;
 }
-.side-logo{
-  height:48px !important;
-  margin-bottom:7px !important;
-}
-.side-logo .aion-logo{
-  font-size:25px !important;
-}
-.side-logo .aion-logo span{
-  font-size:32px !important;
-}
+.side-logo{height:58px !important;margin-bottom:14px !important;}
+.side-logo .aion-logo{font-size:31px!important;}
+.side-logo .aion-logo span{font-size:39px!important;}
 .side .section-title{
-  font-size:13px !important;
-  margin:7px 0 6px !important;
+  font-size:18px !important;
+  margin:12px 0 12px !important;
 }
-.side .stack{
-  gap:6px !important;
-}
-.side input,
-.side select{
-  padding:7px 8px !important;
-  font-size:12px !important;
-  border-radius:8px !important;
-}
-.side button{
-  padding:7px 8px !important;
-  font-size:12px !important;
-  border-radius:8px !important;
-}
-.character-list{
-  gap:5px !important;
-}
+.side .section-title::before{content:'👥 ';}
+.side input, .side select{height:39px !important;background:#091a33!important;border-color:rgba(82,137,216,.42)!important;}
+.side .btn-primary{height:39px!important;background:linear-gradient(180deg,#2d67c9,#173a7b)!important;border:1px solid rgba(122,177,255,.55)!important;}
+.character-list{gap:9px!important;}
 .char-item{
-  padding:6px 7px !important;
-  border-radius:10px !important;
+  padding:12px 12px !important;
+  min-height:76px !important;
+  background:linear-gradient(180deg,rgba(12,32,61,.92),rgba(8,22,43,.92)) !important;
+  border-color:rgba(77,133,218,.34)!important;
+  border-radius:14px!important;
 }
+.char-item.active{
+  border-color:#4d91ff!important;
+  background:linear-gradient(180deg,rgba(20,57,117,.95),rgba(10,32,68,.95))!important;
+  box-shadow:0 0 0 1px rgba(91,154,255,.20),0 0 26px rgba(54,126,255,.20)!important;
+}
+.char-name{font-size:17px!important;line-height:1.15!important;}
 .job-icon-circle{
-  width:28px !important;
-  height:28px !important;
-  font-size:17px !important;
+  width:44px!important;height:44px!important;font-size:27px!important;
+  background:radial-gradient(circle at 45% 30%,rgba(178,219,255,.24),rgba(10,25,50,.98))!important;
+  border-color:rgba(120,180,255,.58)!important;
 }
-.job-chip{
-  gap:6px !important;
-}
-.job-select{
-  padding:4px 6px !important;
-  font-size:10px !important;
-  border-radius:7px !important;
-}
-.char-name{
-  font-size:13px !important;
-  line-height:1.1 !important;
-}
-.small{
-  font-size:10px !important;
-  line-height:1.25 !important;
-}
-.divider{
-  margin:8px 0 !important;
-}
-.side-adventure{
-  display:none !important;
-}
-.side-links{
-  gap:6px !important;
-  margin-top:8px !important;
-}
+.job-select{margin-top:6px!important;height:29px!important;font-size:11px!important;}
+.btn-red.btn-sm{padding:7px 9px!important;border-radius:9px!important;font-size:12px!important;background:#8e4251!important;}
+.side-adventure{display:none!important;}
+.side-links{margin-top:14px!important;gap:9px!important;}
 .side-link-btn{
-  padding:9px 10px !important;
-  font-size:12px !important;
-  border-radius:10px !important;
+  min-height:52px!important;
+  font-size:16px!important;
+  border-radius:13px!important;
+  background:linear-gradient(180deg,rgba(13,35,68,.95),rgba(8,22,43,.95))!important;
+  border-color:rgba(82,144,236,.38)!important;
 }
-.weekly-box{
-  padding:10px !important;
-  margin-bottom:8px !important;
+.side-link-btn span{font-size:11px;color:#82a9e5;font-weight:700;display:block;margin-top:2px;}
+.side-link-btn.ing-meter{align-items:flex-start!important;line-height:1.2!important;}
+.side-meta{
+  margin-top:14px;
+  border:1px solid rgba(75,128,210,.28);
+  background:rgba(6,17,33,.72);
+  border-radius:14px;
+  overflow:hidden;
 }
-.weekly-head{
-  margin-bottom:7px !important;
-}
+.side-meta div{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-top:1px solid rgba(75,128,210,.18);}
+.side-meta div:first-child{border-top:0;}
+.side-meta span{color:#9badcf;font-size:13px;font-weight:800;}
+.side-meta b{font-size:14px;}
+.weekly-box{padding:16px!important;}
+.weekly-head{margin-bottom:14px!important;}
 .weekly-head .section-title{
-  font-size:17px !important;
-  margin-bottom:2px !important;
+  font-size:25px!important;
+  display:flex;align-items:center;gap:9px;
 }
-.weekly-head .small{
-  display:none !important;
-}
-.legend{
-  font-size:11px !important;
-}
-.weekly-summary-layout{
-  gap:10px !important;
-  grid-template-columns:minmax(0,1fr) 330px !important;
-}
-#weeklyGrid{
-  gap:9px !important;
-}
-.weekly-top-layout{
-  gap:9px !important;
-}
+.weekly-head .section-title::before{content:'📋';font-size:28px;}
+.weekly-head .small{font-size:13px!important;}
+.legend{font-size:12px!important;color:#a8b9dc!important;}
+.weekly-summary-layout{grid-template-columns:minmax(0,1fr) 420px!important;gap:16px!important;}
+.weekly-top-layout{grid-template-columns:1fr 1fr!important;gap:14px!important;}
 .weekly-group-box{
-  padding:9px !important;
-  border-radius:13px !important;
+  padding:16px!important;
+  border-radius:17px!important;
+  background:linear-gradient(180deg,rgba(9,25,49,.92),rgba(7,18,36,.92))!important;
 }
 .weekly-group-title{
-  font-size:14px !important;
-  margin-bottom:6px !important;
+  font-size:19px!important;
+  letter-spacing:-.2px;
 }
-.weekly-group-title .badge{
-  padding:3px 6px !important;
-  font-size:9px !important;
-}
-.weekly-group-row{
-  gap:6px !important;
-}
+.weekly-group-title .badge{font-size:11px!important;padding:4px 8px!important;}
+.weekly-group-row{gap:10px!important;}
 .week-item{
-  min-width:96px !important;
-  padding:7px !important;
-  border-radius:10px !important;
+  min-width:120px!important;
+  min-height:118px!important;
+  padding:12px!important;
+  display:flex!important;flex-direction:column!important;justify-content:space-between!important;
+  border-radius:13px!important;
+  background:linear-gradient(180deg,rgba(13,31,58,.92),rgba(8,21,42,.92))!important;
+  border-color:rgba(72,127,211,.35)!important;
 }
-.w-head{
-  margin-bottom:5px !important;
+.week-item::before{
+  content:attr(data-icon);
+  font-size:28px;
+  display:block;
+  height:30px;
+  line-height:30px;
+  text-align:center;
+  filter:drop-shadow(0 0 8px rgba(90,178,255,.35));
 }
-.w-title{
-  font-size:12px !important;
-}
-.w-value{
-  font-size:18px !important;
-  padding:4px 6px !important;
-  margin-bottom:5px !important;
-  min-width:56px !important;
-  border-radius:8px !important;
-}
-.w-controls button{
-  padding:4px 0 !important;
-  font-size:12px !important;
-  border-radius:7px !important;
-}
-.weekly-progress-panel{
-  padding:9px !important;
-  border-radius:13px !important;
-}
-.progress-panel-title{
-  font-size:14px !important;
-  margin-bottom:7px !important;
-}
-.progress-list{
-  gap:6px !important;
-}
-.progress-card{
-  grid-template-columns:76px minmax(0,1fr) 40px !important;
-  padding:7px !important;
-  gap:7px !important;
-  border-radius:10px !important;
-}
-.progress-name{
-  font-size:12px !important;
-  margin-bottom:4px !important;
-}
-.progress-bar-track{
-  height:13px !important;
-}
-.progress-percent{
-  font-size:15px !important;
-}
-.main > .panel[style*="padding:14px"]{
-  padding:10px !important;
-}
-.header-actions{
-  margin-bottom:7px !important;
-}
-.header-actions .section-title{
-  font-size:17px !important;
-  margin-bottom:2px !important;
-}
-.header-actions .small{
-  display:none !important;
-}
-.header-actions .pill{
-  padding:5px 8px !important;
-  font-size:10px !important;
-}
-.table-wrap{
-  border-radius:13px !important;
-}
-th,td{
-  padding:4px 4px !important;
-}
+.w-head{margin-bottom:7px!important;}
+.w-title{font-size:15px!important;text-align:center;width:100%;}
+.task-title-icon{display:none;}
+.week-item .check{position:absolute;right:10px;top:10px;}
+.w-value{font-size:25px!important;min-width:72px!important;background:#05111f!important;border-color:rgba(86,144,225,.34)!important;}
+.week-item.ticket-card{border-color:rgba(255,126,201,.35)!important;background:linear-gradient(180deg,rgba(55,20,54,.78),rgba(16,20,42,.92))!important;}
+.weekly-progress-panel{padding:16px!important;}
+.progress-panel-title{font-size:20px!important;display:flex;gap:8px;align-items:center;}
+.progress-panel-title::before{content:'👥';}
+.progress-card{grid-template-columns:92px minmax(0,1fr) 48px!important;min-height:47px!important;}
+.progress-bar-track{height:13px!important;}
+.progress-bar-fill{background:linear-gradient(90deg,#5cd869,#a0ff78)!important;}
+.header-actions .section-title{font-size:21px!important;display:flex;align-items:center;gap:8px;}
+.header-actions .section-title::before{content:'⚔️';}
+.table-wrap{border-radius:16px!important;background:rgba(6,16,31,.92)!important;}
+table{min-width:1180px!important;}
 thead th{
-  height:38px !important;
-  padding:5px 4px !important;
+  background:linear-gradient(180deg,#153468,#10264c)!important;
+  height:48px!important;
 }
-.th-title{
-  font-size:14px !important;
-  line-height:1.05 !important;
-}
-.cell-wrap{
-  min-height:62px !important;
-  gap:3px !important;
-  padding:3px 3px !important;
-}
-.char-input{
-  width:72px !important;
-  font-size:12px !important;
-  padding:5px 5px !important;
-}
-.table-job-icon{
-  font-size:18px !important;
-}
-.manual-info-input,
-.profile-link-input{
-  width:68px !important;
-  font-size:12px !important;
-  padding:5px 4px !important;
-}
-.profile-summary{
-  padding:5px 4px !important;
-}
-.profile-summary .level-line,
-.profile-summary .power-line{
-  font-size:14px !important;
-}
-.main-count{
-  font-size:18px !important;
-  padding:4px 7px !important;
-  border-radius:8px !important;
-}
-.sub-count{
-  font-size:13px !important;
-  padding:3px 6px !important;
-  border-radius:8px !important;
-}
-.sub-count small{
-  font-size:9px !important;
-}
-.mini-btn{
-  width:22px !important;
-  height:22px !important;
-  font-size:13px !important;
-}
-.cube-row{
-  gap:4px !important;
-}
-.cube{
-  min-width:52px !important;
-  padding:5px 6px !important;
-  font-size:13px !important;
-  border-radius:8px !important;
-}
-.cube small{
-  font-size:8px !important;
-}
-.check{
-  width:14px !important;
-  height:14px !important;
-}
-.done-label{
-  font-size:10px !important;
-}
-.note{
-  width:88px !important;
-  padding:5px 5px !important;
-  font-size:11px !important;
-}
-@media(max-width:1400px){
-  .weekly-summary-layout{grid-template-columns:1fr !important;}
-  .layout{grid-template-columns:235px minmax(0,1fr) !important;}
-}
-
-
-
-/* ===== v13: 전체 크기 1.2배 확대 + 잉미터기 링크 ===== */
-.app{
-  zoom:.89 !important;
-}
-.side-links{
-  gap:7px !important;
-}
-.side-link-btn{
-  padding:10px 12px !important;
-  font-size:13px !important;
-}
-@media (max-width:1400px){
-  .app{zoom:.84 !important;}
-}
+thead th:nth-child(3){background:linear-gradient(180deg,#1f7045,#18482f)!important;}
+thead th:nth-child(4){background:linear-gradient(180deg,#236746,#18482f)!important;}
+thead th:nth-child(10){background:linear-gradient(180deg,#79314f,#451d35)!important;}
+.th-title{font-size:17px!important;}
+tbody td{background:rgba(7,18,34,.82)!important;}
+.table-char-row{justify-content:flex-start!important;padding-left:10px!important;}
+.table-job-icon{font-size:30px!important;width:34px;text-align:center;}
+.char-input{background:rgba(6,15,28,.88)!important;border-color:rgba(72,130,216,.42)!important;}
+.manual-info-input{font-size:14px!important;background:#06162c!important;border-color:rgba(74,132,215,.42)!important;}
+.manual-info-input.power-input{color:var(--v14-gold)!important;}
+.main-count,.sub-count,.cube{box-shadow:0 4px 12px rgba(0,0,0,.22)!important;}
+.cube{border-color:rgba(218,152,62,.60)!important;background:rgba(6,15,28,.84)!important;}
+.cube.zero{border-color:#1a2330!important;background:#050911!important;}
+.mini-btn{background:#0b254a!important;border-color:rgba(103,163,255,.48)!important;}
+@media(max-width:1400px){.weekly-summary-layout{grid-template-columns:1fr!important}.layout{grid-template-columns:285px minmax(0,1fr)!important}.app{zoom:.84!important;}}
 
 </style>
 </head>
@@ -1544,8 +1415,12 @@ thead th{
       <div class="side-links">
         <button class="side-link-btn" type="button" onclick="openNotice()">🎧 공지사항</button>
         <button class="side-link-btn" type="button" onclick="openAion2ToolSearch()">🔍 아툴 검색</button>
-        <button class="side-link-btn" type="button" onclick="openIngmeter()">📊 잉미터기</button>
         <button class="side-link-btn" type="button" onclick="openOfficialCharacterSearch()">🧙 캐릭터 검색</button>
+        <button class="side-link-btn ing-meter" type="button" onclick="openIngMeter()">📊 잉미터기<br><span>https://aion.ing/aion2/meter.php</span></button>
+      </div>
+      <div class="side-meta">
+        <div><span>버전</span><b>v1.1.4</b></div>
+        <div><span>문의</span><b>오천크스</b></div>
       </div>
     </div>
 
@@ -1588,6 +1463,14 @@ const JOB_ICONS = {
   '검성':'⚔️','수호성':'🛡️','권성':'👊','살성':'🗡️','궁성':'🏹','정령성':'🔮','마도성':'✨','치유성':'🌿','호법성':'📿'
 };
 const JOB_ORDER = ['검성','수호성','권성','살성','궁성','정령성','마도성','치유성','호법성'];
+
+const TASK_ICONS = {
+  '사명':'💀','슈고':'🛡️','원정/초월 도움':'⚔️','오드':'⚡','미지의 틈새':'📦','완료권':'🎟️',
+  '일일던전':'🌀','아티쟁':'✳️','나흐마':'💀','아그로':'🦋','⚔️전장 (승리)':'⚔️','어비스사냥':'🌀','시공(🗡️공격)':'🎯','시공(🛡️방어)':'🛡️',
+  '⚡오드':'⚡','🛠️오드':'🛠️','🌀회랑':'🌀','원정':'🔮','초월':'✨','악몽':'🧪','각성전':'⚔️','⚔️성역⚔️':'🏰'
+};
+function getTaskIcon(name){ return TASK_ICONS[name] || '◆'; }
+function taskTitleHtml(name){ return `<span class="task-title-icon">${getTaskIcon(name)}</span>${escapeHtml(name)}`; }
 function getJobIcon(job){ return JOB_ICONS[job] || '◇'; }
 function getCharacterJobIcon(c){ return getJobIcon(c?.job || '검성'); }
 function setCharacterJob(id, job){ const c = state.characters.find(x=>x.id===id); if(!c) return; c.job = job; saveState(); render(); }
@@ -2199,11 +2082,11 @@ function openNotice(){
 function openAion2ToolSearch(){
   window.open('https://www.aion2tool.com/', '_blank');
 }
-function openIngmeter(){
-  window.open('https://aion.ing/aion2/meter.php', '_blank');
-}
 function openOfficialCharacterSearch(){
   window.open('https://aion2.plaync.com/ko-kr/characters/index', '_blank');
+}
+function openIngMeter(){
+  window.open('https://aion.ing/aion2/meter.php', '_blank');
 }
 
 function setupAuth(){
@@ -3613,9 +3496,9 @@ function renderWeekly(){
     if(w.name === '슈고'){
       const chargeCls = getMainClass(w.chargeCurrent || 0, w.chargeMax || 10);
       return `
-        <div class="week-item ${cls}" style="min-width:180px; ${specialBg}">
+        <div class="week-item ${cls}" data-icon="${getTaskIcon(w.name)}" style="min-width:180px; ${specialBg}">
           <div class="w-head">
-            <div class="w-title">${escapeHtml(w.name)}</div>
+            <div class="w-title">${taskTitleHtml(w.name)}</div>
             <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
           </div>
           <div class="row" style="justify-content:center; flex-direction:column; gap:6px;">
@@ -3629,9 +3512,9 @@ function renderWeekly(){
     if(w.name === '나흐마'){
       const labels = ['금','일'];
       return `
-        <div class="week-item ${cls}" style="min-width:180px; ${specialBg}">
+        <div class="week-item ${cls}" data-icon="${getTaskIcon(w.name)}" style="min-width:180px; ${specialBg}">
           <div class="w-head">
-            <div class="w-title">${escapeHtml(w.name)}</div>
+            <div class="w-title">${taskTitleHtml(w.name)}</div>
             <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
           </div>
           <div class="cube-row" style="margin-top:12px; justify-content:center;">
@@ -3651,9 +3534,9 @@ function renderWeekly(){
     if(w.name === '아티쟁'){
       const labels = ['수','토'];
       return `
-        <div class="week-item ${cls}" style="min-width:180px; ${specialBg}">
+        <div class="week-item ${cls}" data-icon="${getTaskIcon(w.name)}" style="min-width:180px; ${specialBg}">
           <div class="w-head">
-            <div class="w-title">${escapeHtml(w.name)}</div>
+            <div class="w-title">${taskTitleHtml(w.name)}</div>
             <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
           </div>
           <div class="cube-row" style="margin-top:12px; justify-content:center;">
@@ -3672,9 +3555,9 @@ function renderWeekly(){
 
     if(w.name === '원정/초월 도움'){
       return `
-        <div class="week-item ${cls}" style="min-width:180px; ${specialBg}">
+        <div class="week-item ${cls}" data-icon="${getTaskIcon(w.name)}" style="min-width:180px; ${specialBg}">
           <div class="w-head">
-            <div class="w-title">${escapeHtml(w.name)}</div>
+            <div class="w-title">${taskTitleHtml(w.name)}</div>
             <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
           </div>
           <div class="row" style="justify-content:center; flex-direction:column; gap:6px;">
@@ -3686,9 +3569,9 @@ function renderWeekly(){
     }
 
     return `
-      <div class="week-item ${cls} ${variant === 'purchase' ? 'purchase-card' : ''}" style="min-width:140px; ${specialBg}">
+      <div class="week-item ${cls} ${variant === 'purchase' ? 'purchase-card' : ''}" data-icon="${getTaskIcon(w.name)}" style="min-width:140px; ${specialBg}">
         <div class="w-head">
-          <div class="w-title">${escapeHtml(w.name)}</div>
+          <div class="w-title">${taskTitleHtml(w.name)}</div>
           <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}', this.checked)" />
         </div>
         <div class="row" style="justify-content:center;">
@@ -3704,9 +3587,9 @@ function renderWeekly(){
     const totalMax = daily.max + nightmare.max;
     const cls = getMainClass(totalCur, totalMax);
     return `
-      <div class="week-item ${cls} ticket-card" style="min-width:220px; background:#151a2a;border-color:#6e5a2f; box-shadow:inset 0 0 0 1px rgba(234,196,98,.12);">
+      <div class="week-item ${cls} ticket-card" data-icon="🎟️" style="min-width:220px; background:#151a2a;border-color:#6e5a2f; box-shadow:inset 0 0 0 1px rgba(234,196,98,.12);">
         <div class="w-head">
-          <div class="w-title">완료권</div>
+          <div class="w-title">🎟️ 완료권</div>
           <input class="check" type="checkbox" ${(daily.current === 0 && nightmare.current === 0) ? 'checked' : ''} onchange="if(this.checked){ weeklyComplete('${daily.id}', true); weeklyComplete('${nightmare.id}', true); } else { weeklyComplete('${daily.id}', false); weeklyComplete('${nightmare.id}', false); }" />
         </div>
         <div class="cube-row" style="margin-top:12px; justify-content:center;">
@@ -3738,7 +3621,7 @@ function renderWeekly(){
   el.innerHTML = `
     <div class="weekly-top-layout">
       <div class="weekly-group-box daily-mission">
-        <div class="weekly-group-title">🎯 일일미션 <span class="badge">사명 · 슈고</span></div>
+        <div class="weekly-group-title">📋 일일미션 <span class="badge">사명 · 슈고</span></div>
         <div class="weekly-group-row">
           ${dailyMissions.map(w => weeklyCard(w, 'mission')).join('')}
         </div>
@@ -3833,7 +3716,7 @@ function renderHeader(names){
 
     return `
       <th class="${isOdeGroup ? `task-group-ode-header ${isStart ? 'task-group-start' : ''} ${isEnd ? 'task-group-end' : ''}` : ''} task-header-click" data-task-header="1" style="background:${color}" onclick="if(!event.target.closest('.palette-pop')) togglePalette('${escapeHtml(name)}')">
-        <div class="th-title">${escapeHtml(name)}${bossUsageHtml}</div>
+        <div class="th-title">${taskTitleHtml(name)}${bossUsageHtml}</div>
         ${hideResetText ? '' : `<div class="th-sub">${escapeHtml(rule)}</div>`}
         ${hideResetText ? '' : `<div class="th-sub">${next ? diffText(next) : '리셋 없음'}</div>`}
         ${renderPalette(name, color)}
