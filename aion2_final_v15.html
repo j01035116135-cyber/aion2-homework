@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v10</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v12</title>
 <style>
   :root{
     --bg:#000000;
@@ -1151,6 +1151,316 @@ thead th:first-child, tbody td:first-child{min-width:110px!important;width:110px
 .job-picker-btn.active{background:#17386d!important;border-color:#79b8ff!important;box-shadow:0 0 16px rgba(100,170,255,.20);}
 @media(max-width:1400px){.weekly-summary-layout{grid-template-columns:1fr!important}.layout{grid-template-columns:235px minmax(0,1fr)!important}.weekly-top-layout{grid-template-columns:1fr!important}}
 
+
+
+/* ===== V12 HEIGHT FIT: 100% 화면 4캐릭터 기준 세로 압축 + 좌측 패널 스크롤 제거 ===== */
+.app{
+  zoom:.74 !important;
+  padding:10px 14px 12px 14px !important;
+}
+.topbar{
+  margin-bottom:8px !important;
+  padding-bottom:6px !important;
+  min-height:0 !important;
+}
+.title{
+  font-size:23px !important;
+  line-height:1.05 !important;
+}
+.sub{
+  font-size:11px !important;
+  margin-top:2px !important;
+}
+.topbar-right{
+  gap:6px !important;
+}
+.topbar-right .pill{
+  padding:5px 8px !important;
+  font-size:10px !important;
+}
+.topbar-right button{
+  padding:6px 8px !important;
+  font-size:11px !important;
+  border-radius:8px !important;
+}
+.layout{
+  grid-template-columns:245px minmax(0,1fr) !important;
+  gap:10px !important;
+}
+.side{
+  position:static !important;
+  top:auto !important;
+  max-height:none !important;
+  overflow:visible !important;
+  padding:9px !important;
+}
+.side-logo{
+  height:48px !important;
+  margin-bottom:7px !important;
+}
+.side-logo .aion-logo{
+  font-size:25px !important;
+}
+.side-logo .aion-logo span{
+  font-size:32px !important;
+}
+.side .section-title{
+  font-size:13px !important;
+  margin:7px 0 6px !important;
+}
+.side .stack{
+  gap:6px !important;
+}
+.side input,
+.side select{
+  padding:7px 8px !important;
+  font-size:12px !important;
+  border-radius:8px !important;
+}
+.side button{
+  padding:7px 8px !important;
+  font-size:12px !important;
+  border-radius:8px !important;
+}
+.character-list{
+  gap:5px !important;
+}
+.char-item{
+  padding:6px 7px !important;
+  border-radius:10px !important;
+}
+.job-icon-circle{
+  width:28px !important;
+  height:28px !important;
+  font-size:17px !important;
+}
+.job-chip{
+  gap:6px !important;
+}
+.job-select{
+  padding:4px 6px !important;
+  font-size:10px !important;
+  border-radius:7px !important;
+}
+.char-name{
+  font-size:13px !important;
+  line-height:1.1 !important;
+}
+.small{
+  font-size:10px !important;
+  line-height:1.25 !important;
+}
+.divider{
+  margin:8px 0 !important;
+}
+.side-adventure{
+  display:none !important;
+}
+.side-links{
+  gap:6px !important;
+  margin-top:8px !important;
+}
+.side-link-btn{
+  padding:9px 10px !important;
+  font-size:12px !important;
+  border-radius:10px !important;
+}
+.weekly-box{
+  padding:10px !important;
+  margin-bottom:8px !important;
+}
+.weekly-head{
+  margin-bottom:7px !important;
+}
+.weekly-head .section-title{
+  font-size:17px !important;
+  margin-bottom:2px !important;
+}
+.weekly-head .small{
+  display:none !important;
+}
+.legend{
+  font-size:11px !important;
+}
+.weekly-summary-layout{
+  gap:10px !important;
+  grid-template-columns:minmax(0,1fr) 330px !important;
+}
+#weeklyGrid{
+  gap:9px !important;
+}
+.weekly-top-layout{
+  gap:9px !important;
+}
+.weekly-group-box{
+  padding:9px !important;
+  border-radius:13px !important;
+}
+.weekly-group-title{
+  font-size:14px !important;
+  margin-bottom:6px !important;
+}
+.weekly-group-title .badge{
+  padding:3px 6px !important;
+  font-size:9px !important;
+}
+.weekly-group-row{
+  gap:6px !important;
+}
+.week-item{
+  min-width:96px !important;
+  padding:7px !important;
+  border-radius:10px !important;
+}
+.w-head{
+  margin-bottom:5px !important;
+}
+.w-title{
+  font-size:12px !important;
+}
+.w-value{
+  font-size:18px !important;
+  padding:4px 6px !important;
+  margin-bottom:5px !important;
+  min-width:56px !important;
+  border-radius:8px !important;
+}
+.w-controls button{
+  padding:4px 0 !important;
+  font-size:12px !important;
+  border-radius:7px !important;
+}
+.weekly-progress-panel{
+  padding:9px !important;
+  border-radius:13px !important;
+}
+.progress-panel-title{
+  font-size:14px !important;
+  margin-bottom:7px !important;
+}
+.progress-list{
+  gap:6px !important;
+}
+.progress-card{
+  grid-template-columns:76px minmax(0,1fr) 40px !important;
+  padding:7px !important;
+  gap:7px !important;
+  border-radius:10px !important;
+}
+.progress-name{
+  font-size:12px !important;
+  margin-bottom:4px !important;
+}
+.progress-bar-track{
+  height:13px !important;
+}
+.progress-percent{
+  font-size:15px !important;
+}
+.main > .panel[style*="padding:14px"]{
+  padding:10px !important;
+}
+.header-actions{
+  margin-bottom:7px !important;
+}
+.header-actions .section-title{
+  font-size:17px !important;
+  margin-bottom:2px !important;
+}
+.header-actions .small{
+  display:none !important;
+}
+.header-actions .pill{
+  padding:5px 8px !important;
+  font-size:10px !important;
+}
+.table-wrap{
+  border-radius:13px !important;
+}
+th,td{
+  padding:4px 4px !important;
+}
+thead th{
+  height:38px !important;
+  padding:5px 4px !important;
+}
+.th-title{
+  font-size:14px !important;
+  line-height:1.05 !important;
+}
+.cell-wrap{
+  min-height:62px !important;
+  gap:3px !important;
+  padding:3px 3px !important;
+}
+.char-input{
+  width:72px !important;
+  font-size:12px !important;
+  padding:5px 5px !important;
+}
+.table-job-icon{
+  font-size:18px !important;
+}
+.manual-info-input,
+.profile-link-input{
+  width:68px !important;
+  font-size:12px !important;
+  padding:5px 4px !important;
+}
+.profile-summary{
+  padding:5px 4px !important;
+}
+.profile-summary .level-line,
+.profile-summary .power-line{
+  font-size:14px !important;
+}
+.main-count{
+  font-size:18px !important;
+  padding:4px 7px !important;
+  border-radius:8px !important;
+}
+.sub-count{
+  font-size:13px !important;
+  padding:3px 6px !important;
+  border-radius:8px !important;
+}
+.sub-count small{
+  font-size:9px !important;
+}
+.mini-btn{
+  width:22px !important;
+  height:22px !important;
+  font-size:13px !important;
+}
+.cube-row{
+  gap:4px !important;
+}
+.cube{
+  min-width:52px !important;
+  padding:5px 6px !important;
+  font-size:13px !important;
+  border-radius:8px !important;
+}
+.cube small{
+  font-size:8px !important;
+}
+.check{
+  width:14px !important;
+  height:14px !important;
+}
+.done-label{
+  font-size:10px !important;
+}
+.note{
+  width:88px !important;
+  padding:5px 5px !important;
+  font-size:11px !important;
+}
+@media(max-width:1400px){
+  .weekly-summary-layout{grid-template-columns:1fr !important;}
+  .layout{grid-template-columns:235px minmax(0,1fr) !important;}
+}
+
 </style>
 </head>
 <body>
@@ -1214,10 +1524,6 @@ thead th:first-child, tbody td:first-child{min-width:110px!important;width:110px
         </div>
       </div>
 
-      <div class="side-adventure">
-        <div class="art"></div>
-        <div class="caption">아이온2와 함께하는<br>모험의 하루</div>
-      </div>
       <div class="side-links">
         <button class="side-link-btn" type="button" onclick="openNotice()">🎧 공지사항</button>
         <button class="side-link-btn" type="button" onclick="openAion2ToolSearch()">🔍 아툴 검색</button>
