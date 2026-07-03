@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v15</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v16</title>
 <style>
   :root{
     --bg:#000000;
@@ -1357,7 +1357,7 @@ tbody td{background:rgba(7,18,34,.82)!important;}
   padding:12px 18px 16px 18px !important;
 }
 .title{font-size:25px !important;}
-.title::after{content:'v1.1.5' !important;font-size:12px !important;padding:3px 8px !important;}
+.title::after{content:'v1.1.6' !important;font-size:12px !important;padding:3px 8px !important;}
 .sub{font-size:11px !important;}
 .topbar{padding-bottom:8px !important;margin-bottom:10px !important;}
 .topbar-right{gap:8px !important;}
@@ -1442,6 +1442,127 @@ thead th:nth-child(10),tbody td:nth-child(10){width:180px !important;min-width:1
   .weekly-summary-layout{grid-template-columns:1fr !important;}
   .layout{grid-template-columns:260px minmax(900px, 1180px) !important;}
   .app{zoom:.78 !important;}
+}
+
+
+
+/* ===== AION2 V16 ALIGNED PANELS: 실제 적용 화면 기준 오른쪽 기준선 통일 ===== */
+:root{ --dashboard-main-width: 1480px; --dashboard-side-width: 270px; }
+.app{
+  zoom:.82 !important;
+  padding:12px 18px 16px 18px !important;
+  min-width:calc(var(--dashboard-side-width) + var(--dashboard-main-width) + 64px) !important;
+}
+.layout{
+  display:grid !important;
+  grid-template-columns:var(--dashboard-side-width) var(--dashboard-main-width) !important;
+  gap:14px !important;
+  justify-content:start !important;
+  align-items:start !important;
+  width:fit-content !important;
+}
+.side{width:var(--dashboard-side-width) !important; max-width:var(--dashboard-side-width) !important;}
+.main{width:var(--dashboard-main-width) !important; max-width:var(--dashboard-main-width) !important; min-width:0 !important;}
+.main > .panel,
+.weekly-box,
+.panel.main{
+  width:100% !important;
+  max-width:100% !important;
+  margin-left:0 !important;
+  margin-right:0 !important;
+}
+/* 상단 숙제 현황: 내부 카드가 패널 끝까지 같은 기준으로 채우도록 */
+.weekly-summary-layout{
+  display:grid !important;
+  grid-template-columns:minmax(0, 1fr) 330px !important;
+  gap:12px !important;
+  width:100% !important;
+  max-width:100% !important;
+  align-items:stretch !important;
+}
+#weeklyGrid{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+}
+.weekly-top-layout{
+  display:grid !important;
+  grid-template-columns:minmax(0, 1.05fr) minmax(0, .95fr) !important;
+  gap:12px !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+}
+.weekly-group-box{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+}
+.weekly-group-row{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+}
+.weekly-progress-panel{
+  width:100% !important;
+  max-width:330px !important;
+  min-width:0 !important;
+  align-self:stretch !important;
+}
+/* 주간 콘텐츠는 패널 폭에 맞춰 카드가 균등하게 보이도록 */
+.weekly-group-box.weekly-mission .weekly-group-row,
+.weekly-group-box.purchase-mission .weekly-group-row{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit, minmax(92px, 1fr)) !important;
+  gap:8px !important;
+  overflow:visible !important;
+}
+.weekly-group-box.weekly-mission .week-item,
+.weekly-group-box.purchase-mission .week-item{
+  min-width:0 !important;
+  width:100% !important;
+}
+/* 캐릭터별 숙제: 패널 오른쪽 끝을 위 패널과 동일하게, 테이블은 내부에서만 스크롤 */
+.table-center{
+  width:100% !important;
+  max-width:100% !important;
+  justify-content:flex-start !important;
+}
+.table-wrap{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  overflow-x:auto !important;
+  overflow-y:hidden !important;
+}
+table{
+  width:100% !important;
+  min-width:1220px !important;
+  table-layout:fixed !important;
+}
+/* 정렬 기준선 디버깅용 여백 제거 */
+.header-actions,
+.weekly-head{
+  width:100% !important;
+  max-width:100% !important;
+}
+/* 오른쪽 빈 공간은 남기되, 모든 콘텐츠 끝은 같은 선으로 */
+.topbar{
+  width:calc(var(--dashboard-side-width) + var(--dashboard-main-width) + 14px) !important;
+  max-width:calc(var(--dashboard-side-width) + var(--dashboard-main-width) + 14px) !important;
+}
+/* 화면이 작을 때만 축소하되 패널 기준선은 유지 */
+@media(max-width:1600px){
+  :root{ --dashboard-main-width: 1360px; --dashboard-side-width: 260px; }
+  .app{zoom:.78 !important;}
+  .weekly-summary-layout{grid-template-columns:minmax(0,1fr) 310px !important;}
+  .weekly-progress-panel{max-width:310px !important;}
+}
+@media(max-width:1400px){
+  :root{ --dashboard-main-width: 1220px; --dashboard-side-width: 250px; }
+  .app{zoom:.74 !important;}
+  .weekly-summary-layout{grid-template-columns:minmax(0,1fr) 290px !important;}
+  .weekly-progress-panel{max-width:290px !important;}
 }
 
 </style>
