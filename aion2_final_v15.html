@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의)</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v10</title>
 <style>
   :root{
     --bg:#000000;
@@ -3427,12 +3427,6 @@ function renderWeekly(){
       <div class="weekly-group-title">📦 주간 콘텐츠 <span class="badge">수요일 05시 초기화</span></div>
       <div class="weekly-group-row">
         ${weeklyContentHtml}
-      </div>
-    </div>
-    <div class="job-picker-panel">
-      <div class="job-picker-title">직업 아이콘 선택 <span class="small muted">선택한 캐릭터의 직업 아이콘을 바꿉니다.</span></div>
-      <div class="job-picker-grid">
-        ${JOB_ORDER.map(j => `<button type="button" class="job-picker-btn ${getSelectedCharacter()?.job === j ? 'active' : ''}" onclick="if(state.selectedCharacterId) setCharacterJob(state.selectedCharacterId, '${j}')">${JOB_ICONS[j]} ${j}</button>`).join('')}
       </div>
     </div>
   `;
