@@ -1923,6 +1923,32 @@ thead th:nth-child(6), tbody td:nth-child(6){min-width:160px !important;width:16
 thead th:nth-child(7), tbody td:nth-child(7){min-width:133px !important;width:133px !important;} /* 악몽 */
 thead th:nth-child(8), tbody td:nth-child(8){min-width:133px !important;width:133px !important;} /* 각성전 */
 thead th:nth-child(9), tbody td:nth-child(9){min-width:231px !important;width:231px !important;} /* 성역 */
+
+
+/* ===== 요청 반영: 원정&초월 하단 문구 제거 + 회랑 폭 확대 + 메뉴 구분선 강화 ===== */
+/* 통합 후 컬럼 순서: 1 캐릭터 / 2 정보 / 3 오드 / 4 오드제작 / 5 회랑 / 6 원정&초월 / 7 악몽 / 8 각성전 / 9 성역 */
+thead th:nth-child(5), tbody td:nth-child(5){min-width:190px !important;width:190px !important;} /* 회랑 버튼 튀어나옴 방지 */
+tbody td:nth-child(5) .cube-row{gap:10px !important;flex-wrap:nowrap !important;}
+tbody td:nth-child(5) .cube{min-width:74px !important;padding-left:8px !important;padding-right:8px !important;}
+
+thead th:nth-child(6), tbody td:nth-child(6){min-width:160px !important;width:160px !important;} /* 원정&초월 */
+thead th:nth-child(7), tbody td:nth-child(7){min-width:138px !important;width:138px !important;} /* 악몽 */
+thead th:nth-child(8), tbody td:nth-child(8){min-width:138px !important;width:138px !important;} /* 각성전 */
+thead th:nth-child(9), tbody td:nth-child(9){min-width:240px !important;width:240px !important;} /* 성역 */
+
+/* 악몽 / 각성전 / 성역 사이 구분선 강조 */
+thead th:nth-child(7), tbody td:nth-child(7),
+thead th:nth-child(8), tbody td:nth-child(8),
+thead th:nth-child(9), tbody td:nth-child(9){
+  border-left:4px solid rgba(140,190,255,.72) !important;
+}
+thead th:nth-child(9), tbody td:nth-child(9){
+  border-right:4px solid rgba(255,135,190,.72) !important;
+}
+thead th:nth-child(7){background:linear-gradient(180deg,#244b82,#132b52) !important;}
+thead th:nth-child(8){background:linear-gradient(180deg,#234f6f,#142f48) !important;}
+thead th:nth-child(9){background:linear-gradient(180deg,#79314f,#451d35) !important;}
+
 </style>
 </head>
 <body>
@@ -4512,7 +4538,6 @@ function renderCell(character, taskName){
                   <button class="mini-btn" type="button" onclick="changeCubeCount('${t.id}','${e.mode}',-1)">-</button>
                   <button class="mini-btn" type="button" onclick="changeCubeCount('${t.id}','${e.mode}',1)">+</button>
                 </div>
-                <div class="small muted" style="margin-top:4px;font-weight:800;">${e.label}</div>
               </div>
             `).join('')}
           </div>
