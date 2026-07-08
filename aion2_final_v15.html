@@ -1949,6 +1949,32 @@ thead th:nth-child(7){background:linear-gradient(180deg,#244b82,#132b52) !import
 thead th:nth-child(8){background:linear-gradient(180deg,#234f6f,#142f48) !important;}
 thead th:nth-child(9){background:linear-gradient(180deg,#79314f,#451d35) !important;}
 
+
+
+/* ===== LEFT SIDE CLEANUP: 캐릭터/숙제 추가 영역 제거 + 삭제버튼 숨김 ===== */
+.character-list-only{
+  margin-bottom:10px !important;
+}
+.character-list-only .char-item{
+  padding-right:12px !important;
+}
+.character-list-only .char-item.active{
+  border-color:#9bc7ff !important;
+  box-shadow:0 0 0 1px rgba(155,199,255,.34), 0 0 22px rgba(72,144,255,.22) !important;
+  background:linear-gradient(180deg,rgba(34,74,142,.98),rgba(13,40,86,.98)) !important;
+}
+.character-list-only .char-item .job-chip{
+  width:100% !important;
+}
+.side .section-title:first-of-type{
+  margin-top:4px !important;
+}
+.side-links{
+  margin-top:14px !important;
+  padding-top:12px !important;
+  border-top:1px solid rgba(80,145,232,.22) !important;
+}
+
 </style>
 </head>
 <body>
@@ -1974,42 +2000,9 @@ thead th:nth-child(9){background:linear-gradient(180deg,#79314f,#451d35) !import
   <div class="layout">
     <div class="panel side">
       <div class="side-logo"><div class="aion-logo">AION<span>2</span></div></div>
-      <div class="section-title">캐릭터 관리</div>
-      <div class="stack">
-        <div class="row">
-          <input id="characterNameInput" type="text" placeholder="캐릭터 이름" style="flex:1" />
-          <button class="btn-primary" type="button" onclick="addCharacter()">추가</button>
-        </div>
+      <div class="section-title">캐릭터 목록</div>
+      <div class="stack character-list-only">
         <div id="characterList" class="character-list"></div>
-        <div class="small muted">캐릭터 이름만 추가하고, 아이템레벨과 전투력은 오른쪽 표에서 직접 입력합니다.</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="section-title">개별 숙제 추가</div>
-      <div class="stack">
-        <input id="taskNameInput" type="text" placeholder="숙제 이름" />
-        <div class="row">
-          <input id="challengeMaxInput" type="number" min="0" placeholder="도전" style="width:82px" />
-          <input id="rewardMaxInput" type="number" min="0" placeholder="보상" style="width:82px" />
-          <input id="chargeMaxInput" type="number" min="0" placeholder="충전" style="width:82px" />
-        </div>
-        <select id="resetRuleInput">
-          <option value="none">리셋 없음</option>
-          <option value="daily_05_reset">매일 05시 초기화</option>
-          <option value="daily_05_plus2">매일 05시 +2 충전</option>
-          <option value="daily_05_plus1">매일 05시 +1 충전</option>
-          <option value="expedition_charge">원정 05/13/21시 +1 충전</option>
-          <option value="transcend_charge">초월 05/17시 +1 충전</option>
-          <option value="weekly_wed_05_reset">매주 수요일 05시 초기화</option>
-          <option value="wed_sat_22_reset">수/토 22시 초기화</option>
-          <option value="od_charge">오드 3시간당 +15</option>
-        </select>
-        <div class="row">
-          <label class="small muted">컬러</label>
-          <input id="taskColorInput" type="color" value="#4a4578" />
-          <button class="btn-dark" type="button" onclick="addCustomTask()">추가</button>
-        </div>
       </div>
 
       <div class="side-links">
@@ -4177,7 +4170,7 @@ function renderCharacterList(){
           <div onclick="event.stopPropagation();" style="margin-top:5px;">${jobSelectHtml(c.id, c.job || '검성')}</div>
         </div>
       </div>
-      <button class="btn-red btn-sm" type="button" onclick="removeCharacter('${c.id}')">삭제</button>
+
     </div>
   `).join('');
 }
