@@ -2119,7 +2119,7 @@ const EXTRA_CHARGE_DEFAULTS = {
   '원정':10,
   '초월':10,
   '악몽':10,
-  '각성전':10,
+  '각성전':20,
 };
 
 const CORRIDOR_LEGACY_NAMES = ['🌀회랑 -하','🌀회랑 -중'];
@@ -2543,7 +2543,7 @@ function normalizeLoadedState(parsed){
         if(t.resetRule === 'tue_thu_sat_21_reset') t.resetRule = 'wed_sat_22_reset';
         syncCorridorTask(t);
       } else if(EXTRA_CHARGE_DEFAULTS[t.name]){
-        t.chargeMax = 10;
+        t.chargeMax = EXTRA_CHARGE_DEFAULTS[t.name];
         if(typeof t.chargeCurrent !== 'number') t.chargeCurrent = 0;
         t.challengeChargeMax = 0;
         t.rewardChargeMax = 0;
@@ -4602,7 +4602,7 @@ function renderCell(character, taskName){
     const rewardCls = getMiniClass(t.rewardCurrent, t.rewardMax);
     const chargeCls = getMiniClass(t.chargeCurrent, t.chargeMax);
     return `
-      <td class="${tdGroupClass} ${mainCls === 'zero' ? 'character-task-complete' : ''}" style="background:${bg}">
+      <td class="${tdGroupClass}" style="background:#0d1427">
         <div class="cell-wrap" style="${cellAccent}">
           <div class="main-count${rewardCls}" onclick="setNumeric('${t.id}','rewardCurrent')">${t.rewardCurrent}</div>
           <div class="sub-count${chargeCls}" onclick="setNumeric('${t.id}','chargeCurrent')">(${t.chargeCurrent})</div>
