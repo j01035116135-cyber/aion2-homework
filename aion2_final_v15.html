@@ -2018,6 +2018,9 @@ tbody td.character-task-complete:hover{
 .expedition-cost-btn small{display:block;font-size:10px!important;color:#dbe8ff!important;white-space:nowrap;}
 /* 전장 이동 후 컬럼 순서: 1 캐릭터 / 2 정보 / 3 오드 / 4 오드제작 / 5 회랑 / 6 원정 / 7 초월 / 8 악몽 / 9 각성전 / 10 전장 / 11 성역 */
 thead th:nth-child(6),tbody td:nth-child(6),thead th:nth-child(7),tbody td:nth-child(7){min-width:166px!important;width:166px!important;}
+/* 악몽과 각성전의 폭을 동일하게 유지 */
+thead th:nth-child(8),tbody td:nth-child(8),
+thead th:nth-child(9),tbody td:nth-child(9){min-width:138px!important;width:138px!important;}
 thead th:nth-child(10),tbody td:nth-child(10){min-width:145px!important;width:145px!important;}
 thead th:nth-child(11),tbody td:nth-child(11){min-width:220px!important;width:220px!important;}
 thead th:nth-child(8),tbody td:nth-child(8),
@@ -4734,7 +4737,7 @@ function renderCell(character, taskName){
           ${t.rewardMax > 0 ? `${t.rewardCurrent}/${t.rewardMax}` : `${t.challengeCurrent}/${t.challengeMax}`}
         </div>
         ${(t.rewardMax > 0 ? t.rewardCurrent === 0 : t.challengeCurrent === 0) ? `<div class="done-label">완료</div>` : ''}
-        <input class="note" value="${escapeHtml(t.note || '')}" placeholder="메모" oninput="t.note=this.value" />
+        ${t.name === BATTLEFIELD_NAME ? '' : `<input class="note" value="${escapeHtml(t.note || '')}" placeholder="메모" oninput="t.note=this.value" />`}
       </div>
     </td>
   `;
