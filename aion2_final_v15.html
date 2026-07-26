@@ -1951,6 +1951,47 @@ thead th:nth-child(9){background:linear-gradient(180deg,#79314f,#451d35) !import
 
 
 
+/* ===== LEFT CHARACTER ADD PANEL ===== */
+.character-add-box{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+  margin:0 0 12px 0;
+  padding:10px;
+  border:1px solid rgba(80,145,232,.34);
+  border-radius:13px;
+  background:linear-gradient(180deg,rgba(11,30,58,.88),rgba(7,20,39,.88));
+}
+.character-add-box input{
+  width:100%;
+  min-width:0;
+  padding:9px 10px !important;
+  font-size:12px !important;
+  border-radius:9px !important;
+  background:#07162b !important;
+  border-color:rgba(82,145,225,.42) !important;
+}
+.character-add-box .character-add-btn{
+  width:100%;
+  padding:10px 12px !important;
+  font-size:13px !important;
+  border-radius:10px !important;
+  background:linear-gradient(180deg,#5a56b7,#393777) !important;
+  border:1px solid rgba(166,164,255,.48) !important;
+  color:#fff !important;
+  box-shadow:0 5px 14px rgba(44,47,120,.24);
+}
+.character-add-box .character-add-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 7px 18px rgba(70,76,180,.30);
+}
+.character-add-guide{
+  font-size:10px;
+  line-height:1.35;
+  color:#8fa8d5;
+  text-align:center;
+}
+
 /* ===== LEFT SIDE CLEANUP: 캐릭터/숙제 추가 영역 제거 + 삭제버튼 숨김 ===== */
 .character-list-only{
   margin-bottom:10px !important;
@@ -2111,6 +2152,12 @@ table{
     <div class="panel side">
       <div class="side-logo"><div class="aion-logo">AION<span>2</span></div></div>
       <div class="section-title">캐릭터 목록</div>
+      <div class="character-add-box">
+        <input id="characterNameInput" type="text" maxlength="20" placeholder="캐릭터 이름 입력" onkeydown="if(event.key === 'Enter') addCharacter()" />
+        <input id="characterProfileUrlInput" type="url" placeholder="캐릭터 정보 링크 (선택)" onkeydown="if(event.key === 'Enter') addCharacter()" />
+        <button class="character-add-btn" type="button" onclick="addCharacter()">＋ 캐릭터 추가</button>
+        <div class="character-add-guide">이름만 입력해도 추가할 수 있습니다.</div>
+      </div>
       <div class="stack character-list-only">
         <div id="characterList" class="character-list"></div>
       </div>
