@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v22</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v23</title>
 <style>
   :root{
     --bg:#000000;
@@ -1190,7 +1190,7 @@ body{
   gap:10px !important;
 }
 .title::after{
-  content:'v1.1.4';
+  content:'v1.1.5';
   font-size:13px;
   font-weight:800;
   color:#b9cdf6;
@@ -2126,6 +2126,92 @@ table{
   .app{zoom:.72 !important;}
 }
 
+
+
+/* ===== v23 서버 공용 지령서 + 상단 진행률 제거 ===== */
+.weekly-top-layout{
+  grid-template-columns:minmax(0,1.05fr) minmax(245px,.62fr) minmax(420px,1.15fr) !important;
+  gap:12px !important;
+  align-items:stretch !important;
+}
+.weekly-top-layout > .weekly-group-box{
+  min-width:0 !important;
+  width:100% !important;
+  margin:0 !important;
+}
+.weekly-top-layout .daily-mission .weekly-group-row{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+.weekly-top-layout .expedition-help-mission .weekly-group-row{
+  grid-template-columns:1fr !important;
+}
+.weekly-group-box.directive-mission{
+  border-color:rgba(223,174,76,.62) !important;
+  box-shadow:inset 0 0 0 1px rgba(255,208,112,.08) !important;
+  background:linear-gradient(180deg,rgba(34,28,16,.76),rgba(13,20,34,.90)) !important;
+}
+.directive-mission .weekly-group-title .badge{
+  border-color:rgba(223,174,76,.48) !important;
+  color:#ffe7ae !important;
+  background:rgba(75,54,19,.42) !important;
+}
+.directive-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  width:100%;
+  margin-top:1px;
+}
+.directive-btn{
+  min-width:0 !important;
+  min-height:74px !important;
+  padding:8px 6px !important;
+  border-radius:12px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:5px !important;
+  border:1px solid rgba(255,255,255,.13) !important;
+  transition:transform .12s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease !important;
+}
+.directive-btn:hover{transform:translateY(-1px) !important;}
+.directive-btn.pending{
+  background:linear-gradient(180deg,rgba(115,28,38,.82),rgba(60,15,22,.88)) !important;
+  border-color:rgba(255,112,124,.58) !important;
+  color:#ffe6e8 !important;
+  box-shadow:inset 0 0 15px rgba(255,45,65,.08) !important;
+}
+.directive-btn.done{
+  background:linear-gradient(180deg,rgba(27,105,63,.82),rgba(13,59,36,.90)) !important;
+  border-color:rgba(112,238,157,.62) !important;
+  color:#eaffef !important;
+  box-shadow:inset 0 0 15px rgba(62,220,123,.08) !important;
+}
+.directive-status{
+  font-size:21px;
+  font-weight:1000;
+  line-height:1;
+}
+.directive-name{
+  font-size:12px;
+  font-weight:900;
+  line-height:1.05;
+  white-space:nowrap;
+}
+.directive-name small{
+  display:block;
+  margin-top:3px;
+  font-size:11px;
+  font-weight:900;
+  color:inherit;
+}
+@media(max-width:1500px){
+  .weekly-top-layout{grid-template-columns:minmax(0,1fr) minmax(230px,.62fr) minmax(380px,1.05fr) !important;}
+  .directive-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .directive-btn{min-height:58px !important;}
+}
+
 </style>
 </head>
 <body>
@@ -2317,6 +2403,7 @@ function makeDefaultWeeklyTasks(){
     makeWeekly('시공(🛡️방어)',100),
     makeWeekly('오드',20),
     makeWeekly('원정/초월 도움',10),
+    {id:uid(), name:'지령서', current:4, max:4, segmentStates:[0,0,0,0], resetRule:'weekly_wed_05_reset', lastResetAppliedKey:null},
     makeWeekly('미지의 틈새',21),
     makeWeekly('즉시완료(일던)',21),
     makeWeekly('즉시완료(악몽)',14)
@@ -2751,6 +2838,18 @@ function normalizeLoadedState(parsed){
       w.max = 10;
       if(typeof w.current !== 'number') w.current = w.max;
       w.current = clamp(w.current, 0, w.max);
+      w.resetRule = 'weekly_wed_05_reset';
+    }
+    if (w.name === '지령서') {
+      w.max = 4;
+      if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 4){
+        const current = clamp(Number(w.current) || w.max, 0, w.max);
+        const doneCount = clamp(w.max - current, 0, w.max);
+        w.segmentStates = [0,1,2,3].map(i => i < doneCount ? 1 : 0);
+      }
+      w.segmentStates = w.segmentStates.slice(0,4).map(v => v ? 1 : 0);
+      while(w.segmentStates.length < 4) w.segmentStates.push(0);
+      w.current = w.max - w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
       w.resetRule = 'weekly_wed_05_reset';
     }
     if (w.name === '슈고') {
@@ -3470,6 +3569,18 @@ function ensureWeeklySegmentState(w){
 
     w.current = w.max - w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
   }
+
+  if(w.name === '지령서'){
+    w.max = 4;
+    if(!Array.isArray(w.segmentStates) || w.segmentStates.length !== 4){
+      const current = clamp(Number(w.current) || w.max, 0, w.max);
+      const doneCount = clamp(w.max - current, 0, w.max);
+      w.segmentStates = [0,1,2,3].map(i => i < doneCount ? 1 : 0);
+    }
+    w.segmentStates = w.segmentStates.slice(0,4).map(v => v ? 1 : 0);
+    while(w.segmentStates.length < 4) w.segmentStates.push(0);
+    w.current = w.max - w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
+  }
 }
 
 function weeklySetSegment(id, index, nextValue){
@@ -3501,6 +3612,17 @@ function weeklyRightClickSegment(event, id, index){
   if(!w) return;
   ensureWeeklySegmentState(w);
   if(w.segmentStates[index]) weeklySetSegment(id, index, 0);
+}
+
+function toggleDirectiveSegment(id, index){
+  const w = state.weeklyTasks.find(x => x.id === id);
+  if(!w || w.name !== '지령서') return;
+  ensureWeeklySegmentState(w);
+  if(index < 0 || index >= w.segmentStates.length) return;
+  w.segmentStates[index] = w.segmentStates[index] ? 0 : 1;
+  w.current = w.max - w.segmentStates.reduce((sum, n) => sum + (n ? 1 : 0), 0);
+  saveState();
+  renderWeekly();
 }
 
 function setNumeric(taskId, key){
@@ -4374,8 +4496,10 @@ function renderWeekly(){
   const instantDaily = weeklyMap.get('즉시완료(일던)');
   const instantNightmare = weeklyMap.get('즉시완료(악몽)');
   const expeditionTranscendHelp = weeklyMap.get('원정/초월 도움');
+  const directiveTask = weeklyMap.get('지령서');
 
   [...dailyMissions, ...weeklyMissions].forEach(ensureWeeklySegmentState);
+  ensureWeeklySegmentState(directiveTask);
 
   function weeklyCard(w, variant){
     const cls = getMainClass(w.current, w.max);
@@ -4474,6 +4598,30 @@ function renderWeekly(){
     `;
   }
 
+  function directiveCard(w){
+    if(!w) return '';
+    ensureWeeklySegmentState(w);
+    const labels = [
+      ['알트가르드',''],
+      ['모르헤임',''],
+      ['어비스','하층'],
+      ['어비스','중층']
+    ];
+    return `
+      <div class="directive-grid">
+        ${labels.map((parts, idx) => {
+          const done = !!w.segmentStates[idx];
+          return `
+            <button type="button" class="directive-btn ${done ? 'done' : 'pending'}" onclick="toggleDirectiveSegment('${w.id}',${idx})" title="클릭해서 구매 상태 변경">
+              <span class="directive-status">${done ? '✓' : 'X'}</span>
+              <span class="directive-name">${parts[0]}${parts[1] ? `<small>${parts[1]}</small>` : ''}</span>
+            </button>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
   function instantCompleteCard(daily, nightmare){
     if(!daily || !nightmare) return '';
     const totalCur = daily.current + nightmare.current;
@@ -4525,7 +4673,10 @@ function renderWeekly(){
           ${expeditionTranscendHelpHtml}
         </div>
       </div>
-      <div id="characterProgressArea" class="weekly-progress-panel top-progress-panel"></div>
+      <div class="weekly-group-box directive-mission">
+        <div class="weekly-group-title">🧾 지령서 <span class="badge">서버별 주 1회 · 수요일 05시 초기화</span></div>
+        ${directiveCard(directiveTask)}
+      </div>
     </div>
     <div class="weekly-group-box weekly-mission">
       <div class="weekly-group-title">📦 주간 콘텐츠 <span class="badge">수요일 05시 초기화</span></div>
@@ -4942,7 +5093,6 @@ function render(){
   applyAllRules();
   renderCharacterList();
   renderWeekly();
-  renderCharacterProgress();
   renderTable();
   renderTop();
 }
@@ -4966,7 +5116,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   setInterval(function(){
     applyAllRules();
     renderWeekly();
-    renderCharacterProgress();
     renderTable();
     renderTop();
   }, 60000);
