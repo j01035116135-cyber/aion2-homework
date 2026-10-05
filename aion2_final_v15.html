@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v23</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v24</title>
 <style>
   :root{
     --bg:#000000;
@@ -1357,7 +1357,7 @@ tbody td{background:rgba(7,18,34,.82)!important;}
   padding:12px 18px 16px 18px !important;
 }
 .title{font-size:25px !important;}
-.title::after{content:'v1.1.8' !important;font-size:12px !important;padding:3px 8px !important;}
+.title::after{content:'v1.1.9' !important;font-size:12px !important;padding:3px 8px !important;}
 .sub{font-size:11px !important;}
 .topbar{padding-bottom:8px !important;margin-bottom:10px !important;}
 .topbar-right{gap:8px !important;}
@@ -2212,6 +2212,61 @@ table{
   .directive-btn{min-height:58px !important;}
 }
 
+
+
+/* ===== v24 요청 반영: 성역 비탄 / 슈고 추가 건 표시 ===== */
+/* 성역 4개 보스가 기존 성역 칸 안에서 한 줄로 모두 보이도록 압축 */
+thead th:nth-child(11), tbody td:nth-child(11){
+  min-width:220px !important;
+  width:220px !important;
+}
+tbody td:nth-child(11) .cube-row{
+  gap:4px !important;
+  flex-wrap:nowrap !important;
+}
+tbody td:nth-child(11) .cube{
+  min-width:48px !important;
+  width:48px !important;
+  padding-left:3px !important;
+  padding-right:3px !important;
+  font-size:14px !important;
+}
+tbody td:nth-child(11) .cube small{
+  font-size:8px !important;
+  white-space:nowrap !important;
+}
+tbody td:nth-child(11) .small.muted{
+  font-size:10px !important;
+  white-space:nowrap !important;
+}
+
+/* 슈고의 (0) 아래 '추가 건' 문구가 잘리지 않도록 표시 */
+.shugo-extra-count{
+  min-width:76px !important;
+  width:auto !important;
+  padding:4px 9px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  align-items:center !important;
+  justify-content:center !important;
+  line-height:1.05 !important;
+  overflow:visible !important;
+}
+.shugo-extra-count small{
+  display:block !important;
+  margin-top:3px !important;
+  font-size:10px !important;
+  line-height:1.1 !important;
+  color:#b8c4eb !important;
+  white-space:nowrap !important;
+}
+.weekly-top-layout .daily-mission .week-item{
+  overflow:visible !important;
+}
+.weekly-top-layout .daily-mission .weekly-group-row{
+  overflow:visible !important;
+}
+
 </style>
 </head>
 <body>
@@ -2357,7 +2412,7 @@ const BATTLEFIELD_NAME = '⚔️전장 (승리)';
 const BATTLEFIELD_MAX = 3;
 const SANCTUARY_ODE_COST = 160;
 const SANCTUARY_NAME = '⚔️성역⚔️';
-const SANCTUARY_BOSS_NAMES = ['⚔️루드라','⚔️침식','⚔️무스펠'];
+const SANCTUARY_BOSS_NAMES = ['⚔️루드라','⚔️침식','⚔️무스펠','⚔️비탄'];
 const ODE_LINKED_TASK_NAMES = [SANCTUARY_NAME];
 const ODE_CRAFT_LEGACY_NAME = '🛠️오드제작';
 const ODE_CRAFT_NAME = '🛠️오드';
@@ -2583,8 +2638,8 @@ function makeSanctuaryTaskFromLegacy(tasks=[]){
     bosses,
     challengeMax: 0,
     challengeCurrent: 0,
-    rewardMax: 3,
-    rewardCurrent: 3,
+    rewardMax: SANCTUARY_BOSS_NAMES.length,
+    rewardCurrent: SANCTUARY_BOSS_NAMES.length,
     chargeMax: 0,
     chargeCurrent: 0,
     challengeChargeMax: 0,
@@ -3202,9 +3257,8 @@ function formatPowerDisplay(value=''){
   if(!cleaned) return '';
   const num = Number(cleaned);
   if(!Number.isFinite(num) || num <= 0) return '';
-  if(num >= 1000){
-    return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-  }
+  // c.power는 이미 K 단위로 저장됩니다. 예: 474.7 => 474.7K, 1000 => 1000K
+  // 따라서 1000 이상이라고 다시 1000으로 나누면 1000K가 1K로 축소되는 문제가 생깁니다.
   const text = cleaned.includes('.') ? String(num).replace(/\.0$/, '') : String(Math.round(num));
   return text + 'K';
 }
@@ -4520,7 +4574,9 @@ function renderWeekly(){
           </div>
           <div class="row" style="justify-content:center; flex-direction:column; gap:6px;">
             <div class="w-value" style="margin:0; min-width:96px;" onclick="changeWeekly('${w.id}',-1)" oncontextmenu="changeWeeklyByContext(event,'${w.id}',1)">${w.current}/${w.max}</div>
-            <div class="sub-count${chargeCls === 'zero' ? ' zero' : chargeCls === 'warn' ? ' warn' : ''}" onclick="changeWeeklyCharge('${w.id}',-1)" oncontextmenu="changeWeeklyChargeByContext(event,'${w.id}',1)">(${w.chargeCurrent || 0})</div>
+            <div class="sub-count shugo-extra-count${chargeCls === 'zero' ? ' zero' : chargeCls === 'warn' ? ' warn' : ''}" onclick="changeWeeklyCharge('${w.id}',-1)" oncontextmenu="changeWeeklyChargeByContext(event,'${w.id}',1)">
+              <span>(${w.chargeCurrent || 0})</span><small>추가 건</small>
+            </div>
           </div>
         </div>
       `;
