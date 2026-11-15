@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v24</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v25</title>
 <style>
   :root{
     --bg:#000000;
@@ -2267,6 +2267,13 @@ tbody td:nth-child(11) .small.muted{
   overflow:visible !important;
 }
 
+/* v25: 캐릭터 열 재정렬: 8 악몽 / 9 전장 / 10 성역 */
+thead th:nth-child(9),tbody td:nth-child(9){min-width:145px!important;width:145px!important;}
+thead th:nth-child(9){background:linear-gradient(180deg,#244b82,#132b52)!important;}
+thead th:nth-child(10),tbody td:nth-child(10){min-width:220px!important;width:220px!important;}
+thead th:nth-child(10){background:linear-gradient(180deg,#79314f,#451d35)!important;}
+tbody td:nth-child(10) .cube{min-width:68px!important;}
+tbody td:nth-child(10) .cube-row{gap:6px!important;}
 </style>
 </head>
 <body>
@@ -2352,7 +2359,7 @@ const JOB_ORDER = ['검성','수호성','권성','살성','궁성','정령성','
 
 const TASK_ICONS = {
   '사명':'💀','슈고':'🛡️','원정/초월 도움':'⚔️','오드':'⚡','미지의 틈새':'📦','완료권':'🎟️',
-  '일일던전':'🌀','아티쟁':'✳️','나흐마':'💀','아그로':'🦋','⚔️전장 (승리)':'⚔️','어비스사냥':'🌀','시공(🗡️공격)':'🎯','시공(🛡️방어)':'🛡️',
+  '일일던전':'🌀','아티쟁':'✳️','나흐마':'💀','아그로':'🦋','⚔️전장 (승리)':'⚔️','어비스사냥':'🌀','시공(🗡️공격)':'🎯','시공(🛡️방어)':'🛡️','시공 (공격&방어)':'🎯',
   '⚡오드':'⚡','🛠️오드':'🛠️','🌀회랑':'🌀','원정&초월':'⚔️','원정':'🔮','초월':'✨','악몽':'🧪','각성전':'⚔️','⚔️전장 (승리)':'⚔️','⚔️성역⚔️':'🏰'
 };
 function getTaskIcon(name){ return TASK_ICONS[name] || '◆'; }
@@ -2454,8 +2461,8 @@ function makeDefaultWeeklyTasks(){
     makeWeekly('나흐마',2),
     makeWeekly('아그로',3),
     makeWeekly('어비스사냥',2000),
-    makeWeekly('시공(🗡️공격)',100),
-    makeWeekly('시공(🛡️방어)',100),
+    makeWeekly('시공 (공격&방어)',100),
+    {id:uid(), name:'각성전', current:9, max:9, chargeCurrent:0, chargeMax:20, resetRule:'weekly_wed_05_reset', lastResetAppliedKey:null},
     makeWeekly('오드',20),
     makeWeekly('원정/초월 도움',10),
     {id:uid(), name:'지령서', current:4, max:4, segmentStates:[0,0,0,0], resetRule:'weekly_wed_05_reset', lastResetAppliedKey:null},
@@ -2835,6 +2842,37 @@ function normalizeLoadedState(parsed){
     });
   });
 
+  // v25: 각성전을 캐릭터 숙제에서 서버 공통 주간 콘텐츠로 이관합니다.
+  // 캐릭터별 3회 진행 상황은 서버 9회 기록과 동등하지 않아 새 기준 9회로 시작합니다.
+  // 기존 값은 백업 배열로 보존하고 캐릭터 숙제 표에서는 제외합니다.
+  const legacyAwakening = [];
+  parsed.characters.forEach(c => {
+    (c.tasks || []).filter(t => t.name === '각성전').forEach(t => {
+      legacyAwakening.push({characterId:c.id, task:JSON.parse(JSON.stringify(t))});
+    });
+    c.tasks = (c.tasks || []).filter(t => t.name !== '각성전');
+  });
+  if(legacyAwakening.length && !parsed.legacyAwakeningV24){
+    parsed.legacyAwakeningV24 = legacyAwakening;
+  }
+
+  // v25: 공격/방어 각각 100회 -> 합산 100회. 기존 사용량을 합산해 남은 횟수 계산.
+  const oldRiftNames = ['시공(🗡️공격)','시공(🛡️방어)'];
+  const oldRifts = (parsed.weeklyTasks || []).filter(w => oldRiftNames.includes(w.name));
+  let newRift = (parsed.weeklyTasks || []).find(w => w.name === '시공 (공격&방어)');
+  if(oldRifts.length && !newRift){
+    const used = oldRifts.reduce((sum,w) => {
+      const max = Number.isFinite(Number(w.max)) ? Number(w.max) : 100;
+      const remaining = Number.isFinite(Number(w.current)) ? Number(w.current) : max;
+      return sum + Math.max(0, max - remaining);
+    },0);
+    newRift = makeWeekly('시공 (공격&방어)',100);
+    newRift.current = clamp(100 - used,0,100);
+    newRift.lastResetAppliedKey = oldRifts[0].lastResetAppliedKey || null;
+    parsed.weeklyTasks.push(newRift);
+  }
+  parsed.weeklyTasks = (parsed.weeklyTasks || []).filter(w => !oldRiftNames.includes(w.name));
+
   parsed.weeklyTasks = (parsed.weeklyTasks || [])
     .map(w => { if(w.name === '오드(제작)') w.name = '오드'; return w; })
     .filter(w => !['원정','초월','카이라','심연의 재련'].includes(w.name));
@@ -2888,6 +2926,20 @@ function normalizeLoadedState(parsed){
     parsed.weeklyTasks = makeDefaultWeeklyTasks();
   }
 
+  parsed.weeklyTasks.forEach(w => {
+    if(w.name === '시공 (공격&방어)'){
+      w.max = 100;
+      w.current = clamp(Number.isFinite(Number(w.current)) ? Number(w.current) : 100,0,100);
+      w.resetRule = 'weekly_wed_05_reset';
+    }
+    if(w.name === '각성전'){
+      w.max = 9;
+      w.current = clamp(Number.isFinite(Number(w.current)) ? Number(w.current) : 9,0,9);
+      w.chargeMax = 20;
+      w.chargeCurrent = clamp(Number(w.chargeCurrent) || 0,0,20);
+      w.resetRule = 'weekly_wed_05_reset';
+    }
+  });
   parsed.weeklyTasks.forEach(w => {
     if (w.name === '원정/초월 도움') {
       w.max = 10;
@@ -3508,7 +3560,6 @@ function getDefaultPresetTasks(){
     { name:EXPEDITION_NAME, rewardMax:0, challengeMax:0, resetRule:'weekly_wed_05_reset' },
     { name:TRANSCEND_NAME, rewardMax:0, challengeMax:0, resetRule:'weekly_wed_05_reset' },
     { name:'악몽', rewardMax:14, resetRule:'daily_05_plus2' },
-    { name:'각성전', rewardMax:3, resetRule:'weekly_wed_05_reset' },
     { name:BATTLEFIELD_NAME, rewardMax:BATTLEFIELD_MAX, resetRule:'weekly_wed_05_reset' },
     { name:SANCTUARY_NAME, challengeMax:0, rewardMax:3, resetRule:'weekly_wed_05_reset' }
   ];
@@ -4456,6 +4507,7 @@ function applyRuleToWeekly(task){
     }
   }
 
+  if(task.name === '각성전') task.chargeCurrent = 0;
   task.lastResetAppliedKey = hit.key;
   return true;
 }
@@ -4539,7 +4591,7 @@ function renderCharacterList(){
 
 function renderWeekly(){
   const el = document.getElementById('weeklyGrid');
-  const missionOrder = ['사명','슈고','일일던전','아티쟁','나흐마','아그로','어비스사냥','시공(🗡️공격)','시공(🛡️방어)'];
+  const missionOrder = ['사명','슈고','일일던전','아티쟁','나흐마','아그로','어비스사냥','시공 (공격&방어)','각성전'];
   const purchaseOrder = ['오드','미지의 틈새','완료권'];
 
   const weeklyMap = new Map(state.weeklyTasks.map(w => [w.name, w]));
@@ -4563,6 +4615,26 @@ function renderWeekly(){
       : (isDailyDungeon
           ? "background:#111827;border-color:#8b6b2a; box-shadow:inset 0 0 0 1px rgba(234,196,98,.22);"
           : "");
+
+    if(w.name === '각성전'){
+      return `
+        <div class="week-item ${cls}" data-icon="${getTaskIcon(w.name)}" style="min-width:170px; ${specialBg}">
+          <div class="w-head">
+            <div class="w-title">${taskTitleHtml(w.name)}</div>
+            <input class="check" type="checkbox" ${w.current === 0 ? 'checked' : ''} onchange="weeklyComplete('${w.id}',this.checked)" />
+          </div>
+          <div class="row" style="justify-content:center;gap:7px;">
+            <div class="w-value" style="margin:0;min-width:70px;" onclick="changeWeekly('${w.id}',-1)" oncontextmenu="changeWeeklyByContext(event,'${w.id}',1)" ondblclick="setWeeklyValue('${w.id}')">${w.current}/${w.max}</div>
+            <div class="sub-count" style="margin:0;" title="추가 충전 횟수 (클릭해 직접 입력)" onclick="setWeeklyChargeValue('${w.id}')">(${w.chargeCurrent || 0})</div>
+          </div>
+          <div class="mini-row" style="margin-top:7px;">
+            <button type="button" class="mini-btn" onclick="changeWeeklyCharge('${w.id}',-1)" title="추가 충전 -1">−</button>
+            <span class="small muted">추가 충전</span>
+            <button type="button" class="mini-btn" onclick="changeWeeklyCharge('${w.id}',1)" title="추가 충전 +1">+</button>
+          </div>
+        </div>
+      `;
+    }
 
     if(w.name === '슈고'){
       const chargeCls = getMainClass(w.chargeCurrent || 0, w.chargeMax || 10);
@@ -4747,7 +4819,7 @@ function orderedTaskNames(){
 
   const preferred = [
     '⚡오드', ODE_CRAFT_NAME, '🌀회랑',
-    EXPEDITION_NAME,TRANSCEND_NAME,'악몽','각성전',BATTLEFIELD_NAME,SANCTUARY_NAME
+    EXPEDITION_NAME,TRANSCEND_NAME,'악몽',BATTLEFIELD_NAME,SANCTUARY_NAME
   ];
 
   const all = [];
