@@ -1190,7 +1190,7 @@ body{
   gap:10px !important;
 }
 .title::after{
-  content:'v1.1.5';
+  content:'v1.1.6';
   font-size:13px;
   font-weight:800;
   color:#b9cdf6;
@@ -2274,6 +2274,102 @@ thead th:nth-child(10),tbody td:nth-child(10){min-width:220px!important;width:22
 thead th:nth-child(10){background:linear-gradient(180deg,#79314f,#451d35)!important;}
 tbody td:nth-child(10) .cube{min-width:68px!important;}
 tbody td:nth-child(10) .cube-row{gap:6px!important;}
+
+/* ===== v26 readability / no-clipping layout corrections ===== */
+/* Cards must grow to accommodate secondary counters and helper text. */
+.weekly-top-layout > .weekly-group-box{
+  height:auto !important;
+  min-height:190px !important;
+  max-height:none !important;
+  overflow:visible !important;
+}
+.weekly-top-layout .weekly-group-row{
+  overflow:visible !important;
+  align-items:stretch !important;
+}
+.weekly-top-layout .week-item{
+  height:auto !important;
+  min-height:148px !important;
+  max-height:none !important;
+  overflow:visible !important;
+  padding:12px 10px !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+.weekly-top-layout .week-item .w-head{min-height:28px;}
+.weekly-top-layout .week-item .w-title{white-space:normal !important;overflow-wrap:anywhere;}
+.weekly-top-layout .daily-mission .weekly-group-row{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+.weekly-top-layout .expedition-help-mission .weekly-group-row{
+  grid-template-columns:minmax(0,1fr) !important;
+}
+.shugo-extra-count{min-height:42px !important;overflow:visible !important;}
+.shugo-extra-count small{display:block !important;line-height:1.3 !important;}
+/* Use two neatly aligned rows rather than forcing ten cards into tiny columns. */
+.weekly-group-box.weekly-mission{
+  overflow:visible !important;
+  height:auto !important;
+  max-height:none !important;
+}
+.weekly-group-box.weekly-mission .weekly-group-row{
+  display:grid !important;
+  grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:10px !important;
+  overflow:visible !important;
+  width:100% !important;
+  max-width:100% !important;
+}
+.weekly-group-box.weekly-mission .week-item,
+.weekly-group-box.purchase-mission .week-item{
+  height:auto !important;
+  min-height:156px !important;
+  max-height:none !important;
+  min-width:0 !important;
+  overflow:visible !important;
+  padding:12px 10px !important;
+  display:flex !important;
+  flex-direction:column !important;
+}
+.weekly-group-box.weekly-mission .w-head{min-height:29px !important;gap:6px !important;}
+.weekly-group-box.weekly-mission .w-title{
+  font-size:14px !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+  line-height:1.35 !important;
+}
+.weekly-group-box.weekly-mission .w-value{font-size:20px !important;}
+.weekly-group-box.weekly-mission .mini-row{flex-wrap:wrap !important;}
+.weekly-group-box.weekly-mission .week-item .cube-row{flex-wrap:wrap !important;}
+/* Explicit width for four sanctuary bosses; permit horizontal table scrolling. */
+.table-center,.table-wrap{max-width:100% !important;}
+.table-wrap{overflow-x:auto !important;overflow-y:auto !important;}
+.table-wrap table{width:max-content !important;min-width:1850px !important;table-layout:fixed !important;}
+.table-wrap thead th:nth-child(10),
+.table-wrap tbody td:nth-child(10){
+  min-width:360px !important;
+  width:360px !important;
+}
+.table-wrap tbody td:nth-child(10) .cube-row{
+  display:flex !important;
+  flex-wrap:nowrap !important;
+  gap:8px !important;
+  align-items:flex-start !important;
+  justify-content:center !important;
+}
+.table-wrap tbody td:nth-child(10) .cube-row > div{min-width:0 !important;flex:0 0 76px !important;}
+.table-wrap tbody td:nth-child(10) .cube{
+  box-sizing:border-box !important;
+  min-width:74px !important;
+  width:74px !important;
+  padding:8px 4px !important;
+}
+.table-wrap tbody td:nth-child(10) .cube small{white-space:nowrap !important;}
+/* Keep characters and controls legible even when zoom is reduced. */
+.table-wrap .cell-wrap{overflow:visible !important;}
+@media(max-width:1100px){
+  .weekly-group-box.weekly-mission .weekly-group-row{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
+}
 </style>
 </head>
 <body>
