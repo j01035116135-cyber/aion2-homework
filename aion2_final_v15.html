@@ -2370,6 +2370,179 @@ tbody td:nth-child(10) .cube-row{gap:6px!important;}
 @media(max-width:1100px){
   .weekly-group-box.weekly-mission .weekly-group-row{grid-template-columns:repeat(3,minmax(0,1fr)) !important;}
 }
+
+/* ===== v27: 실제 v26 레이아웃 기반 PC 압축형 UI ===== */
+:root{--dashboard-side-width:204px !important;--dashboard-main-width:auto !important;--dashboard-gap:10px !important;}
+html,body{max-width:100%;overflow-x:hidden;}
+.app{
+  zoom:.80 !important;
+  width:125% !important;
+  max-width:none !important;
+  min-width:0 !important;
+  padding:9px 12px 12px !important;
+}
+.topbar{
+  display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;
+  width:100% !important;max-width:100% !important;
+  padding-bottom:5px !important;margin-bottom:7px !important;gap:6px !important;
+}
+.title{font-size:21px !important;line-height:1.12 !important;gap:5px !important;}
+.title::after{font-size:10px !important;padding:2px 5px !important;}
+.sub{font-size:10px !important;margin-top:2px !important;}
+.topbar-right{gap:5px !important;}
+.topbar-right .pill,.topbar-right button{font-size:10px !important;padding:5px 7px !important;}
+.layout{
+  display:grid !important;
+  grid-template-columns:204px minmax(0,1fr) !important;
+  gap:10px !important;width:100% !important;max-width:100% !important;align-items:start !important;
+}
+.side{
+  width:100% !important;max-width:100% !important;min-width:0 !important;
+  padding:9px !important;
+}
+.main{width:100% !important;max-width:100% !important;min-width:0 !important;padding:7px !important;}
+.main > .panel,.weekly-box,.panel.main{width:100% !important;max-width:100% !important;}
+.side-logo{height:40px !important;margin-bottom:5px !important;}
+.side-logo .aion-logo{font-size:25px !important;}
+.side-logo .aion-logo span{font-size:28px !important;}
+.side .section-title{font-size:12px !important;margin:5px 0 !important;}
+.character-add-box{padding:7px !important;gap:4px !important;margin-bottom:6px !important;border-radius:9px !important;}
+.character-add-box input{padding:6px 7px !important;font-size:11px !important;}
+.character-add-box .character-add-btn{padding:7px 8px !important;font-size:11px !important;}
+.character-add-guide{font-size:9px !important;}
+.character-list{gap:4px !important;}
+.character-list-only .char-item{padding:6px !important;border-radius:9px !important;}
+.side .job-icon-circle{width:25px !important;height:25px !important;font-size:15px !important;}
+.side .char-name{font-size:11px !important;}
+.side .small{font-size:9px !important;}
+.side .job-select{padding:3px 5px !important;font-size:10px !important;}
+.side-links{margin-top:6px !important;gap:4px !important;padding-top:5px !important;}
+.side-link-btn{height:29px !important;min-height:29px !important;padding:5px 8px !important;font-size:11px !important;border-radius:7px !important;}
+.weekly-box{padding:10px 11px !important;margin-bottom:8px !important;overflow:visible !important;}
+.weekly-head{margin-bottom:7px !important;gap:6px !important;}
+.weekly-head .section-title{font-size:17px !important;margin-bottom:2px !important;}
+.weekly-head .small,.weekly-head .legend{font-size:9px !important;line-height:1.2 !important;}
+#weeklyGrid{gap:7px !important;}
+.weekly-top-layout{
+  display:grid !important;
+  grid-template-columns:minmax(0,1.05fr) minmax(0,.70fr) minmax(0,1.05fr) !important;
+  width:100% !important;gap:7px !important;margin:0 !important;
+}
+.weekly-top-layout > .weekly-group-box{
+  min-width:0 !important;min-height:117px !important;height:auto !important;
+  padding:8px !important;border-radius:10px !important;
+}
+.weekly-group-title{font-size:12px !important;line-height:1.12 !important;margin-bottom:5px !important;gap:4px !important;}
+.weekly-group-title .badge{font-size:8px !important;padding:2px 5px !important;white-space:normal !important;}
+.weekly-top-layout .weekly-group-row{gap:5px !important;align-items:stretch !important;overflow:visible !important;}
+.weekly-top-layout .week-item{
+  min-width:0 !important;min-height:83px !important;height:auto !important;
+  padding:5px !important;border-radius:8px !important;
+}
+.weekly-top-layout .week-item::before{font-size:15px !important;height:15px !important;line-height:15px !important;}
+.weekly-top-layout .w-head{min-height:17px !important;margin-bottom:3px !important;}
+.weekly-top-layout .w-title{font-size:11px !important;line-height:1.15 !important;}
+.weekly-top-layout .w-value{font-size:17px !important;min-width:0 !important;padding:3px 5px !important;margin-bottom:2px !important;}
+.weekly-top-layout .cube{min-width:0 !important;padding:4px 6px !important;font-size:13px !important;}
+.weekly-top-layout .mini-btn{width:20px !important;height:20px !important;font-size:12px !important;}
+.weekly-top-layout .small{font-size:9px !important;}
+.shugo-extra-count{min-height:26px !important;padding:2px 5px !important;}
+.shugo-extra-count small{font-size:8px !important;margin-top:1px !important;line-height:1.1 !important;}
+.weekly-top-layout .daily-mission .weekly-group-row{grid-template-columns:repeat(2,minmax(0,1fr)) !important;}
+.weekly-top-layout .expedition-help-mission .weekly-group-row{grid-template-columns:minmax(0,1fr) !important;}
+.weekly-top-layout .expedition-help-mission .week-item{min-height:83px !important;}
+.directive-grid{gap:4px !important;grid-template-columns:repeat(4,minmax(0,1fr)) !important;}
+.directive-btn{min-height:54px !important;gap:2px !important;padding:4px 2px !important;border-radius:7px !important;}
+.directive-status{font-size:16px !important;}
+.directive-name{font-size:10px !important;}
+.directive-name small{font-size:9px !important;}
+.weekly-group-box.weekly-mission{padding:8px !important;border-radius:10px !important;height:auto !important;min-height:0 !important;}
+.weekly-group-box.weekly-mission .weekly-group-row{
+  display:grid !important;grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+  gap:5px !important;overflow:visible !important;
+}
+.weekly-group-box.weekly-mission .week-item,
+.weekly-group-box.purchase-mission .week-item{
+  min-width:0 !important;height:auto !important;min-height:75px !important;
+  padding:5px !important;border-radius:8px !important;
+}
+.weekly-group-box.weekly-mission .week-item::before{font-size:14px !important;height:14px !important;line-height:14px !important;}
+.weekly-group-box.weekly-mission .w-head{min-height:17px !important;margin-bottom:2px !important;gap:3px !important;}
+.weekly-group-box.weekly-mission .w-title{font-size:11px !important;line-height:1.12 !important;overflow-wrap:normal !important;}
+.weekly-group-box.weekly-mission .w-value{font-size:16px !important;min-width:0 !important;padding:3px 5px !important;margin-bottom:2px !important;}
+.weekly-group-box.weekly-mission .cube-row{gap:3px !important;flex-wrap:nowrap !important;margin-top:2px !important;}
+.weekly-group-box.weekly-mission .cube{
+  min-width:0 !important;width:auto !important;padding:4px 5px !important;
+  font-size:13px !important;
+}
+.weekly-group-box.weekly-mission .cube small{font-size:8px !important;}
+.weekly-group-box.weekly-mission .ox-cube{min-width:30px !important;padding:4px 6px !important;font-size:16px !important;}
+.weekly-group-box.weekly-mission .mini-row{margin-top:2px !important;gap:3px !important;}
+.weekly-group-box.weekly-mission .mini-btn{width:18px !important;height:18px !important;font-size:11px !important;}
+.weekly-group-box.weekly-mission .small{font-size:9px !important;}
+.weekly-group-box.weekly-mission .sub-count{font-size:12px !important;padding:3px 4px !important;}
+.weekly-group-box.weekly-mission .check,.weekly-top-layout .check{width:12px !important;height:12px !important;flex:0 0 12px !important;}
+.weekly-group-box.weekly-mission .week-item .row{gap:4px !important;}
+/* 캐릭터 숙제 표: 열별 비율, 기존 1850px/성역 360px 강제값 해제 */
+.header-actions{margin-bottom:5px !important;gap:5px !important;}
+.header-actions .section-title{font-size:15px !important;}
+.header-actions .pill{font-size:9px !important;padding:4px 6px !important;}
+.table-center,.table-wrap{width:100% !important;max-width:100% !important;min-width:0 !important;}
+.table-wrap{overflow-x:hidden !important;overflow-y:visible !important;border-radius:9px !important;}
+.table-wrap table{min-width:0 !important;width:100% !important;table-layout:fixed !important;}
+.table-wrap thead th,.table-wrap tbody td{
+  min-width:0 !important;max-width:none !important;
+  box-sizing:border-box !important;padding:3px 1px !important;overflow:visible !important;
+}
+.table-wrap thead th:nth-child(1),.table-wrap tbody td:nth-child(1){width:9% !important;min-width:0 !important;}
+.table-wrap thead th:nth-child(2),.table-wrap tbody td:nth-child(2){width:7% !important;min-width:0 !important;}
+.table-wrap thead th:nth-child(3),.table-wrap tbody td:nth-child(3){width:8% !important;min-width:0 !important;}
+.table-wrap thead th:nth-child(4),.table-wrap tbody td:nth-child(4){width:10% !important;min-width:0 !important;}
+.table-wrap thead th:nth-child(5),.table-wrap tbody td:nth-child(5){width:10% !important;min-width:0 !important;}
+.table-wrap thead th:nth-child(6),.table-wrap tbody td:nth-child(6){width:9% !important;min-width:0 !important;}
+.table-wrap thead th:nth-child(7),.table-wrap tbody td:nth-child(7){width:9% !important;min-width:0 !important;}
+.table-wrap thead th:nth-child(8),.table-wrap tbody td:nth-child(8){width:6.5% !important;min-width:0 !important;}
+.table-wrap thead th:nth-child(9),.table-wrap tbody td:nth-child(9){width:8% !important;min-width:0 !important;}
+.table-wrap thead th:nth-child(10),.table-wrap tbody td:nth-child(10){width:23.5% !important;min-width:0 !important;}
+.table-wrap thead th{height:29px !important;padding:3px 1px !important;}
+.table-wrap .th-title{font-size:12px !important;line-height:1.1 !important;white-space:nowrap !important;}
+.table-wrap .cell-wrap{min-height:57px !important;height:auto !important;gap:2px !important;padding:3px 1px !important;overflow:visible !important;}
+.table-wrap .char-input{width:100% !important;min-width:0 !important;font-size:11px !important;padding:4px 2px !important;}
+.table-wrap .table-char-row{gap:2px !important;flex-wrap:nowrap !important;}
+.table-wrap .table-job-icon{font-size:15px !important;}
+.table-wrap .profile-manual-stack{width:100% !important;gap:2px !important;}
+.table-wrap .manual-info-input{width:100% !important;font-size:10px !important;padding:3px 1px !important;}
+.table-wrap .main-count{font-size:14px !important;padding:3px 5px !important;}
+.table-wrap .sub-count{font-size:11px !important;padding:2px 4px !important;}
+.table-wrap .check{width:12px !important;height:12px !important;}
+.table-wrap .cube-row{width:100% !important;gap:3px !important;flex-wrap:nowrap !important;}
+.table-wrap .cube-row > div{min-width:0 !important;flex:1 1 0 !important;}
+.table-wrap .cube{min-width:0 !important;width:100% !important;font-size:11px !important;padding:4px 2px !important;}
+.table-wrap .cube small{font-size:7px !important;white-space:nowrap !important;}
+.table-wrap .mini-row{gap:3px !important;}
+.table-wrap .mini-btn{width:18px !important;height:18px !important;font-size:11px !important;}
+.table-wrap .small,.table-wrap .done-label{font-size:8px !important;line-height:1.15 !important;}
+.table-wrap .expedition-count-cell{min-height:57px !important;gap:3px !important;}
+.table-wrap .expedition-count-title{font-size:10px !important;}
+.table-wrap .expedition-cost-buttons{gap:2px !important;}
+.table-wrap .expedition-cost-btn{min-width:0 !important;width:calc(50% - 1px) !important;padding:4px 1px !important;}
+.table-wrap .expedition-run-count{font-size:11px !important;margin-bottom:1px !important;}
+.table-wrap .expedition-cost-btn small{font-size:7px !important;white-space:normal !important;}
+.table-wrap tbody td:nth-child(10) .cube-row{gap:3px !important;justify-content:space-between !important;}
+.table-wrap tbody td:nth-child(10) .cube-row > div{flex:1 1 0 !important;min-width:0 !important;}
+.table-wrap tbody td:nth-child(10) .cube{min-width:0 !important;width:100% !important;padding:4px 1px !important;font-size:11px !important;}
+.table-wrap tbody td:nth-child(10) .cube small{font-size:7px !important;}
+.table-wrap td:nth-child(n+8),.table-wrap th:nth-child(n+8){border-left-width:2px !important;}
+/* 매우 좁은 화면에서는 강제 축소보다 조작 가능한 스크롤을 허용 */
+@media(max-width:1100px){
+  .app{zoom:.75 !important;width:133.3333% !important;}
+  .layout{grid-template-columns:175px minmax(0,1fr) !important;}
+  .table-wrap{overflow-x:auto !important;}
+  .table-wrap table{min-width:1080px !important;}
+  .weekly-top-layout{grid-template-columns:1fr 1fr !important;}
+  .directive-mission{grid-column:1/-1 !important;}
+}
+
 </style>
 </head>
 <body>
