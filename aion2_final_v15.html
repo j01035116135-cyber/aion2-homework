@@ -1357,7 +1357,7 @@ tbody td{background:rgba(7,18,34,.82)!important;}
   padding:12px 18px 16px 18px !important;
 }
 .title{font-size:25px !important;}
-.title::after{content:'v1.1.9' !important;font-size:12px !important;padding:3px 8px !important;}
+.title::after{content:'v1.2.0' !important;font-size:12px !important;padding:3px 8px !important;}
 .sub{font-size:11px !important;}
 .topbar{padding-bottom:8px !important;margin-bottom:10px !important;}
 .topbar-right{gap:8px !important;}
@@ -2611,6 +2611,11 @@ html,body{width:100% !important;max-width:100% !important;overflow-x:hidden !imp
  .table-wrap table{min-width:850px !important;}
 }
 
+/* v29: 원정 120 단일 / 초월 120·160 구분 */
+.table-wrap .expedition-cost-buttons.expedition-single-cost .expedition-cost-btn{
+  width:100% !important;max-width:100% !important;flex:1 1 100% !important;
+}
+.table-wrap .expedition-count-title{white-space:nowrap !important;}
 </style>
 </head>
 <body>
@@ -2751,6 +2756,7 @@ const EXPEDITION_NAME = '원정';
 const TRANSCEND_NAME = '초월';
 const EXPEDITION_TRANSCEND_80_ODE_COST = 80;
 const EXPEDITION_TRANSCEND_120_ODE_COST = 120;
+const TRANSCEND_160_ODE_COST = 160;
 function isExpeditionOrTranscendName(name){ return name === EXPEDITION_NAME || name === TRANSCEND_NAME; }
 const BATTLEFIELD_NAME = '⚔️전장 (승리)';
 const BATTLEFIELD_MAX = 3;
@@ -4080,7 +4086,8 @@ function setNumeric(taskId, key){
 function getOdeCostForTaskMode(task, mode='default'){
   if(!task) return ODE_LINKED_REWARD_STEP;
   if(task.name === SANCTUARY_NAME) return SANCTUARY_ODE_COST;
-  if(isExpeditionOrTranscendName(task.name)) return (mode === 'cost80' || mode === 'normal' || mode === 'low') ? EXPEDITION_TRANSCEND_80_ODE_COST : EXPEDITION_TRANSCEND_120_ODE_COST;
+  if(task.name === EXPEDITION_NAME) return EXPEDITION_TRANSCEND_120_ODE_COST;
+  if(task.name === TRANSCEND_NAME) return mode === 'cost160' ? TRANSCEND_160_ODE_COST : EXPEDITION_TRANSCEND_120_ODE_COST;
   return ODE_LINKED_REWARD_STEP;
 }
 function showOdeFloat(deltaValue){
@@ -4303,6 +4310,8 @@ function normalizeCubeTask(task){
 
   task.cube80Count = Math.max(0, count80 || 0);
   task.cube120Count = Math.max(0, count120 || 0);
+  // v29: preserve legacy 80-cost records invisibly; newly added 160-cost counts are independent.
+  task.cube160Count = Math.max(0, Number(task.cube160Count) || 0);
   task.cubeCount = 0;
   task.cubeNormalCount = 0;
   task.cubeHardCount = 0;
@@ -4327,7 +4336,8 @@ function normalizeCubeTask(task){
 
 function getCubeKeyForMode(task, mode){
   if(!task) return 'cube120Count';
-  if(isExpeditionOrTranscendName(task.name)) return (mode === 'cost80' || mode === 'normal' || mode === 'low') ? 'cube80Count' : 'cube120Count';
+  if(task.name === EXPEDITION_NAME) return 'cube120Count';
+  if(task.name === TRANSCEND_NAME) return mode === 'cost160' ? 'cube160Count' : 'cube120Count';
   return 'cube120Count';
 }
 
@@ -4356,7 +4366,7 @@ function setCubeCount(taskId, mode){
   normalizeCubeTask(t);
   mode = mode || 'cost120';
   const key = getCubeKeyForMode(t, mode);
-  const label = key === 'cube80Count' ? '80 오드' : '120 오드';
+  const label = key === 'cube160Count' ? '160 오드' : '120 오드';
   const v = prompt(`${t.name} ${label} 횟수를 입력하세요`, String(t[key] || 0));
   if(v === null) return;
   const num = Number(v);
@@ -4798,6 +4808,7 @@ function applyRuleToTask(task){
         normalizeCubeTask(task);
         task.cube80Count = 0;
         task.cube120Count = 0;
+        task.cube160Count = 0;
         task.cubeNormalCount = 0;
         task.cubeHardCount = 0;
         task.cubeLowCount = 0;
@@ -5314,15 +5325,17 @@ function renderCell(character, taskName){
 
   if(isExpeditionOrTranscendName(t.name)){
     normalizeCubeTask(t);
-    const entries = [
-      {mode:'cost80', key:'cube80Count', cost:EXPEDITION_TRANSCEND_80_ODE_COST},
-      {mode:'cost120', key:'cube120Count', cost:EXPEDITION_TRANSCEND_120_ODE_COST}
-    ];
+    const entries = t.name === EXPEDITION_NAME
+      ? [{mode:'cost120', key:'cube120Count', cost:EXPEDITION_TRANSCEND_120_ODE_COST}]
+      : [
+          {mode:'cost120', key:'cube120Count', cost:EXPEDITION_TRANSCEND_120_ODE_COST},
+          {mode:'cost160', key:'cube160Count', cost:TRANSCEND_160_ODE_COST}
+        ];
     return `
       <td class="${tdGroupClass}" style="background:#0d1427">
         <div class="cell-wrap expedition-count-cell" style="${cellAccent}">
           <div class="expedition-count-title">${escapeHtml(t.name)}횟수</div>
-          <div class="cube-row expedition-cost-buttons">
+          <div class="cube-row expedition-cost-buttons ${t.name === EXPEDITION_NAME ? 'expedition-single-cost' : ''}">
             ${entries.map(e => `
               <button type="button" class="cube expedition-cost-btn" onclick="changeCubeCount('${t.id}','${e.mode}',1)" oncontextmenu="changeCubeByContext(event,'${t.id}','${e.mode}',-1)" ondblclick="setCubeCount('${t.id}','${e.mode}')">
                 <span class="expedition-run-count">${t[e.key] || 0}회</span>
