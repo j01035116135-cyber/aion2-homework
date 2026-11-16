@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v25</title>
+<title>아이온2 [무쌍] 마르쿠탄 by 오천크스 (문의) - v30</title>
 <style>
   :root{
     --bg:#000000;
@@ -2616,6 +2616,96 @@ html,body{width:100% !important;max-width:100% !important;overflow-x:hidden !imp
   width:100% !important;max-width:100% !important;flex:1 1 100% !important;
 }
 .table-wrap .expedition-count-title{white-space:nowrap !important;}
+
+/* ===== v30 · 실사용 밀도 개선 / 기존 기능과 저장 로직 유지 ===== */
+@media (min-width:1201px){
+  .app{width:100% !important;max-width:1540px !important;margin:0 auto !important;padding:8px 10px 12px !important;}
+  .layout{grid-template-columns:156px minmax(0,1fr) !important;gap:9px !important;}
+}
+.main{min-width:0 !important;overflow:visible !important;}
+.weekly-box{padding:7px 8px !important;}
+.weekly-head{margin-bottom:4px !important;}
+.weekly-head .section-title{font-size:15px !important;}
+.weekly-head .small{font-size:9px !important;}
+.weekly-top-layout{gap:5px !important;}
+.weekly-top-layout > .weekly-group-box{min-height:0 !important;padding:5px 6px !important;}
+.weekly-group-box .weekly-group-title{font-size:11px !important;margin-bottom:4px !important;}
+.weekly-group-title .badge{font-size:8px !important;padding:2px 4px !important;}
+.weekly-top-layout .week-item{min-height:65px !important;padding:4px 5px !important;}
+.weekly-group-box.weekly-mission{padding:5px 6px !important;}
+.weekly-group-box.weekly-mission .weekly-group-row{gap:4px !important;}
+.weekly-group-box.weekly-mission .week-item{min-height:61px !important;padding:4px 4px !important;}
+.weekly-group-box.weekly-mission .w-value,.weekly-top-layout .w-value{font-size:13px !important;}
+.weekly-group-box.weekly-mission .w-title,.weekly-top-layout .w-title{font-size:10px !important;}
+.weekly-group-box.weekly-mission .cube{padding:3px 4px !important;font-size:11px !important;}
+.weekly-group-box.weekly-mission .ox-cube{font-size:14px !important;}
+.weekly-group-box.weekly-mission .small{font-size:8px !important;}
+.directive-btn{min-height:37px !important;padding:2px !important;}
+.directive-status{font-size:15px !important;}
+.directive-name{font-size:9px !important;}
+#weeklyGrid{gap:5px !important;}
+.header-actions{margin-bottom:4px !important;}
+.table-center{width:100% !important;max-width:100% !important;margin:0 auto !important;}
+.table-wrap{width:100% !important;max-width:100% !important;overflow-x:hidden !important;overflow-y:visible !important;}
+.table-wrap table{width:100% !important;max-width:100% !important;min-width:0 !important;table-layout:fixed !important;}
+.table-wrap thead th,.table-wrap tbody td{max-width:none !important;min-width:0 !important;overflow:hidden !important;padding:2px 1px !important;}
+/* 합계 100%; 성역을 2x2로 묶어 12%로 줄이고, 숫자 중심 컬럼에 배분 */
+.table-wrap thead th:nth-child(1),.table-wrap tbody td:nth-child(1){width:11% !important;}
+.table-wrap thead th:nth-child(2),.table-wrap tbody td:nth-child(2){width:8% !important;}
+.table-wrap thead th:nth-child(3),.table-wrap tbody td:nth-child(3){width:7% !important;}
+.table-wrap thead th:nth-child(4),.table-wrap tbody td:nth-child(4){width:11% !important;}
+.table-wrap thead th:nth-child(5),.table-wrap tbody td:nth-child(5){width:11% !important;}
+.table-wrap thead th:nth-child(6),.table-wrap tbody td:nth-child(6){width:9% !important;}
+.table-wrap thead th:nth-child(7),.table-wrap tbody td:nth-child(7){width:11% !important;}
+.table-wrap thead th:nth-child(8),.table-wrap tbody td:nth-child(8){width:7% !important;}
+.table-wrap thead th:nth-child(9),.table-wrap tbody td:nth-child(9){width:8% !important;}
+.table-wrap thead th:nth-child(10),.table-wrap tbody td:nth-child(10){width:17% !important;}
+.table-wrap .th-title{font-size:11px !important;white-space:nowrap !important;overflow-wrap:normal !important;}
+.table-wrap .cell-wrap{min-height:45px !important;padding:2px 1px !important;gap:2px !important;}
+.table-wrap .cube-row{gap:3px !important;}
+.table-wrap .cube{font-size:11px !important;padding:3px 2px !important;line-height:1.1 !important;}
+.table-wrap .char-input{font-size:11px !important;padding:3px 2px !important;}
+.table-wrap .main-count{font-size:13px !important;padding:3px 5px !important;}
+.table-wrap .sub-count{font-size:10px !important;}
+.table-wrap .expedition-count-title{display:none !important;}
+.table-wrap .expedition-count-cell{min-height:45px !important;justify-content:center !important;}
+.table-wrap .expedition-cost-buttons{width:100% !important;gap:3px !important;}
+.table-wrap .expedition-cost-btn{font-size:11px !important;padding:5px 2px !important;min-height:33px !important;}
+.table-wrap .expedition-cost-btn .expedition-run-count{font-size:12px !important;display:block !important;}
+.table-wrap .expedition-cost-btn small{font-size:9px !important;white-space:nowrap !important;}
+.table-wrap .expedition-cost-buttons.expedition-single-cost .expedition-cost-btn{width:100% !important;}
+/* 성역 4종: 한 행에 4버튼 대신 2열×2행 압축 */
+.table-wrap tbody td:nth-child(10) .sanctuary-compact-grid{
+  display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  gap:3px !important;align-items:stretch !important;width:100% !important;
+}
+.table-wrap tbody td:nth-child(10) .sanctuary-compact-grid>.sanctuary-boss{
+  min-width:0 !important;width:auto !important;display:flex !important;align-items:center !important;
+  justify-content:space-between !important;gap:3px !important;
+  padding:2px 3px !important;border-radius:5px !important;background:rgba(8,16,34,.55) !important;
+}
+.table-wrap tbody td:nth-child(10) .sanctuary-boss-name{
+  font-size:9px !important;font-weight:800 !important;white-space:nowrap !important;overflow:hidden !important;
+  text-overflow:ellipsis !important;flex:1 1 auto !important;
+}
+.table-wrap tbody td:nth-child(10) .sanctuary-boss .cube{
+  width:auto !important;min-width:31px !important;font-size:10px !important;
+  padding:3px 4px !important;flex:0 0 auto !important;white-space:nowrap !important;
+}
+/* 클릭 대상은 여전히 기존 요소; 수치/라벨을 한눈에 */
+.table-wrap tbody td:nth-child(10) .cell-wrap{gap:2px !important;}
+.table-wrap tbody td:nth-child(10) .done-label{display:none !important;}
+@media(max-width:1200px){
+  .app{width:100% !important;max-width:100% !important;margin:0 auto !important;}
+  .table-wrap table{min-width:0 !important;}
+  .table-wrap{overflow-x:hidden !important;}
+}
+@media(max-width:850px){
+  /* 매우 좁은 화면에서는 버튼 조작성 우선 */
+  .table-wrap{overflow-x:auto !important;}
+  .table-wrap table{min-width:850px !important;}
+}
+
 </style>
 </head>
 <body>
@@ -2665,7 +2755,7 @@ html,body{width:100% !important;max-width:100% !important;overflow-x:hidden !imp
         <div class="weekly-head">
           <div>
             <div class="section-title" style="margin-bottom:4px">숙제 현황</div>
-            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정/초월 큐브와 도움은 매주 수요일 05시 초기화 · 원정·초월 각각 왼쪽 80 / 오른쪽 120 · 성역 160</div>
+            <div class="small muted">사명은 매일 05시 초기화 · 슈고는 매일 05시 +2 충전 · 원정/초월 큐브와 도움은 매주 수요일 05시 초기화 · 원정 120 / 초월 120·160 · 성역 160</div>
           </div>
           <div class="legend">좌클릭/버튼: 차감 · 우클릭: 복구</div>
         </div>
@@ -5274,16 +5364,15 @@ function renderCell(character, taskName){
       <td class="${tdGroupClass} ${allDone ? 'character-task-complete' : ''}" style="background:${bg}">
         <div class="cell-wrap" style="${cellAccent}">
           <input class="check" type="checkbox" ${allDone ? 'checked' : ''} onchange="completeSanctuaryTask('${t.id}', this.checked)" />
-          <div class="cube-row" style="gap:10px; flex-wrap:nowrap;">
+          <div class="cube-row sanctuary-compact-grid">
             ${t.bosses.map((boss, idx) => {
               const rewardCls = getMiniClass(boss.current, boss.max);
               return `
-                <div style="text-align:center;">
-                  <div class="cube${rewardCls}" onclick="changeSanctuaryBossCount('${t.id}',${idx},-1)" oncontextmenu="changeSanctuaryBossByContext(event,'${t.id}',${idx},1)" ondblclick="setSanctuaryBossCount('${t.id}',${idx})" style="min-width:74px;">
+                <div class="sanctuary-boss" title="${escapeHtml(boss.name)} · 160 오드">
+                  <span class="sanctuary-boss-name">${escapeHtml(boss.name.replace('⚔️','').replace('⚔️',''))}</span>
+                  <div class="cube${rewardCls}" onclick="changeSanctuaryBossCount('${t.id}',${idx},-1)" oncontextmenu="changeSanctuaryBossByContext(event,'${t.id}',${idx},1)" ondblclick="setSanctuaryBossCount('${t.id}',${idx})">
                     ${boss.current}/${boss.max}
-                    <small>160 오드</small>
                   </div>
-                  <div class="small muted" style="margin-top:4px;font-weight:800;">${escapeHtml(boss.name.replace('⚔️','').replace('⚔️',''))}</div>
                 </div>
               `;
             }).join('')}
@@ -5334,12 +5423,12 @@ function renderCell(character, taskName){
     return `
       <td class="${tdGroupClass}" style="background:#0d1427">
         <div class="cell-wrap expedition-count-cell" style="${cellAccent}">
-          <div class="expedition-count-title">${escapeHtml(t.name)}횟수</div>
+          <div class="expedition-count-title" aria-hidden="true">${escapeHtml(t.name)} 횟수</div>
           <div class="cube-row expedition-cost-buttons ${t.name === EXPEDITION_NAME ? 'expedition-single-cost' : ''}">
             ${entries.map(e => `
               <button type="button" class="cube expedition-cost-btn" onclick="changeCubeCount('${t.id}','${e.mode}',1)" oncontextmenu="changeCubeByContext(event,'${t.id}','${e.mode}',-1)" ondblclick="setCubeCount('${t.id}','${e.mode}')">
                 <span class="expedition-run-count">${t[e.key] || 0}회</span>
-                <small>${e.cost} 오드 차감</small>
+                <small>${e.cost} 오드</small>
               </button>
             `).join('')}
           </div>
